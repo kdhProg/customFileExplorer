@@ -1,38 +1,42 @@
-# create-svelte
+# 사용자지정 파일탐색기
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+오픈소스 대회 사용자지정 파일탐색기 프로젝트
 
-## Creating a project
+## 프로젝트 목표
 
-If you're seeing this, you've probably already done this step. Congrats!
+- 고속처리
+- 기존에 없던 유용한 기능 : 멀티윈도우 / 향상된 즐겨찾기 등
+- 적절한 추상화를 통한 손쉬운 오픈소스 기여
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
+## 사용기술 / tool
 
-## Developing
+- rust + tauri
+- sveltekit
+- vscode
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## 아키텍쳐
 
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
+- 추가예정
 
 ## Building
 
-To create a production version of your app:
+프론트엔드 개발서버
 
+```bash
+npm run dev
+```
+
+프론트엔드 빌드
 ```bash
 npm run build
 ```
 
-You can preview the production build with `npm run preview`.
+개발 앱 빌드
+```bash
+cargo tauri dev
+```
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+
+svelte 참고
+>[tauri 공식문서](https://tauri.app/ko/v1/guides/getting-started/setup/sveltekit/)
