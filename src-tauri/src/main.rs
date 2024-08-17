@@ -9,7 +9,8 @@ fn main() {
   .invoke_handler(tauri::generate_handler![
     commands::get_current_dir,
     commands::list_files_in_directory,
-    commands::get_file_metadata
+    commands::get_file_metadata,
+    commands::create_new_folder
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
