@@ -13,6 +13,15 @@ pub struct FileMetadata {
     file_type: String,
 }
 
+#[derive(Debug, serde::Serialize)]
+pub struct FileItem {
+    file_name: String,
+    file_path: String,
+}
+
+
+
+
 // 현재 디렉토리 반환
 #[tauri::command]
 pub fn get_current_dir() -> Result<String, String> {
@@ -87,3 +96,45 @@ pub fn create_new_folder(path: String) -> Result<(), String> {
     Ok(())
 }
 
+
+// 파일명 검색
+#[tauri::command]
+pub fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>, String> {
+    let dir_path = Path::new(&directory);
+
+    if !dir_path.exists() {
+        return Err(format!("Directory does not exist: {}", directory));
+    }
+
+    let mut result = Vec::new();
+
+    fn search_in_directory(dir: &Path, keyword: &str, result: &mut Vec<FileItem>) -> Result<(), String> {
+        match fs::read_dir(dir) {
+            Ok(entries) => {
+                for entry in entries {
+                    if let Ok(entry) = entry {
+                        let path = entry.path();
+                        if path.is_dir() {
+                            // 디렉토리가 있으면 재귀적으로 검색
+                            search_in_directory(&path, keyword, result)?;
+                        } else if let Some(file_name) = path.file_name().and_then(|name| name.to_str()) {
+                            if file_name.contains(keyword) {
+                                result.push(FileItem {
+                                    file_name: file_name.to_string(),
+                                    file_path: path.to_string_lossy().to_string(),
+                                });
+                            }
+                        }
+                    }
+                }
+                Ok(())
+            }
+            Err(e) => Err(format!("Failed to read directory: {}", e.to_string())),
+        }
+    }
+
+    // 루트 디렉토리에서 검색 시작
+    search_in_directory(dir_path, &keyword, &mut result)?;
+
+    Ok(result)
+}

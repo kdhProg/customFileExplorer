@@ -45,6 +45,20 @@
                 console.error('Failed to create folder:', error);
             }
         }
+
+
+        let searchRst = {};
+        async function searchFilesInDirectory() {
+            const directory = 'D://entire_workspace//2024opensw_competition//pathFinder//src//routes';
+            const keyword = '+';
+        try {
+            searchRst = await invoke('search_files', { directory, keyword });
+            console.log(searchRst);
+        } catch (error) {
+            console.error('err:', error);
+        }
+        }
+
     </script>
 <h1>
     backEnd API Test Page
@@ -73,3 +87,5 @@
 <button on:click="{get_cur_dir}">test</button>
 <button on:click="{getMetaData}">metaData Test</button>
 <button on:click="{mk_new_dir}">new dir</button>
+<hr>
+<button on:click="{searchFilesInDirectory}">searchFilesInDirectory</button>

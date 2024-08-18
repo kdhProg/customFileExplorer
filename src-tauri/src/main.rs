@@ -10,7 +10,8 @@ fn main() {
     commands::get_current_dir,
     commands::list_files_in_directory,
     commands::get_file_metadata,
-    commands::create_new_folder
+    commands::create_new_folder,
+    commands::search_files,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
