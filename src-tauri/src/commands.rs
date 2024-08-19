@@ -2,6 +2,8 @@
 use std::env;
 use std::fs;
 use std::path::Path;
+use trash;
+use std::process::Command;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -63,12 +65,12 @@ pub fn get_file_metadata(file_path: String) -> Result<FileMetadata, String> {
         .map_err(|err| err.to_string())?
         .as_secs();
 
-    // 파일 확장자로부터 파일 타입 추출
+    // 파일 확장자 추출
     let file_type = Path::new(&file_path)
         .extension() // 확장자를 가져옴
         .and_then(|ext| ext.to_str()) // &OsStr를 &str로 변환
-        .unwrap_or("unknown") // 확장자가 없으면 "unknown"으로 설정
-        .to_string(); // String으로 변환
+        .unwrap_or("unknown") // 확장자가 없으면 unknown
+        .to_string();
 
     // FileMetadata 구조체로 반환
     let file_metadata = FileMetadata {
@@ -137,4 +139,38 @@ pub fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>,
     search_in_directory(dir_path, &keyword, &mut result)?;
 
     Ok(result)
+}
+
+
+// 파일삭제(휴지통이동)
+#[tauri::command]
+pub fn move_to_trash(del_path: String) -> Result<(), String> {
+    trash::delete(del_path)
+        .map_err(|err| format!("Failed to move file to trash: {}", err.to_string()))
+}
+
+// 기본 프로그램으로 해당 파일 실행
+#[tauri::command]
+pub fn open_file_with_default_program(file_path: &str) -> Result<(), String> {
+    let result = if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .args(&["/C", "start", "", file_path])
+            .status()
+    } else if cfg!(target_os = "macos") {
+        Command::new("open")
+            .arg(file_path)
+            .status()
+    } else if cfg!(target_os = "linux") {
+        Command::new("xdg-open")
+            .arg(file_path)
+            .status()
+    } else {
+        return Err("Unsupported operating system".to_string());
+    };
+
+    match result {
+        Ok(status) if status.success() => Ok(()),
+        Ok(status) => Err(format!("Command exited with status: {}", status)),
+        Err(err) => Err(format!("Failed to open file: {}", err)),
+    }
 }

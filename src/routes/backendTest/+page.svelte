@@ -5,6 +5,7 @@
     
         let dir_lists = ''
     
+        // 현재파일목록
         async function get_cur_dir() {
         cur_dir = await invoke('get_current_dir');
         dir_lists = await invoke('list_files_in_directory', { path: cur_dir });
@@ -25,6 +26,7 @@
         let metadata: FileMetadata | null = null;
         let error: string | null = null;
     
+        // 메타데이터 호출
         async function getMetaData() {
         try {
             
@@ -35,6 +37,7 @@
         }
         }
 
+        // 새폴더 생성
         async function mk_new_dir(){
             const folderPath = 'D://entire_workspace//2024opensw_competition//pathFinder//src//routes//backendTest//test';
 
@@ -47,6 +50,7 @@
         }
 
 
+        // 검색 테스트
         let searchRst = {};
         async function searchFilesInDirectory() {
             const directory = 'D://entire_workspace//2024opensw_competition//pathFinder//src//routes';
@@ -56,6 +60,18 @@
             console.log(searchRst);
         } catch (error) {
             console.error('err:', error);
+        }
+        }
+
+        // 휴지통 테스트
+        async function deleteFile() {
+        try {
+            const del_path = 'D://entire_workspace//2024opensw_competition//pathFinder//src//routes//backendTest//a.txt';
+            await invoke('move_to_trash', { delPath: del_path });
+            // 난점 --> 백엔드 인자명은 del_path인데 여기서는 카멜표기법으로 해야 인식함
+            console.log('File moved to trash successfully');
+        } catch (error) {
+            console.error('Failed to delete file:', error);
         }
         }
 
@@ -89,3 +105,5 @@
 <button on:click="{mk_new_dir}">new dir</button>
 <hr>
 <button on:click="{searchFilesInDirectory}">searchFilesInDirectory</button>
+<hr>
+<button on:click="{deleteFile}">deleteFile</button>
