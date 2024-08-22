@@ -1,0 +1,48 @@
+.splash-screen {
+    display: flex;
+    flex-direction: column;
+    /* 아이콘과 텍스트를 수직으로 정렬 */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+    overflow: hidden;
+}
+
+.file-icon {
+    width: 100px;
+    height: 100px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    animation: fadeIn 2s forwards;
+    cursor: pointer;
+}
+
+.file-icon::before {
+    content: "📁";
+    font-size: 48px;
+}
+
+.description {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #ffffff;
+    text-align: center;
+    font-family: 'Roboto', sans-serif;
+    /* 부드러운 폰트로 변경 */
+    opacity: 0;
+    animation: fadeIn 2s forwards;
+    /* 텍스트도 부드럽게 나타나게 설정 */
+    animation-delay: 1s;
+    /* 아이콘보다 텍스트가 1초 뒤에 나타나도록 설정 */
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
