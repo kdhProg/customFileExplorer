@@ -9,8 +9,9 @@
     async function get_cur_dir() {
         cur_dir = await invoke("get_current_dir");
         dir_lists = await invoke("list_files_in_directory", { path: cur_dir });
+        console.log(dir_lists)
     }
-
+    
     let metaData = "";
 
     interface FileMetadata {
@@ -21,7 +22,7 @@
     }
 
     let filePath =
-        "D:\\entire_workspace\\2024opensw_competition\\pathFinder\\src-tauri\\tauri.conf.json";
+        "D:\\entire_workspace\\2024opensw_competition\\pathFinder\\src-tauri";
 
     let metadata: FileMetadata | null = null;
     let error: string | null = null;
@@ -77,6 +78,20 @@
             console.error("Failed to delete file:", error);
         }
     }
+
+    // 폴더여부 테스트
+    let result = "";
+
+    let isFileDirFilePath = "C:\\";
+
+    async function checkIfDirectory() {
+        try {
+        const isDir = await invoke('is_directory', { path: isFileDirFilePath });
+        result = isDir ? "This is a directory." : "This is not a directory.";
+        } catch (error) {
+        result = `Error: ${error}`;
+        }
+    }
 </script>
 
 <h1>backEnd API Test Page</h1>
@@ -110,3 +125,6 @@
 <button on:click={searchFilesInDirectory}>searchFilesInDirectory</button>
 <hr />
 <button on:click={deleteFile}>deleteFile</button>
+<hr>
+<button on:click={checkIfDirectory}>Is Folder? Check</button>
+<p>{result}</p>

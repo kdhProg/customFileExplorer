@@ -1,0 +1,139 @@
+.main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+}
+
+.top-bar {
+    background-color: transparent;
+    color: #333;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: bold;
+    color: #005082;
+}
+
+.settings-icon {
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-grow: 1;
+    padding: 10px;
+}
+
+.dual-view {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.sidebar {
+    width: 180px;
+    background-color: transparent;
+    padding: 10px;
+    color: #333;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.folder-list li {
+    margin-bottom: 8px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.folder-list li:hover {
+    color: #005082;
+}
+
+.folder-sublist {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.file-viewer {
+    flex-grow: 1;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: transparent;
+}
+
+.file-item {
+    background-color: rgba(255, 255, 255, 0.8);
+    margin: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.1s, box-shadow 0.3s;
+}
+
+.file-item:hover {
+    transform: scale(1.05);
+}
+
+.file-icon {
+    font-size: 24px;
+}
+
+
+.file-name {
+    font-size: 12px;
+    margin-top: 5px;
+}
+
+.settings-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    width: 350px;
+    border-radius: 8px;
+}
+
+.modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.tabs {
+    display: flex;
+    gap: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.tabs .active {
+    font-weight: bold;
+    color: #005082;
+}
+
+.tab-content {
+    padding: 15px 0;
+}
+
+.close-modal {
+    background-color: #005082;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+}

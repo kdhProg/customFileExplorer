@@ -118,7 +118,6 @@ pub fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>,
                     if let Ok(entry) = entry {
                         let path = entry.path();
                         if path.is_dir() {
-                            // 디렉토리가 있으면 재귀적으로 검색
                             search_in_directory(&path, keyword, result)?;
                         } else if let Some(file_name) = path.file_name().and_then(|name| name.to_str()) {
                             if file_name.contains(keyword) {
@@ -149,6 +148,20 @@ pub fn move_to_trash(del_path: String) -> Result<(), String> {
     trash::delete(del_path)
         .map_err(|err| format!("Failed to move file to trash: {}", err.to_string()))
 }
+
+
+// 해당 경로의 폴더 여부 판단
+#[tauri::command]
+pub fn is_directory(path: String) -> Result<bool, String> {
+    let metadata = fs::metadata(&path);
+    
+    match metadata {
+        Ok(meta) => Ok(meta.is_dir()),
+        Err(err) => Err(err.to_string()),
+    }
+}
+
+
 
 // 기본 프로그램으로 해당 파일 실행
 #[tauri::command]

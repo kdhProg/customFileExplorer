@@ -1,17 +1,95 @@
-<script>
-    import "/src/routes/frontTest/style/mainPage.css";
+<script lang="ts">
+    // import "/src/lib/style/mainPage.css";
 
+    import { invoke } from "@tauri-apps/api/tauri";
+
+
+    // import - css
+    import "/src/lib/style/global_features.css"
+
+    // import - components
+    import Navi from "$lib/components/navi.svelte";
+    import CurrentPath from "$lib/components/currentPath.svelte";
+    import Test from "$lib/components/test.svelte";
+
+
+    let c_default_path = 'c:\\';
+    let d_default_path = 'd:\\';
+
+    let c_drive_default_files: string[] = [];
+    let d_drive_default_files: string[] = [];
+
+    async function c_d_file_lists() {
+        c_drive_default_files = await invoke("list_files_in_directory", { path: c_default_path });
+        d_drive_default_files = await invoke("list_files_in_directory", { path: d_default_path });
+    }
+
+
+    interface FileMetadata {
+        file_name: string;
+        file_size: number;
+        last_modified: number;
+        file_type: string;
+    }
+
+    let metadata: FileMetadata;
+    let error: string | null = null;
+
+    // 메타데이터 호출
+    async function getMetaData(filePath: string): Promise<FileMetadata> {
+        try {
+            metadata = await invoke<FileMetadata>("get_file_metadata", {
+                filePath,
+            });
+        } catch (err) {
+            error = (err as Error).message;
+        } finally{
+            return metadata;
+        }
+    }
+   
+
+
+    // 페이지 로드 후 비동기적으로 파일 목록을 가져와서 업데이트
+    async function initializeDrives() {
+        await c_d_file_lists();
+
+        // C 드라이브의 폴더4에 파일 목록 업데이트
+        drives["C 드라이브"].C폴더4 = c_drive_default_files;
+
+        console.log(drives); // 업데이트된 drives 객체 출력
+    }
+
+    // 페이지 로드 시 비동기 함수 실행
+    initializeDrives();
+
+
+    /////////////////////////////////////////////////////////////
     let drives = {
         "C 드라이브": {
             C폴더1: ["텍스트파일", "이미지파일"],
             C폴더2: ["동영상파일", "텍스트파일"],
             C폴더3: ["실행파일", "이미지파일"],
+            C폴더4: c_drive_default_files
         },
         "D 드라이브": {
             D폴더1: ["텍스트파일", "텍스트파일"],
             D폴더2: ["이미지파일", "동영상파일"],
         },
     };
+
+
+        // "C 드라이브": {
+        //     C폴더1: ["텍스트파일", "이미지파일"],
+        //     C폴더2: ["동영상파일", "텍스트파일"],
+        //     C폴더3: ["실행파일", "이미지파일"],
+        //     C폴더4: c_drive_default_files
+        // },
+        // "D 드라이브": {
+        //     D폴더1: ["텍스트파일", "텍스트파일"],
+        //     D폴더2: ["이미지파일", "동영상파일"],
+        // },
+
 
     let showSettings = false;
     let activeTab = "interface";
@@ -93,6 +171,41 @@
         if (file.includes("실행파일")) return "💻";
         return "📁";
     }
+
+
+    // 테마
+    // 기본 CSS 파일 로드
+    let currentTheme = '/src/lib/style/mainPage.css';
+
+    // CSS 파일을 동적으로 변경하는 함수
+    function applyTheme(themePath) {
+        const existingLink = document.querySelector('#dynamic-theme');
+        
+        // 기존의 link 태그가 존재하면 경로를 변경
+        if (existingLink) {
+            existingLink.href = themePath;
+        } else {
+            // 새로운 link 태그를 생성하여 추가
+            const linkElement = document.createElement('link');
+            linkElement.rel = 'stylesheet';
+            linkElement.id = 'dynamic-theme';
+            linkElement.href = themePath;
+            document.head.appendChild(linkElement);
+        }
+
+        // 현재 테마 경로 업데이트
+        currentTheme = themePath;
+    }
+
+    // 페이지 로드 시 기본 테마 적용
+    applyTheme(currentTheme);
+
+
+    // -------------- tauri API --------------------
+
+    
+
+
 </script>
 
 <!-- 메인 화면 -->
@@ -103,15 +216,25 @@
         <div class="settings-icon" on:click={toggleSettings}>⚙️</div>
     </header>
 
+    <!-- 네비게이션 바 -->
+    <div class="navi-container">
+        <Navi/>
+    </div>
+
+    <!-- 현재 디렉토리 -->
+     <div>
+       <CurrentPath/>
+     </div>
+
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
         <!-- 좌측 패널: 드라이브 및 폴더 탐색기 -->
         <aside class="sidebar">
             <ul class="folder-list">
                 {#each Object.keys(drives) as drive}
                     <li>
-                        <span on:click={() => toggleDrive(drive, "left")}>
+                        <button on:click={() => toggleDrive(drive, "left")}>
                             {drive}
-                        </span>
+                        </button>
                         {#if selectedDriveLeft === drive && openedDrives[drive]}
                             <ul class="folder-sublist">
                                 {#each Object.keys(drives[drive]) as folder}
@@ -213,6 +336,12 @@
                     >
                         화면 크기 조절
                     </li>
+                    <li
+                        class:active={activeTab === "themes"}
+                        on:click={() => changeTab("themes")}
+                    >
+                        테마선택
+                    </li>
                 </ul>
                 <div class="tab-content">
                     {#if activeTab === "interface"}
@@ -233,6 +362,11 @@
                             on:input={updateFileSize}
                         />
                         <p>파일 아이콘 크기: {fileSize}px</p>
+                    {:else if activeTab === "themes"}
+                    <h3>테마 선택</h3>
+                    <button on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>디폴트 테마</button>
+                    <button on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>레트로 테마</button>
+                    <button on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>SF 테마</button>
                     {/if}
                 </div>
                 <button class="close-modal" on:click={toggleSettings}
@@ -242,5 +376,5 @@
         </div>
     {/if}
 </div>
-
+<Test/>
 <a href="/frontTest/frame">Go to previous page</a>
