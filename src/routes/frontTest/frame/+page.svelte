@@ -4,4 +4,6 @@
 <p></p>
 <a href="/frontTest/frame/mainPage">Go to main page</a>
 <p></p>
+<a href="/frontTest/frame/dirTempTest">dirTempTest</a>
+<p></p>
 <a href="/frontTest">Go to previous page</a>

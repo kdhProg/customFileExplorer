@@ -1,6 +1,10 @@
 import { writable } from 'svelte/store';
 
-export const drives = writable({
-    "C:\\": null,
-    "D:\\": null,
+export type DriveState = {
+  [key: string]: { [key: string]: string[] | null } | null;
+};
+
+export const drives = writable<DriveState>({
+  "C:\\": null,
+  "D:\\": null,
 });

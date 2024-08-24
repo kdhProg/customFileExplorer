@@ -10,7 +10,6 @@
     // import - components
     import Navi from "$lib/components/navi.svelte";
     import CurrentPath from "$lib/components/currentPath.svelte";
-    import Test from "$lib/components/test.svelte";
 
 
     let c_default_path = 'c:\\';
@@ -376,5 +375,4 @@
         </div>
     {/if}
 </div>
-<Test/>
 <a href="/frontTest/frame">Go to previous page</a>

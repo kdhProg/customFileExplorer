@@ -17,7 +17,7 @@ export async function isDirectory(path: string): Promise<boolean> {
     if (result) {
         return true;
     } else {
-        console.error(`Error checking directory: ${result}`);
+        console.error({result});
         return false;
     }
 }
