@@ -42,6 +42,7 @@
 
   function getFolderName(fullPath: string): string {
     return fullPath.split(/[/\\]/).pop() || "";
+    return fullPath.split(/[/\\]/).pop() || "";
   }
 </script>
 
