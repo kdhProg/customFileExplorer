@@ -1,7 +1,13 @@
 import { writable } from 'svelte/store';
 
+export type FolderStructure = {
+  name: string;
+  path: string;
+  children: FolderStructure[] | null;
+};
+
 export type DriveState = {
-  [key: string]: { [key: string]: string[] | null } | null;
+  [key: string]: FolderStructure | null;
 };
 
 export const drives = writable<DriveState>({

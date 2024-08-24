@@ -1,8 +1,9 @@
 <script lang="ts">
     // import "/src/lib/style/mainPage.css";
-
+    import { isDirectory, listFilesInDirectory } from "$lib/api";
     import { invoke } from "@tauri-apps/api/tauri";
-
+    import Folder from '$lib/components/Folder.svelte';
+    import { drives } from '$lib/store';
 
     // import - css
     import "/src/lib/style/global_features.css"
@@ -10,84 +11,6 @@
     // import - components
     import Navi from "$lib/components/navi.svelte";
     import CurrentPath from "$lib/components/currentPath.svelte";
-
-
-    let c_default_path = 'c:\\';
-    let d_default_path = 'd:\\';
-
-    let c_drive_default_files: string[] = [];
-    let d_drive_default_files: string[] = [];
-
-    async function c_d_file_lists() {
-        c_drive_default_files = await invoke("list_files_in_directory", { path: c_default_path });
-        d_drive_default_files = await invoke("list_files_in_directory", { path: d_default_path });
-    }
-
-
-    interface FileMetadata {
-        file_name: string;
-        file_size: number;
-        last_modified: number;
-        file_type: string;
-    }
-
-    let metadata: FileMetadata;
-    let error: string | null = null;
-
-    // 메타데이터 호출
-    async function getMetaData(filePath: string): Promise<FileMetadata> {
-        try {
-            metadata = await invoke<FileMetadata>("get_file_metadata", {
-                filePath,
-            });
-        } catch (err) {
-            error = (err as Error).message;
-        } finally{
-            return metadata;
-        }
-    }
-   
-
-
-    // 페이지 로드 후 비동기적으로 파일 목록을 가져와서 업데이트
-    async function initializeDrives() {
-        await c_d_file_lists();
-
-        // C 드라이브의 폴더4에 파일 목록 업데이트
-        drives["C 드라이브"].C폴더4 = c_drive_default_files;
-
-        console.log(drives); // 업데이트된 drives 객체 출력
-    }
-
-    // 페이지 로드 시 비동기 함수 실행
-    initializeDrives();
-
-
-    /////////////////////////////////////////////////////////////
-    let drives = {
-        "C 드라이브": {
-            C폴더1: ["텍스트파일", "이미지파일"],
-            C폴더2: ["동영상파일", "텍스트파일"],
-            C폴더3: ["실행파일", "이미지파일"],
-            C폴더4: c_drive_default_files
-        },
-        "D 드라이브": {
-            D폴더1: ["텍스트파일", "텍스트파일"],
-            D폴더2: ["이미지파일", "동영상파일"],
-        },
-    };
-
-
-        // "C 드라이브": {
-        //     C폴더1: ["텍스트파일", "이미지파일"],
-        //     C폴더2: ["동영상파일", "텍스트파일"],
-        //     C폴더3: ["실행파일", "이미지파일"],
-        //     C폴더4: c_drive_default_files
-        // },
-        // "D 드라이브": {
-        //     D폴더1: ["텍스트파일", "텍스트파일"],
-        //     D폴더2: ["이미지파일", "동영상파일"],
-        // },
 
 
     let showSettings = false;
@@ -118,56 +41,23 @@
         showSettings = false; // 설정 모달 닫기
     }
 
-    // 파일 크기 조절
-    function updateFileSize(event) {
-        fileSize = event.target.value;
+
+    let curFolderName = '';
+    let filesInCurrentFolder: string[] = []; // 현재 폴더의 파일 목록을 저장할 배열
+
+    async function handleFolderSelected(event) {
+        curFolderName = event.detail;
+        filesInCurrentFolder = await listFilesInDirectory(curFolderName);
     }
 
-    // 드라이브 선택 시 하위 폴더 표시/숨김
-    function toggleDrive(drive, panel) {
-        if (openedDrives[drive]) {
-            delete openedDrives[drive];
-            if (panel === "left") {
-                selectedDriveLeft = null;
-                selectedFolderLeft = null;
-                filesInFolderLeft = [];
-            } else {
-                selectedDriveRight = null;
-                selectedFolderRight = null;
-                filesInFolderRight = [];
-            }
-        } else {
-            openedDrives = {}; // 다른 드라이브 닫기
-            openedDrives[drive] = true;
-            if (panel === "left") {
-                selectedDriveLeft = drive;
-                selectedFolderLeft = null;
-                filesInFolderLeft = [];
-            } else {
-                selectedDriveRight = drive;
-                selectedFolderRight = null;
-                filesInFolderRight = [];
-            }
-        }
-    }
 
-    // 폴더 선택 시 파일 표시
-    function selectFolder(folder, panel) {
-        if (panel === "left") {
-            selectedFolderLeft = folder;
-            filesInFolderLeft = drives[selectedDriveLeft]?.[folder] || [];
-        } else {
-            selectedFolderRight = folder;
-            filesInFolderRight = drives[selectedDriveRight]?.[folder] || [];
-        }
-    }
 
-    // 파일 아이콘 설정
-    function getFileIcon(file) {
-        if (file.includes("텍스트파일")) return "📄";
-        if (file.includes("이미지파일")) return "🖼️";
-        if (file.includes("동영상파일")) return "🎥";
-        if (file.includes("실행파일")) return "💻";
+    // 파일 아이콘 설정 (파일 이름에 따라 아이콘을 다르게 설정하는 함수)
+    function getFileIcon(file: string): string {
+        if (file.includes(".txt")) return "📄";
+        if (file.includes(".jpg") || file.includes(".png")) return "🖼️";
+        if (file.includes(".mp4")) return "🎥";
+        if (file.includes(".exe")) return "💻";
         return "📁";
     }
 
@@ -208,6 +98,7 @@
 </script>
 
 <!-- 메인 화면 -->
+ <button on:click={()=>{console.log('curFolderName'+curFolderName)}}>testtest</button>
 <div class="main-container">
     <!-- 상단 바 -->
     <header class="top-bar">
@@ -228,33 +119,15 @@
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
         <!-- 좌측 패널: 드라이브 및 폴더 탐색기 -->
         <aside class="sidebar">
-            <ul class="folder-list">
-                {#each Object.keys(drives) as drive}
-                    <li>
-                        <button on:click={() => toggleDrive(drive, "left")}>
-                            {drive}
-                        </button>
-                        {#if selectedDriveLeft === drive && openedDrives[drive]}
-                            <ul class="folder-sublist">
-                                {#each Object.keys(drives[drive]) as folder}
-                                    <li
-                                        on:click={() =>
-                                            selectFolder(folder, "left")}
-                                    >
-                                        {folder}
-                                    </li>
-                                {/each}
-                            </ul>
-                        {/if}
-                    </li>
-                {/each}
-            </ul>
+            {#each Object.keys($drives) as drive}
+                <Folder path={drive} name={drive} items={$drives[drive]} on:folderSelected={handleFolderSelected}/>
+            {/each}
         </aside>
 
         <!-- 좌측 파일 탐색기 -->
         <div class="file-viewer">
-            {#if filesInFolderLeft.length > 0}
-                {#each filesInFolderLeft as file}
+            {#if filesInCurrentFolder.length > 0}
+                {#each filesInCurrentFolder as file}
                     <div
                         class="file-item"
                         style="width: {fileSize}px; height: {fileSize}px;"
@@ -273,33 +146,15 @@
         {#if viewMode === "dual"}
             <!-- 우측 패널: 드라이브 및 폴더 탐색기 -->
             <aside class="sidebar">
-                <ul class="folder-list">
-                    {#each Object.keys(drives) as drive}
-                        <li>
-                            <span on:click={() => toggleDrive(drive, "right")}>
-                                {drive}
-                            </span>
-                            {#if selectedDriveRight === drive && openedDrives[drive]}
-                                <ul class="folder-sublist">
-                                    {#each Object.keys(drives[drive]) as folder}
-                                        <li
-                                            on:click={() =>
-                                                selectFolder(folder, "right")}
-                                        >
-                                            {folder}
-                                        </li>
-                                    {/each}
-                                </ul>
-                            {/if}
-                        </li>
-                    {/each}
-                </ul>
+                {#each Object.keys($drives) as drive}
+                    <Folder path={drive} name={drive} items={$drives[drive]} />
+                {/each}
             </aside>
 
             <!-- 우측 파일 탐색기 -->
             <div class="file-viewer">
-                {#if filesInFolderRight.length > 0}
-                    {#each filesInFolderRight as file}
+                {#if filesInCurrentFolder.length > 0}
+                    {#each filesInCurrentFolder as file}
                         <div
                             class="file-item"
                             style="width: {fileSize}px; height: {fileSize}px;"
