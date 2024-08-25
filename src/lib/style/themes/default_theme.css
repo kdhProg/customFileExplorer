@@ -17,6 +17,14 @@
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
+.resizer {
+    background-color: #ccc;
+}
+
+.resizer:hover {
+    background-color: #aaa;
+}
+
 
 .folder-list li:hover {
     color: #005082;
@@ -28,6 +36,11 @@
 
 .file-item {
     background-color: rgba(255, 255, 255, 0.8);
+    /* background-color: transparent; */
+}
+
+.file-icon {
+    background-color: transparent;
 }
 
 .settings-modal {

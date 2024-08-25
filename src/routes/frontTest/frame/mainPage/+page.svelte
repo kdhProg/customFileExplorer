@@ -1,5 +1,7 @@
 <script lang="ts">
-    // import "/src/lib/style/mainPage.css";
+
+import { onMount, afterUpdate } from 'svelte';
+
     import { isDirectory, listFilesInDirectory } from "$lib/api";
     import { invoke } from "@tauri-apps/api/tauri";
     import Folder from '$lib/components/Folder.svelte';
@@ -41,10 +43,19 @@
         showSettings = false; // 설정 모달 닫기
     }
 
+    // 파일사이즈
+    function updateFileSize(event: Event){
+        const target = event.target as HTMLInputElement;
+        fileSize = parseInt(target.value);
+    }
 
+
+
+    // 현재폴더 경로
     let curFolderName = '';
     let filesInCurrentFolder: string[] = []; // 현재 폴더의 파일 목록을 저장할 배열
 
+    // 디렉토리 리스트에서 파일 클릭
     async function handleFolderSelected(event) {
         curFolderName = event.detail;
         filesInCurrentFolder = await listFilesInDirectory(curFolderName);
@@ -62,9 +73,10 @@
         return "📁";
     }
 
+    // 파일명 추출
     function getFileName(filePath:string) {
-    const parts = filePath.split(/[/\\]/);
-    return parts[parts.length - 1];
+        const parts = filePath.split(/[/\\]/);
+        return parts[parts.length - 1];
     }
 
 
@@ -121,7 +133,7 @@
 
                 console.log('searching finished!')
                 console.timeEnd("search_API_time_analysis");
-                
+
                 const C_fileNames = C_searchRst.map((item: any) => item.file_name);
                 const D_fileNames = D_searchRst.map((item: any) => item.file_name);
 
@@ -138,7 +150,76 @@
     }
 
     
+    //각 폴더 클릭
+    async function eachFolderClick(file:string){
+        curFolderName = file;
+        filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+    }
     
+
+    // 분할바 관련
+    let sidebarWidth = 250; // 초기 사이드바 너비를 전역 변수로 관리
+
+function updateSidebarWidth(width) {
+    sidebarWidth = width;
+    document.getElementById('sidebar').style.width = `${sidebarWidth}px`;
+    document.getElementById('sidebar').style.minWidth = `${sidebarWidth}px`;
+    document.getElementById('sidebar').style.maxWidth = `${sidebarWidth}px`;
+}
+
+onMount(() => {
+    const sidebar = document.getElementById('sidebar');
+    const resizer = document.getElementById('resizer');
+
+    let startX;
+    let startWidth;
+
+    const mouseDownHandler = function (e) {
+        startX = e.clientX;
+        startWidth = sidebar.offsetWidth;
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+        document.addEventListener('mouseup', mouseUpHandler);
+
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'col-resize';
+    };
+
+    const mouseMoveHandler = function (e) {
+        const dx = e.clientX - startX;
+        let newWidth = startWidth + dx;
+
+        const minWidth = 150;
+        const maxWidth = 500; // 사용자가 조정 가능한 최대 너비
+
+        if (newWidth < minWidth) {
+            newWidth = minWidth;
+        } else if (newWidth > maxWidth) {
+            newWidth = maxWidth;
+        }
+
+        updateSidebarWidth(newWidth);
+    };
+
+    const mouseUpHandler = function () {
+        document.removeEventListener('mousemove', mouseMoveHandler);
+        document.removeEventListener('mouseup', mouseUpHandler);
+
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+    };
+
+    resizer.addEventListener('mousedown', mouseDownHandler);
+
+    // Ensure initial sidebar width is set
+    updateSidebarWidth(sidebarWidth);
+});
+
+afterUpdate(() => {
+    // 폴더를 펼치거나 접을 때 사이드바의 너비를 재설정
+    updateSidebarWidth(sidebarWidth);
+});
+
 
 
 </script>
@@ -159,7 +240,7 @@
 
     <!-- 현재 디렉토리 -->
      <div class="current-directory-box">
-       <input type="text">
+       <input type="text" value={curFolderName}>
      </div>
 
     <!-- 검색박스 -->
@@ -170,19 +251,24 @@
 
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
         <!-- 좌측 패널: 드라이브 및 폴더 탐색기 -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             {#each Object.keys($drives) as drive}
                 <Folder path={drive} name={drive} items={$drives[drive]} on:folderSelected={handleFolderSelected}/>
             {/each}
         </aside>
 
+
+        <!-- 추가: 사이드바와 파일 뷰어 사이의 분할자 -->
+        <div class="resizer" id="resizer"></div>
+
         <!-- 좌측 파일 탐색기 -->
-        <div class="file-viewer">
+        <div class="file-viewer" id="fileViewer">
             {#if filesInCurrentFolder.length > 0}
                 {#each filesInCurrentFolder as file}
                     <div
                         class="file-item"
                         style="width: {fileSize}px; height: {fileSize}px;"
+                        on:dblclick={() => eachFolderClick(file)}
                     >
                         <span class="file-icon">{getFileIcon(file)}</span>
                         <span class="file-name">{getFileName(file)}</span>

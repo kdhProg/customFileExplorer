@@ -28,6 +28,14 @@
     border-right: 2px solid #96b9eb;
 }
 
+.resizer {
+    background-color: #8f6969;
+}
+
+.resizer:hover {
+    background-color: #e21414;
+}
+
 .folder-list li {
     background-color: #e3edf8;
     border: 1px solid #ffffff;
