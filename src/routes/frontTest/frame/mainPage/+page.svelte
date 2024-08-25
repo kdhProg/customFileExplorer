@@ -6,11 +6,11 @@
     import { drives } from '$lib/store';
 
     // import - css
-    import "/src/lib/style/global_features.css"
+    import "$lib/style/global_features.css"
+    import "/src/lib/style/mainpage.css"
 
     // import - components
     import Navi from "$lib/components/navi.svelte";
-    import CurrentPath from "$lib/components/currentPath.svelte";
 
 
     let showSettings = false;
@@ -62,10 +62,15 @@
         return "📁";
     }
 
+    function getFileName(filePath:string) {
+    const parts = filePath.split(/[/\\]/);
+    return parts[parts.length - 1];
+    }
+
 
     // 테마
     // 기본 CSS 파일 로드
-    let currentTheme = '/src/lib/style/mainPage.css';
+    let currentTheme = '/src/lib/style/themes/default_theme.css';
 
     // CSS 파일을 동적으로 변경하는 함수
     function applyTheme(themePath) {
@@ -96,19 +101,27 @@
         // console.log('clicked!')
         try {
             // 기본값 임시 설정
-            let C_directory: string = "D://entire_workspace//2024opensw_competition//pathFinder//src";
+            // let C_directory: string = "D://entire_workspace//2024opensw_competition//pathFinder//src";
+            let C_directory: string = "C://";
             let D_directory: string = "D://";
             const keyword = document.getElementById('searchInput');
 
             let C_searchRst: string[];
             let D_searchRst: string[];
-
+            
             if (keyword instanceof HTMLInputElement) {
                 const inputValue = keyword.value;
                 // console.log(inputValue);
+
+                console.log('searching.......')
+                console.time("search_API_time_analysis");
+
                 C_searchRst = await invoke("search_files", { directory:C_directory, keyword:inputValue });
                 D_searchRst = await invoke("search_files", { directory:D_directory, keyword:inputValue });
 
+                console.log('searching finished!')
+                console.timeEnd("search_API_time_analysis");
+                
                 const C_fileNames = C_searchRst.map((item: any) => item.file_name);
                 const D_fileNames = D_searchRst.map((item: any) => item.file_name);
 
@@ -145,8 +158,8 @@
     </div>
 
     <!-- 현재 디렉토리 -->
-     <div>
-       <CurrentPath/>
+     <div class="current-directory-box">
+       <input type="text">
      </div>
 
     <!-- 검색박스 -->
@@ -172,7 +185,7 @@
                         style="width: {fileSize}px; height: {fileSize}px;"
                     >
                         <span class="file-icon">{getFileIcon(file)}</span>
-                        <span class="file-name">{file}</span>
+                        <span class="file-name">{getFileName(file)}</span>
                     </div>
                 {/each}
             {:else if selectedDriveLeft && selectedFolderLeft}

@@ -1,5 +1,7 @@
 <script lang="ts">
 
+// Legacy file(어디에도 사용되지 않음)
+
 // import { invoke } from "@tauri-apps/api/tauri";
 
 // let cur_dir = "";

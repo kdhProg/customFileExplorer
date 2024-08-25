@@ -59,11 +59,12 @@
     async function searchFilesInDirectory() {
         schfin = '검색중....';
         // const directory ="D://entire_workspace//2024opensw_competition//pathFinder//src//routes";
-        const directory ="D://entire_workspace";
-        const keyword = "page";
+        const directory ="D://";
+        const keyword = "테스트_찾기파일";
         try {
+            console.time("search_API_time_analysis");
             searchRst = await invoke("search_files", { directory, keyword });
-            console.log(searchRst);
+            console.timeEnd("search_API_time_analysis");
             schfin='완료';
             schCount = searchRst.length;
         } catch (error) {

@@ -132,7 +132,7 @@ fn search_in_directory<'a>(
     Box::pin(async move {
         let mut handles = Vec::new();
 
-        match async_fs::read_dir(dir).await {
+        match async_fs::read_dir(&dir).await {
             Ok(mut entries) => {
                 while let Ok(Some(entry)) = entries.next_entry().await {
                     let path = entry.path();
@@ -141,7 +141,14 @@ fn search_in_directory<'a>(
                         // 디렉토리를 비동기적으로 탐색
                         let handle = tokio::spawn(async move {
                             let mut sub_result = Vec::new();
-                            search_in_directory(path, keyword, &mut sub_result).await?;
+                            if let Err(e) = search_in_directory(path, keyword, &mut sub_result).await {
+                                // 권한 문제나 다른 문제로 인해 탐색할 수 없는 폴더가 있을 경우 오류를 무시하고 넘어감
+                                if e.contains("Access is denied") || e.contains("Permission denied") {
+                                    println!("Skipping directory due to access error: {}", e);
+                                } else {
+                                    return Err(e);
+                                }
+                            }
                             Ok::<_, String>(sub_result)
                         });
                         handles.push(handle);
@@ -169,7 +176,15 @@ fn search_in_directory<'a>(
 
                 Ok(())
             }
-            Err(e) => Err(format!("Failed to read directory: {}", e.to_string())),
+            Err(e) => {
+                // 디렉토리를 읽을 수 없는 경우, 오류 무시
+                if e.kind() == std::io::ErrorKind::PermissionDenied {
+                    println!("Skipping directory due to access error: {}", e);
+                    Ok(())
+                } else {
+                    Err(format!("Failed to read directory: {}", e.to_string()))
+                }
+            }
         }
     })
 }

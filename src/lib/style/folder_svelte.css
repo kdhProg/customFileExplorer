@@ -1,0 +1,29 @@
+.folder {
+    margin-left: 0px;
+  }
+
+.clickable {
+cursor: pointer;
+display: flex;
+align-items: center;
+margin-left: 10px;
+/* border: 1px solid red; */
+}
+
+.icon {
+margin-right: 5px;
+}
+
+.folder-item {
+margin-left: 10px;
+/* border: 1px solid blue; */
+}
+
+.folder-contents {
+padding-left: 5px;
+margin: 0;
+}
+
+ul,li{
+    list-style: none;
+}

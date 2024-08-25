@@ -6,6 +6,8 @@
   import { isDirectory, listFilesInDirectory } from "$lib/api";
   import Folder from "./Folder.svelte";
 
+  import '$lib/style/folder_svelte.css';
+
   import { createEventDispatcher } from 'svelte';
   const dispatch = createEventDispatcher();
 
@@ -42,7 +44,7 @@
 
   function getFolderName(fullPath: string): string {
     return fullPath.split(/[/\\]/).pop() || "";
-    return fullPath.split(/[/\\]/).pop() || "";
+    // return fullPath.split(/[/\\]/).pop() || "";
   }
 </script>
 
@@ -68,29 +70,5 @@
 </div>
 
 <style>
-  .folder {
-    margin-left: 20px;
-  }
-
-  .clickable {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    margin-left: 10px;
-    /* border: 1px solid red; */
-  }
-
-  .icon {
-    margin-right: 5px;
-  }
-
-  .folder-item {
-    margin-left: 10px;
-    /* border: 1px solid blue; */
-  }
-
-  .folder-contents {
-    padding-left: 20px;
-    margin: 0;
-  }
+  
 </style>
