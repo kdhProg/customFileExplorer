@@ -54,16 +54,24 @@
 
     // 검색 테스트
     let searchRst = {};
+    let schfin = ''
     async function searchFilesInDirectory() {
-        const directory =
-            "D://entire_workspace//2024opensw_competition//pathFinder//src//routes";
-        const keyword = "+";
+        schfin = 'searching!!!!!!';
+        // const directory ="D://entire_workspace//2024opensw_competition//pathFinder//src//routes";
+        const directory ="D://entire_workspace";
+        const keyword = "page";
         try {
             searchRst = await invoke("search_files", { directory, keyword });
             console.log(searchRst);
+            schfin='fin';
         } catch (error) {
             console.error("err:", error);
         }
+    }
+
+    let doOtherTasksVal = 1;
+    function doOtherTasks(){
+        doOtherTasksVal += 1;
     }
 
     // 휴지통 테스트
@@ -123,8 +131,13 @@
 <button on:click={mk_new_dir}>new dir</button>
 <hr />
 <button on:click={searchFilesInDirectory}>searchFilesInDirectory</button>
+<button on:click={doOtherTasks}>다른 task : {doOtherTasksVal}</button>
+<div>
+    schfin: {schfin}
+</div>
 <hr />
 <button on:click={deleteFile}>deleteFile</button>
 <hr>
 <button on:click={checkIfDirectory}>Is Folder? Check</button>
 <p>{result}</p>
+<a href="/">Go to previous page</a>

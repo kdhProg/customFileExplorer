@@ -1,11 +1,19 @@
 
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use trash;
 use std::process::Command;
 
 use std::time::{SystemTime, UNIX_EPOCH};
+
+use std::future::Future;
+use std::pin::Pin;
+
+use tokio::fs as async_fs;
+use tokio::task;
+
+
 
 #[derive(serde::Serialize)]
 pub struct FileMetadata {
@@ -102,25 +110,29 @@ pub fn create_new_folder(path: String) -> Result<(), String> {
 
 // 파일명 검색
 #[tauri::command]
-pub fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>, String> {
-    let dir_path = Path::new(&directory);
+pub async fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>, String> {
+    let dir_path = PathBuf::from(directory);
 
     if !dir_path.exists() {
-        return Err(format!("Directory does not exist: {}", directory));
+        return Err(format!("Directory does not exist: {:?}", dir_path));
     }
 
     let mut result = Vec::new();
 
-    fn search_in_directory(dir: &Path, keyword: &str, result: &mut Vec<FileItem>) -> Result<(), String> {
-        match fs::read_dir(dir) {
-            Ok(entries) => {
-                for entry in entries {
-                    if let Ok(entry) = entry {
+    fn search_in_directory<'a>(
+        dir: PathBuf,
+        keyword: String,
+        result: &'a mut Vec<FileItem>,
+    ) -> Pin<Box<dyn Future<Output = Result<(), String>> + Send + 'a>> {
+        Box::pin(async move {
+            match async_fs::read_dir(dir).await {
+                Ok(mut entries) => {
+                    while let Ok(Some(entry)) = entries.next_entry().await {
                         let path = entry.path();
                         if path.is_dir() {
-                            search_in_directory(&path, keyword, result)?;
+                            search_in_directory(path, keyword.clone(), result).await?;
                         } else if let Some(file_name) = path.file_name().and_then(|name| name.to_str()) {
-                            if file_name.contains(keyword) {
+                            if file_name.contains(&keyword) {
                                 result.push(FileItem {
                                     file_name: file_name.to_string(),
                                     file_path: path.to_string_lossy().to_string(),
@@ -128,16 +140,14 @@ pub fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>,
                             }
                         }
                     }
+                    Ok(())
                 }
-                Ok(())
+                Err(e) => Err(format!("Failed to read directory: {}", e.to_string())),
             }
-            Err(e) => Err(format!("Failed to read directory: {}", e.to_string())),
-        }
+        })
     }
 
-    // 루트 디렉토리에서 검색 시작
-    search_in_directory(dir_path, &keyword, &mut result)?;
-
+    search_in_directory(dir_path, keyword, &mut result).await?;
     Ok(result)
 }
 

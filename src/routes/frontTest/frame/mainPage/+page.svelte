@@ -48,6 +48,7 @@
     async function handleFolderSelected(event) {
         curFolderName = event.detail;
         filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+        // console.log(typeof filesInCurrentFolder[0])
     }
 
 
@@ -90,15 +91,47 @@
     applyTheme(currentTheme);
 
 
-    // -------------- tauri API --------------------
+    // 검색박스
+    async function searchFilesInDirectory() {
+        // console.log('clicked!')
+        try {
+            // 기본값 임시 설정
+            let C_directory: string = "D://entire_workspace//2024opensw_competition//pathFinder//src";
+            let D_directory: string = "D://";
+            const keyword = document.getElementById('searchInput');
 
+            let C_searchRst: string[];
+            let D_searchRst: string[];
+
+            if (keyword instanceof HTMLInputElement) {
+                const inputValue = keyword.value;
+                // console.log(inputValue);
+                C_searchRst = await invoke("search_files", { directory:C_directory, keyword:inputValue });
+                D_searchRst = await invoke("search_files", { directory:D_directory, keyword:inputValue });
+
+                const C_fileNames = C_searchRst.map((item: any) => item.file_name);
+                const D_fileNames = D_searchRst.map((item: any) => item.file_name);
+
+                filesInCurrentFolder = C_fileNames.concat(D_fileNames);
+                // console.log(typeof filesInCurrentFolder[0])
+                // const temp = filesInCurrentFolder = C_searchRst.concat(D_searchRst);
+                // console.log(temp);
+            } else {
+                console.error("Input element not found or is not of type HTMLInputElement");
+            }
+        } catch (error) {
+            console.error("err:", error);
+        }
+    }
+
+    
     
 
 
 </script>
 
 <!-- 메인 화면 -->
- <button on:click={()=>{console.log('curFolderName'+curFolderName)}}>testtest</button>
+ <!-- <button on:click={()=>{console.log('curFolderName'+curFolderName)}}>testtest</button> -->
 <div class="main-container">
     <!-- 상단 바 -->
     <header class="top-bar">
@@ -115,6 +148,12 @@
      <div>
        <CurrentPath/>
      </div>
+
+    <!-- 검색박스 -->
+    <div>
+        <input id="searchInput" class="searchBoxInput" type="text">
+        <button id="searchButton" class="searchBoxButton" on:click={searchFilesInDirectory}>검색</button>
+    </div>
 
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
         <!-- 좌측 패널: 드라이브 및 폴더 탐색기 -->
