@@ -15,6 +15,7 @@ use tokio::task;
 
 
 
+
 #[derive(serde::Serialize)]
 pub struct FileMetadata {
     file_name: String,
@@ -109,6 +110,7 @@ pub fn create_new_folder(path: String) -> Result<(), String> {
 
 
 // 파일명 검색
+// tokio를 이용한 비동기 + 병렬처리
 #[tauri::command]
 pub async fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>, String> {
     let dir_path = PathBuf::from(directory);
@@ -118,20 +120,33 @@ pub async fn search_files(directory: String, keyword: String) -> Result<Vec<File
     }
 
     let mut result = Vec::new();
+    search_in_directory(dir_path, keyword, &mut result).await?;
+    Ok(result)
+}
 
-    fn search_in_directory<'a>(
-        dir: PathBuf,
-        keyword: String,
-        result: &'a mut Vec<FileItem>,
-    ) -> Pin<Box<dyn Future<Output = Result<(), String>> + Send + 'a>> {
-        Box::pin(async move {
-            match async_fs::read_dir(dir).await {
-                Ok(mut entries) => {
-                    while let Ok(Some(entry)) = entries.next_entry().await {
-                        let path = entry.path();
-                        if path.is_dir() {
-                            search_in_directory(path, keyword.clone(), result).await?;
-                        } else if let Some(file_name) = path.file_name().and_then(|name| name.to_str()) {
+fn search_in_directory<'a>(
+    dir: PathBuf,
+    keyword: String,
+    result: &'a mut Vec<FileItem>,
+) -> Pin<Box<dyn Future<Output = Result<(), String>> + Send + 'a>> {
+    Box::pin(async move {
+        let mut handles = Vec::new();
+
+        match async_fs::read_dir(dir).await {
+            Ok(mut entries) => {
+                while let Ok(Some(entry)) = entries.next_entry().await {
+                    let path = entry.path();
+                    let keyword = keyword.clone();
+                    if path.is_dir() {
+                        // 디렉토리를 비동기적으로 탐색
+                        let handle = tokio::spawn(async move {
+                            let mut sub_result = Vec::new();
+                            search_in_directory(path, keyword, &mut sub_result).await?;
+                            Ok::<_, String>(sub_result)
+                        });
+                        handles.push(handle);
+                    } else {
+                        if let Some(file_name) = path.file_name().and_then(|name| name.to_str()) {
                             if file_name.contains(&keyword) {
                                 result.push(FileItem {
                                     file_name: file_name.to_string(),
@@ -140,15 +155,23 @@ pub async fn search_files(directory: String, keyword: String) -> Result<Vec<File
                             }
                         }
                     }
-                    Ok(())
                 }
-                Err(e) => Err(format!("Failed to read directory: {}", e.to_string())),
-            }
-        })
-    }
 
-    search_in_directory(dir_path, keyword, &mut result).await?;
-    Ok(result)
+                for handle in handles {
+                    match handle.await {
+                        Ok(Ok(mut sub_result)) => {
+                            result.append(&mut sub_result);
+                        }
+                        Ok(Err(e)) => return Err(e),
+                        Err(e) => return Err(format!("Task failed: {:?}", e)),
+                    }
+                }
+
+                Ok(())
+            }
+            Err(e) => Err(format!("Failed to read directory: {}", e.to_string())),
+        }
+    })
 }
 
 

@@ -54,16 +54,18 @@
 
     // 검색 테스트
     let searchRst = {};
-    let schfin = ''
+    let schfin = '';
+    let schCount = 0;
     async function searchFilesInDirectory() {
-        schfin = 'searching!!!!!!';
+        schfin = '검색중....';
         // const directory ="D://entire_workspace//2024opensw_competition//pathFinder//src//routes";
         const directory ="D://entire_workspace";
         const keyword = "page";
         try {
             searchRst = await invoke("search_files", { directory, keyword });
             console.log(searchRst);
-            schfin='fin';
+            schfin='완료';
+            schCount = searchRst.length;
         } catch (error) {
             console.error("err:", error);
         }
@@ -132,8 +134,11 @@
 <hr />
 <button on:click={searchFilesInDirectory}>searchFilesInDirectory</button>
 <button on:click={doOtherTasks}>다른 task : {doOtherTasksVal}</button>
+<div style="color: red">
+    탐색여부 : {schfin}
+</div>
 <div>
-    schfin: {schfin}
+    찾은 파일 개수 : {schCount}
 </div>
 <hr />
 <button on:click={deleteFile}>deleteFile</button>
