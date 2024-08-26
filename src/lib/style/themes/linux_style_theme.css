@@ -1,0 +1,144 @@
+/* linux(ubuntu) Themed CSS */
+.main-container {
+    background: rgb(242, 242, 242);
+}
+
+.top-bar {
+    background-color: #eaeaea;
+    color: #000000;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.logo {
+    color: #69005b;
+    /* font-weight: bold; */
+}
+
+.settings-icon {
+    color: #000000;
+}
+
+.content-wrapper {
+    background-color: #ffffff;
+}
+
+.dual-view {
+    background-color: #202020;
+}
+
+.sidebar {
+    background-color: #ffffff;
+    color: #000000;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.7);
+}
+
+.resizer {
+    background-color: #870b6e;
+}
+
+.resizer:hover {
+    background-color: #f838eb;
+}
+
+.folder-list li {
+    margin-bottom: 8px;
+    color: #000000;
+}
+
+.folder-list li:hover {
+    color: #000000;
+}
+
+.folder-sublist {
+    padding-left: 20px;
+    margin-top: 5px;
+}
+
+.file-viewer {
+    background-color: #ffffff;
+    border-left: 1px solid #444;
+}
+
+.file-item {
+    background-color: transparent;
+    /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); */
+}
+
+.file-item:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.file-icon {
+    background-color: transparent;
+}
+
+/* .file-name {
+} */
+
+.settings-modal {
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.7);
+    color: #000000;
+}
+
+.tabs .active {
+    color: hsl(314, 90%, 25%);
+}
+
+.tab-content {
+    color: #000000;
+}
+
+.close-modal {
+    background-color: #64035a;
+    color: white;
+}
+
+a {
+    color: #630043;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #cb2694;
+}
+
+/* .util-bar-container{
+    background-color: lightgray;
+} */
+
+
+.navi-container{
+    color: #333;
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+}
+
+
+.current-directory-inputbox{
+    border:1px solid gray;
+    border-radius: 5px;
+    background: white;
+}
+
+.searchbox-input{
+    border:1px solid gray;
+    border-radius: 5px;
+    background: white;
+}
+
+.searchbox-button{ 
+    border:1px solid gray;
+    border-radius: 5px;
+    background: white;
+}
+
+.movement-button-container>div{
+    color:#870b6e
+}
+
+.theme_btn{
+    background-color: #870b6e;
+    border-color: transparent;
+    border-radius: 5px;
+    color: white;
+}

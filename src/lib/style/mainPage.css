@@ -100,7 +100,7 @@
 
 .file-item {
     /* background-color: rgba(255, 255, 255, 0.8); */
-    margin: 20px;
+    margin: 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -109,6 +109,8 @@
     cursor: pointer;
     text-align: center;
     transition: transform 0.1s, box-shadow 0.3s;
+
+    height:100px;
 }
 
 .file-item:hover {
@@ -117,7 +119,7 @@
 
 .file-icon {
     font-size: 24px;
-    height: 50px;
+    height: 65px;
 }
 
 .file-icon::before {
@@ -191,7 +193,8 @@
 }
 
 .navi-container>div{
-    margin-right: 20px;
+    margin-right: 10px;
+    margin-left: 10px;
 }
 
 
@@ -203,6 +206,8 @@
     height: 25px;
 
     margin: auto;
+
+    margin-bottom: 20px;
 
     /* border:2px solid green; */
 }
@@ -257,4 +262,9 @@
 
 .movement-button-container>div{
     margin-left: 20px;
+}
+
+
+.theme_btn{
+    cursor: pointer;
 }

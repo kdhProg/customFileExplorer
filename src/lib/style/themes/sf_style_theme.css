@@ -55,21 +55,25 @@
 }
 
 .file-viewer {
-    background-color: #252525;
+    background-color: #1b1b1b;
     border-left: 1px solid #444;
 }
 
 .file-item {
-    background-color: #333;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    background-color: transparent;
+    color:#00c8ff;
+    /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5); */
 }
 
 .file-item:hover {
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.7);
+    color:#49d8ff;
+    border:rgb(159, 234, 255) 1px solid;
+    box-shadow: 0 4px 15px rgba(159, 234, 255, 0.5);
 }
 
 .file-icon {
     color: #00c8ff;
+    background-color: transparent;
 }
 
 /* .file-name {
@@ -91,7 +95,7 @@
 
 .close-modal {
     background-color: #00c8ff;
-    color: white;
+    color: #000000;
 }
 
 a {
@@ -100,5 +104,45 @@ a {
 }
 
 a:hover {
-    color: #00ff9d;
+    color: #afd0ff;
 }
+
+.navi-container{
+    color: #00c8ff;
+    /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
+}
+
+
+.current-directory-inputbox{
+    border:1px solid #00c8ff;
+    color:#00c8ff;
+    border-radius: 5px;
+    background: transparent;
+}
+
+.searchbox-input{
+    border:1px solid #00c8ff;
+    color:#00c8ff;
+    border-radius: 5px;
+    background: transparent;
+}
+
+.searchbox-button{ 
+    border:1px solid #00c8ff;
+    color:#00c8ff;
+    border-radius: 5px;
+    background: transparent;
+}
+
+.movement-button-container>div{
+    color:#00c8ff
+}
+
+
+.theme_btn{
+    background-color: #1b1b1b;
+    border-color: transparent;
+    border-radius: 5px;
+    color: #00c8ff;
+}
+

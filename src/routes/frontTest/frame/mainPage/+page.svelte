@@ -413,10 +413,10 @@ afterUpdate(() => {
                         <p>파일 아이콘 크기: {fileSize}px</p>
                     {:else if activeTab === "themes"}
                     <h3>테마 선택</h3>
-                    <button on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>디폴트 테마</button>
-                    <button on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>레트로 테마</button>
-                    <button on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>SF 테마</button>
-                    <button on:click={() => applyTheme('/src/lib/style/themes/linux_style_theme.css')}>SF 테마</button>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>디폴트 테마</button>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>레트로 테마</button>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>SF 테마</button>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/linux_style_theme.css')}>Linux 테마</button>
                     {/if}
                 </div>
                 <button class="close-modal" on:click={toggleSettings}

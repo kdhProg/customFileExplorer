@@ -1,17 +1,17 @@
 /* Windows XP Themed CSS */
 .main-container {
-    color: #000000;
+    background-color: #e7e7e7;
     font-family: "Tahoma", sans-serif;
 }
 
 .top-bar {
-    background-color: #d6e7f5;
-    color: #000000;
-    border-bottom: 2px solid #96b9eb;
+    background: linear-gradient(to bottom, #1e1eff, #1e1eff 40%, #0000b6 70%, #1e1eff 90%, #1e1eff 100%);
+    color: #ffffff;
+    /* border-bottom: 2px solid #96b9eb; */
 }
 
 .logo {
-    color: #000000;
+    color: #ffffff;
 }
 
 .settings-icon {
@@ -19,21 +19,21 @@
 }
 
 .content-wrapper {
-    background-color: #ffffff;
+    background-color: #5858ff;
 }
 
 .sidebar {
-    background-color: #e3edf8;
+    background-color: #8ac3ff;
     color: #000000;
     border-right: 2px solid #96b9eb;
 }
 
 .resizer {
-    background-color: #8f6969;
+    background-color: #6b6b6b;
 }
 
 .resizer:hover {
-    background-color: #e21414;
+    background-color: #a9a9a9;
 }
 
 .folder-list li {
@@ -41,27 +41,27 @@
     border: 1px solid #ffffff;
 }
 
-.folder-list li:hover {
+/* .folder-list li:hover {
     background-color: #f7faff;
     border-color: #a6caf0;
-}
+} */
 
 .file-viewer {
     background-color: #ffffff;
-    border-left: 2px solid #96b9eb;
+    /* border-left: 2px solid #96b9eb; */
 }
 
 .file-item {
-    background-color: #ffffff;
+    background-color: transparent;
     color: #000000;
-    border: 1px solid #d6e7f5;
-    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+    /* border: 1px solid #d6e7f5;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1); */
 }
 
 .file-item:hover {
     background-color: #f0f0f0;
-    border-color: #a6caf0;
-    box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
+    /* border-color: #efefef; */
+    box-shadow: 0 4px 4px rgba(223, 223, 223, 0.2);
 }
 
 .file-icon {
@@ -83,9 +83,9 @@
 }
 
 .close-modal {
-    background-color: #d6e7f5;
+    background-color: #d6d6d6;
     color: #000000;
-    border: 1px solid #96b9eb;
+    /* border: 1px solid #96b9eb; */
 }
 
 a {
@@ -117,4 +117,39 @@ a:hover {
     background-color: #f0f0f0;
     border-top: 2px solid #96b9eb;
     color: #000000;
+}
+
+/* .navi-container,.movement-button-container,.search-container{
+    color: #333;
+    background-color: rgb(234, 234, 234);
+} */
+
+/* .util-bar-container{
+    border: 1px solid red;
+} */
+
+.navi-container>div{
+    font-weight: bold;
+}
+
+.current-directory-inputbox{
+    border-color: black;
+    background: white;
+}
+
+.searchbox-input{
+    border-color: black;
+    background: white;
+}
+
+.searchbox-button{ 
+    border-color: black;
+    background: white;
+}
+
+.theme_btn{
+    background-color: #eeeeee;
+    border-color: transparent;
+    /* border-radius: 5px; */
+    color: rgb(0, 0, 0);
 }
