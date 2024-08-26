@@ -136,11 +136,14 @@ import { onMount, afterUpdate } from 'svelte';
     applyTheme(currentTheme);
 
 
+    // 검색실행여부 변수
+    let isSearching:boolean = false;
+
     // 검색박스
     async function searchFilesInDirectory() {
         // console.log('clicked!')
         try {
-            
+            isSearching = true;
             const keyword = document.getElementById('searchInput');
 
             if(curFolderName === '' || curFolderName.length === 0){
@@ -199,7 +202,7 @@ import { onMount, afterUpdate } from 'svelte';
 
             }
             
-            
+            isSearching = false;
 
             
             
@@ -332,7 +335,11 @@ afterUpdate(() => {
         <!-- 검색박스 -->
         <div class="search-container">
             <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}에서 탐색...">
+            {#if isSearching}
+            <button id="searchButton" class="searchbox-button" disabled>🔍</button>
+            {:else}
             <button id="searchButton" class="searchbox-button" on:click={searchFilesInDirectory}>🔍</button>
+            {/if}
         </div>
     </div>
     
