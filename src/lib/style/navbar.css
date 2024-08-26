@@ -2,3 +2,7 @@
     display: flex;
     flex-direction: row;
 }
+
+.navi-container>div{
+    margin-right: 20px;
+}

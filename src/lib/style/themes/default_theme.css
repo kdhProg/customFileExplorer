@@ -56,3 +56,24 @@
     background-color: #005082;
     color: white;
 }
+
+.navi-container{
+    color: #333;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+.current-directory-inputbox{
+    border-color: transparent;
+    background: white;
+}
+
+.searchbox-input{
+    border-color: transparent;
+    background: white;
+}
+
+.searchbox-button{ 
+    border-color: transparent;
+    background: white;
+}

@@ -63,14 +63,30 @@ import { onMount, afterUpdate } from 'svelte';
     }
 
 
+    // 테마에 따라 로고 이미지를 설정하는 객체
+    const themeLogos = {
+    default: "/icons/dir_logo_default.png",
+    retro: "/icons/dir_logo_retro.png",
+    sf: "/icons/dir_logo_sf.png",
+    linux: "/icons/dir_logo_linux.png"
+    };
+
+    // 기본 로고
+    let currentLogo = themeLogos.default; 
+
+    let default_txt = "/icons/exe_txt.png";
+    let default_jpg = "/icons/exe_jpg.png";
+    let default_mp4 = "/icons/exe_mp4.png";
+    let default_exe = "/icons/exe_default.png";
 
     // 파일 아이콘 설정 (파일 이름에 따라 아이콘을 다르게 설정하는 함수)
     function getFileIcon(file: string): string {
-        if (file.includes(".txt")) return "📄";
-        if (file.includes(".jpg") || file.includes(".png")) return "🖼️";
-        if (file.includes(".mp4")) return "🎥";
-        if (file.includes(".exe")) return "💻";
-        return "📁";
+        if (file.includes(".txt")) return default_txt;
+        if (file.includes(".jpg") || file.includes(".png")) return default_jpg;
+        if (file.includes(".mp4")) return default_mp4;
+        if (file.includes(".exe")) return default_exe;
+        // return "📁";
+        return currentLogo;
     }
 
     // 파일명 추출
@@ -100,8 +116,20 @@ import { onMount, afterUpdate } from 'svelte';
             document.head.appendChild(linkElement);
         }
 
+            // 테마에 따라 로고 이미지를 변경
+        if (themePath.includes('default')) {
+            currentLogo = themeLogos.default;
+        } else if (themePath.includes('retro')) {
+            currentLogo = themeLogos.retro;
+        } else if (themePath.includes('sf')) {
+            currentLogo = themeLogos.sf;
+        } else if(themePath.includes('linux')) {
+            currentLogo = themeLogos.linux;
+        }
         // 현재 테마 경로 업데이트
         currentTheme = themePath;
+
+        filesInCurrentFolder = [...filesInCurrentFolder];
     }
 
     // 페이지 로드 시 기본 테마 적용
@@ -235,19 +263,47 @@ afterUpdate(() => {
 
     <!-- 네비게이션 바 -->
     <div class="navi-container">
-        <Navi/>
+        <div>
+            파일
+        </div>
+        <div>
+            홈
+        </div>
+        <div>
+            보기
+        </div>
+        <div>
+            도움말
+        </div>
     </div>
 
-    <!-- 현재 디렉토리 -->
-     <div class="current-directory-box">
-       <input type="text" value={curFolderName}>
-     </div>
+    <!-- 현재 디렉토리 / 검색박스 / 이동버튼 -->
+    <div class="util-bar-container">
+        <!-- 이동버튼 -->
+        <div class="movement-button-container">
+            <div>
+                ←
+            </div>
+            <div>
+                →
+            </div>
+            <div>
+                ↑
+            </div>
+        </div>
 
-    <!-- 검색박스 -->
-    <div>
-        <input id="searchInput" class="searchBoxInput" type="text">
-        <button id="searchButton" class="searchBoxButton" on:click={searchFilesInDirectory}>검색</button>
+        <!-- 현재 디렉토리 -->
+        <div class="current-directory-container">
+            <input type="text" class="current-directory-inputbox" value={curFolderName}>
+        </div>
+
+        <!-- 검색박스 -->
+        <div class="search-container">
+            <input id="searchInput" class="searchbox-input" type="text">
+            <button id="searchButton" class="searchbox-button" on:click={searchFilesInDirectory}>🔍</button>
+        </div>
     </div>
+    
 
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
         <!-- 좌측 패널: 드라이브 및 폴더 탐색기 -->
@@ -270,7 +326,8 @@ afterUpdate(() => {
                         style="width: {fileSize}px; height: {fileSize}px;"
                         on:dblclick={() => eachFolderClick(file)}
                     >
-                        <span class="file-icon">{getFileIcon(file)}</span>
+                        <!-- <span class="file-icon">{getFileIcon(file)}</span> -->
+                        <img src="{getFileIcon(file)}" alt="File Icon" class="file-icon">
                         <span class="file-name">{getFileName(file)}</span>
                     </div>
                 {/each}
@@ -359,6 +416,7 @@ afterUpdate(() => {
                     <button on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>디폴트 테마</button>
                     <button on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>레트로 테마</button>
                     <button on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>SF 테마</button>
+                    <button on:click={() => applyTheme('/src/lib/style/themes/linux_style_theme.css')}>SF 테마</button>
                     {/if}
                 </div>
                 <button class="close-modal" on:click={toggleSettings}

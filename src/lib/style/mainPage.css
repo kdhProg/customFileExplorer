@@ -181,7 +181,80 @@
     cursor: pointer;
 }
 
-.current-directory-box,
-.current-directory-box>input{
+
+.navi-container{
+    margin-top: 10px;
+    margin-bottom: 10px;
+
+    display: flex;
+    flex-direction: row;
+}
+
+.navi-container>div{
+    margin-right: 20px;
+}
+
+
+
+.util-bar-container{
+    display: flex;
+    flex-direction: row;
+
+    height: 25px;
+
+    margin: auto;
+
+    /* border:2px solid green; */
+}
+
+
+.current-directory-container{
+    margin-left: 50px;
+    width: 450px;
+}
+.current-directory-inputbox{
+    height: 20px;
     width: 100%;
+}
+
+
+.search-container{
+    display: flex;
+    flex-direction: row;
+
+    width: 300px;
+    height: 25px;
+
+    margin-left: 50px;
+
+    /* border: 1px solid red; */
+}
+
+.searchbox-input{
+    height: 25px;
+    box-sizing: border-box;
+}
+
+.searchbox-button{
+    height: 25px;
+    width: 50px;
+    box-sizing: border-box;
+
+    /* margin-left: 10px; */
+
+    /* border: 1px solid blue; */
+}
+
+
+
+
+.movement-button-container{
+    display: flex;
+    flex-direction: row;
+
+    margin: auto;
+}
+
+.movement-button-container>div{
+    margin-left: 20px;
 }
