@@ -122,9 +122,10 @@
     height: 65px;
 }
 
-.file-icon::before {
-    content: none; /* content를 none으로 설정하여 before 가상 요소를 제거 */
-}
+/* content를 none으로 설정하여 before 가상 요소를 제거 */
+/* .file-icon::before {
+    content: none; 
+} */
 
 
 .file-name {

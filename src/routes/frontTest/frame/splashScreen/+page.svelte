@@ -8,14 +8,9 @@
 </script>
 
 <div class="splash-screen">
-    <div class="file-icon" on:click={goToMainPage}></div>
+    <div class="splash-icon" on:click={goToMainPage}>
+        <img src="/icons/mainLogo.png" alt="mainLogo" class="splash-icon-img">
+    </div>
     <p class="description">내 파일 관리하기</p>
     <!-- 폴더 아이콘 밑에 문구 -->
 </div>
-
-<style>
-    .file-icon::before {
-    content: "📁";
-    font-size: 48px;
-}
-</style>
