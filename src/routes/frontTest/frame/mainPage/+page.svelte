@@ -140,16 +140,18 @@ import { onMount, afterUpdate } from 'svelte';
     async function searchFilesInDirectory() {
         // console.log('clicked!')
         try {
-            // 기본값 임시 설정
-            // let C_directory: string = "D://entire_workspace//2024opensw_competition//pathFinder//src";
-            let C_directory: string = "C://";
-            let D_directory: string = "D://";
+            
             const keyword = document.getElementById('searchInput');
 
-            let C_searchRst: string[];
-            let D_searchRst: string[];
-            
-            if (keyword instanceof HTMLInputElement) {
+            if(curFolderName === '' || curFolderName.length === 0){
+                //현재 파일 경로가 없다면(=초기화면) 기본값은 C,D에서 모두 탐색
+                let C_directory: string = "C://";
+                let D_directory: string = "D://";
+
+                let C_searchRst: string[];
+                let D_searchRst: string[];
+
+                if (keyword instanceof HTMLInputElement) {
                 const inputValue = keyword.value;
                 // console.log(inputValue);
 
@@ -169,9 +171,39 @@ import { onMount, afterUpdate } from 'svelte';
                 // console.log(typeof filesInCurrentFolder[0])
                 // const temp = filesInCurrentFolder = C_searchRst.concat(D_searchRst);
                 // console.log(temp);
-            } else {
-                console.error("Input element not found or is not of type HTMLInputElement");
+                } else {
+                    console.error("Input element not found or is not of type HTMLInputElement");
+                }
+
+            }else{
+                // 현재 디렉토리에서 검색
+                if (keyword instanceof HTMLInputElement) {
+                const inputValue = keyword.value;
+
+                let searchRst: string[];
+
+                console.log('searching.......')
+                console.time("search_API_time_analysis");
+
+                searchRst = await invoke("search_files", { directory:curFolderName, keyword:inputValue });
+
+                console.log('searching finished!')
+                console.timeEnd("search_API_time_analysis");
+
+                const searchRstmapped = searchRst.map((item: any) => item.file_name);
+
+                filesInCurrentFolder = searchRstmapped;
+                } else {
+                    console.error("Input element not found or is not of type HTMLInputElement");
+                }
+
             }
+            
+            
+
+            
+            
+            
         } catch (error) {
             console.error("err:", error);
         }
@@ -299,7 +331,7 @@ afterUpdate(() => {
 
         <!-- 검색박스 -->
         <div class="search-container">
-            <input id="searchInput" class="searchbox-input" type="text">
+            <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}에서 탐색...">
             <button id="searchButton" class="searchbox-button" on:click={searchFilesInDirectory}>🔍</button>
         </div>
     </div>
