@@ -133,10 +133,11 @@ cargo doc --no-deps --open
 ```
 
 
-### svelte reference
+### Tauri Sveltekit reference
 
 >[ref](https://tauri.app/ko/v1/guides/getting-started/setup/sveltekit/)
-### tauri cli
+
+### Install Tauri cli
 ```bash
 npm install --save-dev @tauri-apps/cli
 ```
