@@ -14,7 +14,7 @@ fn main() {
     commands::search_files,
     commands::move_to_trash,
     commands::is_directory,
-    commands::open_file_with_default_program,
+    commands::open_file_with_default_program
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

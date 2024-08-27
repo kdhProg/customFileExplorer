@@ -15,7 +15,6 @@ use tokio::task;
 
 
 
-
 #[derive(serde::Serialize)]
 pub struct FileMetadata {
     file_name: String,
@@ -34,7 +33,17 @@ pub struct FileItem {
 
 
 
-// 현재 디렉토리 반환
+/// 현재 디렉토리 경로 반환
+///
+///현재 디렉토리 경로를 문자열로 반환합니다.
+///
+/// # Arguments
+///
+/// * 
+///
+/// # Returns
+///
+/// * `Result<String, String>` - 디렉토리경로
 #[tauri::command]
 pub fn get_current_dir() -> Result<String, String> {
   match env::current_dir() {
@@ -43,7 +52,17 @@ pub fn get_current_dir() -> Result<String, String> {
   }
 }
 
-// 인자 디렉토리의 파일목록 반환(문자열)
+/// 파일리스트 탐색
+///
+/// 폴더 경로를 받아 해당 경로의 모든 폴더와 파일 리스트 반환
+///
+/// # Arguments
+///
+/// * `path` - 디렉토리
+///
+/// # Returns
+///
+/// * `Result<Vec<String>, String>` - 디렉토리경로 문자열
 #[tauri::command]
 pub fn list_files_in_directory(path: String) -> Result<Vec<String>, String> {
     match fs::read_dir(path) {
@@ -62,7 +81,17 @@ pub fn list_files_in_directory(path: String) -> Result<Vec<String>, String> {
     }
 }
 
-// 파일경로를 받아 메타데이터를 반환(파일명/크기/마지막수정일)
+/// 파일 메타데이터
+///
+/// 파일의 메타데이터(최종 수정일 / 확장자 / 크기) 반환
+///
+/// # Arguments
+///
+/// * `file_path` - 파일
+///
+/// # Returns
+///
+/// * `Result<FileMetadata, String>` - 디렉토리경로 문자열
 #[tauri::command]
 pub fn get_file_metadata(file_path: String) -> Result<FileMetadata, String> {
     let metadata = fs::metadata(&file_path).map_err(|err| err.to_string())?;
@@ -93,8 +122,17 @@ pub fn get_file_metadata(file_path: String) -> Result<FileMetadata, String> {
     Ok(file_metadata)
 }
 
-// 특정 경로의 새 폴더 생성
-// ex) D://test 이면 D드라이브 하위에 test폴더 생성
+/// 새 폴더 생성
+///
+/// 주어진 경로에 새 폴더를 생성
+///
+/// # Arguments
+///
+/// * `path` - 생성할 위치와 폴더명
+///
+/// # Returns
+///
+/// * `Result<(), String>` - 실패 시 에러메시지 반환
 #[tauri::command]
 pub fn create_new_folder(path: String) -> Result<(), String> {
     let path = Path::new(&path);
@@ -109,8 +147,19 @@ pub fn create_new_folder(path: String) -> Result<(), String> {
 }
 
 
-// 파일명 검색
-// tokio를 이용한 비동기 + 병렬처리
+/// 파일 검색
+///
+/// 주어진 경로에서 특정 문자열을 포함하는 파일을 탐색
+/// tokio를 이용한 비동기처리, 병렬처리 적용
+///
+/// # Arguments
+///
+/// * `directory` - 탐색시작 폴더 경로
+/// * `keyword` - 포함할 문자열
+///
+/// # Returns
+///
+/// * `Result<Vec<FileItem>, String>` - FileItem을 각 원소로 하는 배열 반환
 #[tauri::command]
 pub async fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>, String> {
     let dir_path = PathBuf::from(directory);
@@ -190,7 +239,17 @@ fn search_in_directory<'a>(
 }
 
 
-// 파일삭제(휴지통이동)
+/// 파일 삭제
+///
+/// 영구삭제가 아닌 휴지통 이동
+///
+/// # Arguments
+///
+/// * `del_path` - 휴지통으로 이동할 파일 경로
+///
+/// # Returns
+///
+/// * `Result<(), String>` - 실패 시 에러메시지 반환
 #[tauri::command]
 pub fn move_to_trash(del_path: String) -> Result<(), String> {
     trash::delete(del_path)
@@ -198,7 +257,17 @@ pub fn move_to_trash(del_path: String) -> Result<(), String> {
 }
 
 
-// 해당 경로의 폴더 여부 판단
+/// 폴더 여부 확인
+///
+/// 주어진 경로의 폴더 여부를 확인하여 boolean 반환
+///
+/// # Arguments
+///
+/// * `path` - 폴더 여부를 검사할 파일 또는 폴더 경로
+///
+/// # Returns
+///
+/// * `Result<bool, String> - true/false 값
 #[tauri::command]
 pub fn is_directory(path: String) -> Result<bool, String> {
     let metadata = fs::metadata(&path);
@@ -211,7 +280,17 @@ pub fn is_directory(path: String) -> Result<bool, String> {
 
 
 
-// 기본 프로그램으로 해당 파일 실행
+/// 기본 프로그램 실행 
+///
+/// 아직 충분히 검증되지 않은 API
+///
+/// # Arguments
+///
+/// * `file_path` - 실행할 대상 파일 경로
+///
+/// # Returns
+///
+/// * `Result<(), String>` - 실패 시 에러메시지 반환
 #[tauri::command]
 pub fn open_file_with_default_program(file_path: &str) -> Result<(), String> {
     let result = if cfg!(target_os = "windows") {
@@ -236,3 +315,4 @@ pub fn open_file_with_default_program(file_path: &str) -> Result<(), String> {
         Err(err) => Err(format!("Failed to open file: {}", err)),
     }
 }
+

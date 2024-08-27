@@ -1,42 +1,113 @@
-# 사용자지정 파일탐색기
 
-오픈소스 대회 사용자지정 파일탐색기 프로젝트
+<p align="center">
+<img width="700" src="./static/banner/main_banner.png"/>
+</p>
+<br>
+<br>
+<p align="center">
+<b>
+  Simple File explorer Project by using Tauri and SvelteKit
+</b>
+</p>
+<br>
+<br>
 
-## 프로젝트 목표
+# Overview
 
-- 고속처리
-- 기존에 없던 유용한 기능 : 멀티윈도우 / 향상된 즐겨찾기 등
-- 적절한 추상화를 통한 손쉬운 오픈소스 기여
+File explorer Project by using Tauri to use
+
+## Project Goals
+
+- Fast Search
+- Various themes
+- Appropriate Source Abstraction
+
+## Tech Stack
+
+- Tauri / Rust / Tokio
+- SvelteKit / TypeScript
+
+## System Architecture
+<p>
+<img width="500px" src="./static/architecture/system_architecture.PNG">
+</p>
+
+## Backend API Documents
+- It will be located at src-tauri / target / doc / app
+- It seems docs sometimes makes initial dev build slower
+- so i recommand not to make all docs which contains deps
+
+## Custom icons
+- directory icons
+<p>
+<img width="500px" src="./static/banner/dir_icons_banner.png">
+</p>
+
+- file icons
+<p>
+<img width="500px" src="./static/banner/icons_banner.png">
+</p>
+
+## ScreenShots
 
 
-## 사용기술 / tool
+## Projects Settings
+- Prerequisite : npm, Tauri CLI
 
-- rust + tauri
-- sveltekit
-- vscode
+- Download
 
-## 아키텍쳐
+```bash
+git clone https://github.com/kdhProg/customFileExplorer
+```
+or
+```bash
+gh repo clone kdhProg/customFileExplorer
+```
 
-- 추가예정
+## Todos
 
-## Building
+- Optimize Searching API
+- More UI Themes
+- User-Customizable UI
+- Unzip functions
 
-프론트엔드 개발서버
+## Commands
+
+Frontend dev server
 
 ```bash
 npm run dev
 ```
 
-프론트엔드 빌드
+Frontend build
 ```bash
 npm run build
 ```
 
-개발 앱 빌드
+Development Build 
 ```bash
 cargo tauri dev
 ```
+or
+```bash
+npm run tauri dev
+```
+
+Rust Docs Build ( Not root directory, should move to "src-tauri")
+(includes all dependencies - it will make all of docs which contains deps)
+```bash
+cargo doc --open
+```
+(without dependencies, only user-written API)
+```bash
+cargo doc --no-deps --open
+```
 
 
-svelte 참고
->[tauri 공식문서](https://tauri.app/ko/v1/guides/getting-started/setup/sveltekit/)
+### svelte reference
+
+>[ref](https://tauri.app/ko/v1/guides/getting-started/setup/sveltekit/)
+### tauri cli
+```bash
+npm install --save-dev @tauri-apps/cli
+```
