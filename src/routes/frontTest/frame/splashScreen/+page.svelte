@@ -11,6 +11,6 @@
     <div class="splash-icon" on:click={goToMainPage}>
         <img src="/icons/mainLogo.png" alt="mainLogo" class="splash-icon-img">
     </div>
-    <p class="description">내 파일 관리하기</p>
-    <!-- 폴더 아이콘 밑에 문구 -->
+    <p class="description" style="font-size: 30px;">PathFinder</p>
+    <p class="description">Simple File explorer</p>
 </div>

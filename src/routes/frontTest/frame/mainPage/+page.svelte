@@ -7,6 +7,9 @@ import { onMount, afterUpdate } from 'svelte';
     import Folder from '$lib/components/Folder.svelte';
     import { drives } from '$lib/store';
 
+    import { language } from '$lib/language';
+    import { translations } from '$lib/i18n/translations';
+
     // import - css
     import "$lib/style/global_features.css"
     import "/src/lib/style/mainpage.css"
@@ -284,6 +287,16 @@ afterUpdate(() => {
 });
 
 
+// 언어설정
+function switchLanguage(lang: string) {
+    language.set(lang);
+}
+
+// Reactive derived store to get the current translations
+$: currentTranslations = translations[$language];
+
+
+
 
 </script>
 
@@ -299,16 +312,16 @@ afterUpdate(() => {
     <!-- 네비게이션 바 -->
     <div class="navi-container">
         <div>
-            파일
+            {currentTranslations.nav_file}
         </div>
         <div>
-            홈
+            {currentTranslations.nav_home}
         </div>
         <div>
-            보기
+            {currentTranslations.nav_view}
         </div>
         <div>
-            도움말
+            {currentTranslations.nav_help}
         </div>
     </div>
 
@@ -334,7 +347,7 @@ afterUpdate(() => {
 
         <!-- 검색박스 -->
         <div class="search-container">
-            <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}에서 탐색...">
+            <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}">
             {#if isSearching}
             <button id="searchButton" class="searchbox-button" disabled>🔍</button>
             {:else}
@@ -371,9 +384,9 @@ afterUpdate(() => {
                     </div>
                 {/each}
             {:else if selectedDriveLeft && selectedFolderLeft}
-                <p>이 폴더는 비어 있습니다</p>
+                <p>{currentTranslations.no_folder}</p>
             {:else}
-                <p>폴더를 선택하세요</p>
+                <p>{currentTranslations.sel_folder}</p>
             {/if}
         </div>
 
@@ -398,9 +411,9 @@ afterUpdate(() => {
                         </div>
                     {/each}
                 {:else if selectedDriveRight && selectedFolderRight}
-                    <p>이 폴더는 비어 있습니다</p>
+                    <p>{currentTranslations.no_folder}</p>
                 {:else}
-                    <p>폴더를 선택하세요</p>
+                    <p>{currentTranslations.sel_folder}</p>
                 {/if}
             </div>
         {/if}
@@ -410,38 +423,40 @@ afterUpdate(() => {
     {#if showSettings}
         <div class="settings-modal">
             <div class="modal-content">
-                <h2>설정</h2>
+                <h2>{currentTranslations.settings}</h2>
                 <ul class="tabs">
                     <li
                         class:active={activeTab === "interface"}
                         on:click={() => changeTab("interface")}
                     >
-                        인터페이스
+                    {currentTranslations.interface}
                     </li>
                     <li
                         class:active={activeTab === "resize"}
                         on:click={() => changeTab("resize")}
                     >
-                        화면 크기 조절
+                    {currentTranslations.resize}
                     </li>
                     <li
                         class:active={activeTab === "themes"}
                         on:click={() => changeTab("themes")}
                     >
-                        테마선택
+                    {currentTranslations.themes}
+                    </li>
+                    <li
+                        class:active={activeTab === "language"}
+                        on:click={() => changeTab("language")}
+                    >
+                    {currentTranslations.language}
                     </li>
                 </ul>
                 <div class="tab-content">
                     {#if activeTab === "interface"}
-                        <h3>인터페이스 설정</h3>
-                        <button on:click={() => changeViewMode("single")}
-                            >화면 하나로 보기</button
-                        >
-                        <button on:click={() => changeViewMode("dual")}
-                            >화면 두 개로 보기</button
-                        >
+                        <h3>{currentTranslations.interface_set}</h3>
+                        <button on:click={() => changeViewMode("single")}>{currentTranslations.inter_one_panel}</button>
+                        <button on:click={() => changeViewMode("dual")}>{currentTranslations.inter_two_panel}</button>
                     {:else if activeTab === "resize"}
-                        <h3>화면 크기 조절</h3>
+                        <h3>{currentTranslations.resize}</h3>
                         <input
                             type="range"
                             min="50"
@@ -449,17 +464,20 @@ afterUpdate(() => {
                             value={fileSize}
                             on:input={updateFileSize}
                         />
-                        <p>파일 아이콘 크기: {fileSize}px</p>
+                        <p>{currentTranslations.file_icon_size}: {fileSize}px</p>
                     {:else if activeTab === "themes"}
-                    <h3>테마 선택</h3>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>디폴트 테마</button>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>레트로 테마</button>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>SF 테마</button>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/linux_style_theme.css')}>Linux 테마</button>
+                    <h3>{currentTranslations.themes}</h3>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>{currentTranslations.default_theme}</button>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>{currentTranslations.retro_theme}</button>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>{currentTranslations.sf_style_theme}</button>
+                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/linux_style_theme.css')}>{currentTranslations.linux_theme}</button>
+                    {:else if activeTab === "language"}
+                    <h3>{currentTranslations.language}</h3>
+                    <button id="lang_btn_en" class="lang_btn" on:click={() => switchLanguage('en')}>English</button>
+                    <button class="lang_btn" on:click={() => switchLanguage('ko')}>한국어</button>
                     {/if}
                 </div>
-                <button class="close-modal" on:click={toggleSettings}
-                    >닫기</button
+                <button class="close-modal" on:click={toggleSettings}>{currentTranslations.modal_close}</button
                 >
             </div>
         </div>

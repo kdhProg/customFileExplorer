@@ -162,9 +162,11 @@
 
 .tabs {
     display: flex;
-    gap: 20px;
+    gap: 10px;
     cursor: pointer;
     font-size: 14px;
+    margin-left: 0px;
+    padding-left: 10px;
 }
 
 .tabs .active {
@@ -268,4 +270,13 @@
 
 .theme_btn{
     cursor: pointer;
+}
+
+#lang_btn_en{
+    height: 24.8px;
+}
+
+.lang_btn{
+    cursor: pointer;
+    width: 70px;
 }

@@ -153,3 +153,10 @@ a:hover {
     /* border-radius: 5px; */
     color: rgb(0, 0, 0);
 }
+
+.lang_btn{
+    background-color: #eeeeee;
+    border-color: transparent;
+    /* border-radius: 5px; */
+    color: rgb(0, 0, 0);
+}

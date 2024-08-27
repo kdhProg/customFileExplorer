@@ -146,3 +146,10 @@ a:hover {
     color: #00c8ff;
 }
 
+.lang_btn{
+    background-color: #1b1b1b;
+    border-color: transparent;
+    border-radius: 5px;
+    color: #00c8ff;
+}
+

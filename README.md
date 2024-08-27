@@ -14,13 +14,13 @@
 
 # Overview
 
-File explorer Project by using Tauri to use
+we developed a file explorer project with key strengths such as fast search speed, customizable themes, and multi-language support. This tool allows users to efficiently manage and locate files while offering a personalized user experience through theme and language settings.
 
-## Project Goals
+## Main Features
 
 - Fast Search
 - Various themes
-- Appropriate Source Abstraction
+- Selectable Languanges
 
 ## Tech Stack
 

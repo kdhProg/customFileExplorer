@@ -142,3 +142,10 @@ a:hover {
     border-radius: 5px;
     color: white;
 }
+
+.lang_btn{
+    background-color: #870b6e;
+    border-color: transparent;
+    border-radius: 5px;
+    color: white;
+}
