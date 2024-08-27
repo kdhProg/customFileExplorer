@@ -49,6 +49,35 @@ we developed a file explorer project with key strengths such as fast search spee
 </p>
 
 ## ScreenShots
+<p>Intro screen</p>
+<p>
+<img width="300px" src="./static/screenshots/splash.png">
+</p>
+
+<p>Main screen</p>
+<p>
+<img width="300px" src="./static/screenshots/main_theme1.png">
+</p>
+
+<p>Modal</p>
+<p>
+<img width="300px" src="./static/screenshots/modal1.png">
+</p>
+
+<p>XP-style theme</p>
+<p>
+<img width="300px" src="./static/screenshots/main_theme2.png">
+</p>
+
+<p>SF-style theme</p>
+<p>
+<img width="300px" src="./static/screenshots/main_theme3.png">
+</p>
+
+<p>Linux-style theme</p>
+<p>
+<img width="300px" src="./static/screenshots/main_theme4.png">
+</p>
 
 
 ## Projects Settings
