@@ -13,6 +13,24 @@ use std::pin::Pin;
 use tokio::fs as async_fs;
 use tokio::task;
 
+use sysinfo::Disks;
+
+
+
+// Todo
+// - 검색 알고리즘 개선(CPU 점유율 낮추기)
+// - 드라이브는 API를 통해서 목록 가져오기
+
+
+// struct for Drive Infos
+#[derive(serde::Serialize)]
+pub struct DriveInfo {
+    name: String,
+    mount_point: String,
+    total_space: f64,
+    available_space: f64,
+}
+
 
 
 #[derive(serde::Serialize)]
@@ -282,8 +300,6 @@ pub fn is_directory(path: String) -> Result<bool, String> {
 
 /// 기본 프로그램 실행 
 ///
-/// 아직 충분히 검증되지 않은 API
-///
 /// # Arguments
 ///
 /// * `file_path` - 실행할 대상 파일 경로
@@ -314,5 +330,25 @@ pub fn open_file_with_default_program(file_path: &str) -> Result<(), String> {
         Ok(status) => Err(format!("Command exited with status: {}", status)),
         Err(err) => Err(format!("Failed to open file: {}", err)),
     }
+}
+
+
+/// 드라이브 목록 반환
+///
+/// # Returns
+///
+/// * `Vec<DriveInfo>`
+#[tauri::command]
+pub fn get_drive_info() -> Vec<DriveInfo> {
+    let disks = Disks::new_with_refreshed_list();
+    
+    disks.iter().map(|disk| {
+        DriveInfo {
+            name: disk.name().to_string_lossy().to_string(),
+            mount_point: disk.mount_point().to_string_lossy().to_string(),
+            total_space: disk.total_space() as f64 / 1_000_000_000.0, // GB 단위
+            available_space: disk.available_space() as f64 / 1_000_000_000.0, // GB 단위
+        }
+    }).collect()
 }
 

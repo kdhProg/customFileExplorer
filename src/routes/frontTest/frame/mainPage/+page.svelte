@@ -61,6 +61,9 @@ import { onMount, afterUpdate } from 'svelte';
     // 디렉토리 리스트에서 파일 클릭
     async function handleFolderSelected(event) {
         curFolderName = event.detail;
+        // Todo : 더블클릭 대상이 폴더면 해당 파일리스트 반환 수행 / 일반파일이면 기본설정프로그램으로 실행
+
+
         filesInCurrentFolder = await listFilesInDirectory(curFolderName);
         // console.log(typeof filesInCurrentFolder[0])
     }

@@ -103,6 +103,34 @@
         result = `Error: ${error}`;
         }
     }
+
+
+    // 기본파일 실행 테스트
+
+    let open_file_de_test_path = "D://entire_workspace//2024opensw_competition//pathFinder//static//mainLogo.png";
+    let open_file_ret = "";
+    async function open_file_with_default_program() {
+        try {
+        const ret = await invoke('open_file_with_default_program', { filePath: open_file_de_test_path });
+        } catch (error) {
+            open_file_ret = `Error: ${error}`;
+        }
+    }
+
+
+    // 스토리지 디바이스 목록 가져오기 테스트
+    //get_drive_info
+    let drives_infos = [];
+
+    async function get_drive_info() {
+    try {
+        drives_infos = await invoke('get_drive_info');
+        console.log(drives_infos);
+    } catch (error) {
+        console.error('Failed to fetch drive list:', error);
+    }
+    }
+
 </script>
 
 <h1>backEnd API Test Page</h1>
@@ -146,4 +174,14 @@
 <hr>
 <button on:click={checkIfDirectory}>Is Folder? Check</button>
 <p>{result}</p>
+<hr>
+<button on:click={open_file_with_default_program}>EXE run test</button>
+<p>{open_file_ret}</p>
+<hr>
+<p>스토리지 디바이스 가져오기</p>
+<button on:click={get_drive_info}>get_drive_info</button>
+<div>
+    {drives_infos}
+</div>
+
 <a href="/">Go to previous page</a>
