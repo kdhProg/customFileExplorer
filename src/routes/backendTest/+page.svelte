@@ -125,7 +125,7 @@
     async function get_drive_info() {
     try {
         drives_infos = await invoke('get_drive_info');
-        console.log(drives_infos);
+        console.log(drives_infos[0].mount_point);
     } catch (error) {
         console.error('Failed to fetch drive list:', error);
     }

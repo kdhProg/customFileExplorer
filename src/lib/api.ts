@@ -25,3 +25,7 @@ export async function isDirectory(path: string): Promise<boolean> {
 export async function openFileWithDefaultProgram(filePath: string){
     invoke('open_file_with_default_program', { filePath });
 }
+
+export async function getDriveInfo(){
+    return invoke('get_drive_info');
+}

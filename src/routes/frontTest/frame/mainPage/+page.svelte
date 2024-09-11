@@ -5,7 +5,7 @@ import { onMount, afterUpdate } from 'svelte';
     import { isDirectory, listFilesInDirectory, openFileWithDefaultProgram } from "$lib/api";
     import { invoke } from "@tauri-apps/api/tauri";
     import Folder from '$lib/components/Folder.svelte';
-    import { drives } from '$lib/store';
+    import { drives,updateDrives } from '$lib/store';
 
     import { language } from '$lib/language';
     import { translations } from '$lib/i18n/translations';
@@ -247,6 +247,10 @@ function updateSidebarWidth(width) {
 }
 
 onMount(() => {
+    // 컴포넌트 첫 로드 시 드라이브 목록 업데이트
+    updateDrives();
+
+
     const sidebar = document.getElementById('sidebar');
     const resizer = document.getElementById('resizer');
 
@@ -308,7 +312,9 @@ function switchLanguage(lang: string) {
 // Reactive derived store to get the current translations
 $: currentTranslations = translations[$language];
 
-
+// drives 스토어 구독
+// 디버깅용 -> <button on:click={()=>{console.log(driveList)}}>test</button>와 같이 활용
+// $: driveList = $drives;
 
 
 </script>
@@ -497,3 +503,4 @@ $: currentTranslations = translations[$language];
     {/if}
 </div>
 <a href="/frontTest/frame">Go to previous page</a>
+

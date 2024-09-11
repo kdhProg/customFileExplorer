@@ -1,15 +1,15 @@
 <script lang="ts">
+
   export let path: string;
   export let name: string = "";
   export let items: { [key: string]: string[] | null } | null = null;
 
-  import { isDirectory, listFilesInDirectory } from "$lib/api";
+  import { isDirectory, listFilesInDirectory} from "$lib/api";
   import Folder from "./Folder.svelte";
 
   import '$lib/style/folder_svelte.css';
 
   import { createEventDispatcher } from 'svelte';
-
   
   const dispatch = createEventDispatcher();
 
