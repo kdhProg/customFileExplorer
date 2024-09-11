@@ -2,7 +2,7 @@
 
 import { onMount, afterUpdate } from 'svelte';
 
-    import { isDirectory, listFilesInDirectory } from "$lib/api";
+    import { isDirectory, listFilesInDirectory, openFileWithDefaultProgram } from "$lib/api";
     import { invoke } from "@tauri-apps/api/tauri";
     import Folder from '$lib/components/Folder.svelte';
     import { drives } from '$lib/store';
@@ -219,10 +219,20 @@ import { onMount, afterUpdate } from 'svelte';
     }
 
     
-    //각 폴더 클릭
+    // Click Each Folder / Files
+    // Folder - update current folder list
+    // File - execute with default enrolled programs
     async function eachFolderClick(file:string){
         curFolderName = file;
-        filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+        let isDir = await isDirectory(curFolderName);
+        if(isDir){
+            // case : this is directory
+            filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+        }else{
+            // case : this is folder
+            openFileWithDefaultProgram(curFolderName);
+            
+        }
     }
     
 

@@ -21,3 +21,7 @@ export async function isDirectory(path: string): Promise<boolean> {
         return false;
     }
 }
+
+export async function openFileWithDefaultProgram(filePath: string){
+    invoke('open_file_with_default_program', { filePath });
+}
