@@ -17,15 +17,12 @@
     /* box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); */
 }
 
-.logo {
-    font-size: 20px;
+.logo-container {
+    font-size: 30px;
     font-weight: bold;
-    /* color: #005082; */
-}
 
-.settings-icon {
-    font-size: 20px;
-    cursor: pointer;
+    margin-left: 20px;
+    /* color: #005082; */
 }
 
 .content-wrapper {
@@ -202,27 +199,46 @@
 
 
 
-.util-bar-container{
+.header-container{
     display: flex;
     flex-direction: row;
 
-    height: 25px;
+    height: 40px;
 
-    margin: auto;
+    /* margin: auto; */
 
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 
     /* border:2px solid green; */
 }
 
+/* .header-container>div{
+    border:1px solid red;
+} */
+
 
 .current-directory-container{
+
+    display: flex;
+    flex-direction: row;
+
     margin-left: 50px;
-    width: 450px;
+    /* width: 450px; */
+    width: 100%;
+
+    min-width: 200px;
 }
 .current-directory-inputbox{
-    height: 20px;
+    /*height: 100%; */
     width: 100%;
+
+    /* border:none; */
+}
+
+.current-dir-inputBox-height{
+    /* only used to match height of current-directory-inputbox */
+    height: 100%;
 }
 
 
@@ -231,22 +247,24 @@
     flex-direction: row;
 
     width: 300px;
-    height: 25px;
+    /* height: 30px; */
 
     margin-left: 50px;
+    margin-right: 20px;
 
     /* border: 1px solid red; */
 }
 
 .searchbox-input{
-    height: 25px;
-    box-sizing: border-box;
+    /* height: 100%; */
+    /* box-sizing: border-box; */
 }
 
 .searchbox-button{
-    height: 25px;
+    /* same as [input] tag's height=30px */
+    height: 100%;
     width: 50px;
-    box-sizing: border-box;
+    /* box-sizing: border-box; */
     cursor: pointer;
     /* margin-left: 10px; */
 
@@ -260,11 +278,14 @@
     display: flex;
     flex-direction: row;
 
-    margin: auto;
+    margin-left: 20px;
 }
 
 .movement-button-container>div{
     margin-left: 20px;
+
+    font-size: 30px;
+    font-weight: bold;
 }
 
 
@@ -279,4 +300,20 @@
 .lang_btn{
     cursor: pointer;
     width: 70px;
+}
+
+
+.util-container{
+    display: flex;
+    flex-direction: row;
+}
+
+
+
+
+.settings-icon-wrapper {
+    font-size: 20px;
+    cursor: pointer;
+
+    margin-right: 20px;
 }

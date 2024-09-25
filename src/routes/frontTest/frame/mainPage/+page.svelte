@@ -322,14 +322,9 @@ $: currentTranslations = translations[$language];
 <!-- 메인 화면 -->
  <!-- <button on:click={()=>{console.log('curFolderName'+curFolderName)}}>testtest</button> -->
 <div class="main-container">
-    <!-- 상단 바 -->
-    <header class="top-bar">
-        <div class="logo">pathFinder</div>
-        <div class="settings-icon" on:click={toggleSettings}>⚙️</div>
-    </header>
 
     <!-- 네비게이션 바 -->
-    <div class="navi-container">
+    <!-- <div class="navi-container">
         <div>
             {currentTranslations.nav_file}
         </div>
@@ -342,11 +337,15 @@ $: currentTranslations = translations[$language];
         <div>
             {currentTranslations.nav_help}
         </div>
-    </div>
+    </div> -->
 
     <!-- 현재 디렉토리 / 검색박스 / 이동버튼 -->
-    <div class="util-bar-container">
-        <!-- 이동버튼 -->
+    <div class="header-container">
+
+        <!-- logo -->
+        <div class="logo-container">pathFinder</div>
+
+        <!-- movementBox -->
         <div class="movement-button-container">
             <div>
                 ←
@@ -359,12 +358,15 @@ $: currentTranslations = translations[$language];
             </div>
         </div>
 
-        <!-- 현재 디렉토리 -->
+        <!-- current directory -->
         <div class="current-directory-container">
             <input type="text" class="current-directory-inputbox" value={curFolderName}>
+            <div class="current-dir-inputBox-height">
+
+            </div>
         </div>
 
-        <!-- 검색박스 -->
+        <!-- search box -->
         <div class="search-container">
             <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}">
             {#if isSearching}
@@ -373,6 +375,18 @@ $: currentTranslations = translations[$language];
             <button id="searchButton" class="searchbox-button" on:click={searchFilesInDirectory}>🔍</button>
             {/if}
         </div>
+    </div>
+
+
+    <!-- util bar + settings -->
+    <div class="util-container">
+
+        <div class="util-btns-container">
+
+        </div>
+
+        <!-- settings -->
+        <div class="settings-icon-wrapper" on:click={toggleSettings}>⚙️</div>
     </div>
     
 
