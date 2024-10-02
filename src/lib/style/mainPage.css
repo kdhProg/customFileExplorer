@@ -85,7 +85,10 @@
     padding: 10px;
     display: flex;
     flex-wrap: wrap;
+    align-content: flex-start;
     /* background-color: transparent; */
+
+    gap: 10px;
 
     /* overflow: auto; */
     box-sizing: border-box;
@@ -106,6 +109,7 @@
     cursor: pointer;
     text-align: center;
     transition: transform 0.1s, box-shadow 0.3s;
+    
 
     height:100px;
 }

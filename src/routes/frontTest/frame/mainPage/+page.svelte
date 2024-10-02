@@ -495,7 +495,6 @@ function openGitgubRepo(){
                         style="width: {fileSize}px; height: {fileSize}px;"
                         on:dblclick={() => eachFolderClick(file)}
                     >
-                        <!-- <span class="file-icon">{getFileIcon(file)}</span> -->
                         <img src="{getFileIcon(file)}" alt="File Icon" class="file-icon">
                         <span class="file-name">{getFileName(file)}</span>
                     </div>
