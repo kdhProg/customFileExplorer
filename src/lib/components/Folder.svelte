@@ -45,15 +45,25 @@
   }
 
   function getFolderName(fullPath: string): string {
+    if (/^[A-Z]:\\$/.test(fullPath) && fullPath.length === 3){
+      return fullPath.replace(/([A-Z]):\\/, '$1 drive');
+    }
     return fullPath.split(/[/\\]/).pop() || "";
-    // return fullPath.split(/[/\\]/).pop() || "";
   }
 </script>
 
 <div class="folder">
   <div class="clickable" on:click={handleFolderClick}>
-    <span class="icon">{expanded ? "▼" : "▶️"}</span>
-    {name === "C:\\" || name === "D:\\" ? name : getFolderName(name)}
+    <span class="icon">
+      <!-- {expanded ? "▼" : "▶️"} -->
+      {#if expanded}
+        <img class="folder-small-icon" src="/icons/small_folder_close.png" alt="">
+      {:else}
+        <img class="folder-small-icon" src="/icons/small_folder_open.png" alt="">
+      {/if}
+    </span>
+    <!-- {name === "C:\\" || name === "D:\\" ? name : getFolderName(name)} -->
+    {getFolderName(name)}
   </div>
   {#if expanded && items}
     <ul class="folder-contents">
@@ -72,5 +82,8 @@
 </div>
 
 <style>
-  
+.folder-small-icon{
+  width: 25px;
+  height: 22px;
+}
 </style>

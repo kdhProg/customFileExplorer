@@ -205,12 +205,20 @@
 
     height: 40px;
 
-    /* margin: auto; */
-
     margin-top: 10px;
     margin-bottom: 10px;
 
-    /* border:2px solid green; */
+    padding-top: 10px;
+
+    width: 99%;
+
+    position: fixed;
+    top:40px;
+
+    z-index: 999;
+
+    /* border: 1px solid red; */
+
 }
 
 /* .header-container>div{
@@ -260,15 +268,17 @@
     /* box-sizing: border-box; */
 }
 
-.searchbox-button{
+.searchbox-button-wrapper{
     /* same as [input] tag's height=30px */
     height: 100%;
     width: 50px;
     /* box-sizing: border-box; */
     cursor: pointer;
-    /* margin-left: 10px; */
+}
 
-    /* border: 1px solid blue; */
+.searchBox-button-img{
+    width: 30px;
+    height:20px
 }
 
 
@@ -278,14 +288,23 @@
     display: flex;
     flex-direction: row;
 
+    padding-top: 7px;
+
     margin-left: 20px;
 }
 
-.movement-button-container>div{
+.movement-button{
+
+    cursor: pointer;
+
     margin-left: 20px;
 
-    font-size: 30px;
-    font-weight: bold;
+    width: 40px;
+    height: 25px;
+}
+
+.movement-button:hover{
+    transform: scale(1.1);
 }
 
 
@@ -306,14 +325,80 @@
 .util-container{
     display: flex;
     flex-direction: row;
+
+    height: 35px;
+    width: 99%;
+
+    position: fixed;
+    top:90px;
+
+    padding-top: 15px;
+    padding-bottom: 10px;
+
+    z-index: 998;
+
+    box-shadow: 0 4px 5px -4px rgba(0, 0, 0, 0.3);
+
+    /* border:1px solid blue; */
+}
+
+.util-btns-container{
+
+    flex-grow: 1; /* flex-grow : 1 ---> It takes all rest of space */
+
+    display: flex;
+    flex-direction: row;
+
+}
+
+/* .util-button-wrapper{
+
+} */
+
+.util-button{
+    cursor: pointer;
+
+    width: 40px;
+    height: 30px;
+
+    margin-left: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.util-button:hover{
+    transform: scale(1.1);
 }
 
 
-
-
 .settings-icon-wrapper {
-    font-size: 20px;
     cursor: pointer;
 
-    margin-right: 20px;
+    width: 100px;
+    text-align: center;
+    margin-right: 10px;
+    
+}
+
+.settings-icon-wrapper:hover{
+    transform: scale(1.1);
+}
+
+.gear-image{
+    width: 55px;
+    height: 40px;
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.main-logo-img{
+    width: 45px;
+    height: 45px;
+
+    cursor: pointer;
+
+    /* border: 1px solid red; */
+}
+
+.main-logo-img:hover{
+    transform: scale(1.1);
 }

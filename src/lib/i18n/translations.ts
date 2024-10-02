@@ -5,6 +5,7 @@ export const translations = {
         resize: 'Resize',
         themes: 'Themes',
         language: 'Language',
+        utils:'Utils',
         close: 'Close',
 
         nav_file:'File',
@@ -16,6 +17,13 @@ export const translations = {
         no_folder:'Empty Folder',
 
         file_icon_size : 'File Icon Size',
+
+        util_apply_button : 'Apply',
+        util_home : 'Home',
+        util_cut : 'Cut',
+        util_copy : 'Copy',
+        util_paste : 'Paste',
+        util_delete: 'Delete',
 
         modal_close : 'Close',
 
@@ -34,6 +42,7 @@ export const translations = {
         resize: '화면 크기 조절',
         themes: '테마선택',
         language: '언어선택',
+        utils:'기능',
         close: '닫기',
         
         nav_file:'파일',
@@ -45,6 +54,13 @@ export const translations = {
         no_folder:'빈 폴더입니다',
 
         file_icon_size : '파일 아이콘 사이즈',
+
+        util_apply_button : '적용',
+        util_home : '홈',
+        util_cut : '잘라내기',
+        util_copy : '복사하기',
+        util_paste : '붙여넣기',
+        util_delete: '삭제하기',
 
         modal_close : '닫기',
 

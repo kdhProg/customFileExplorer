@@ -122,10 +122,16 @@
     //get_drive_info
     let drives_infos = [];
 
+    let mount_point = '';
+    let total_space = 0;
+    let available_space = 0;
+
     async function get_drive_info() {
     try {
         drives_infos = await invoke('get_drive_info');
-        console.log(drives_infos[0].mount_point);
+        mount_point = drives_infos[0].mount_point;
+        total_space = drives_infos[0].total_space;
+        available_space = drives_infos[0].available_space;
     } catch (error) {
         console.error('Failed to fetch drive list:', error);
     }
@@ -181,7 +187,15 @@
 <p>스토리지 디바이스 가져오기</p>
 <button on:click={get_drive_info}>get_drive_info</button>
 <div>
-    {drives_infos}
+    <p>
+        mount_point : {mount_point}
+    </p>
+    <p>
+        total_space : {total_space}
+    </p>
+    <p>
+        available_space : {available_space}
+    </p>
 </div>
 
 <a href="/">Go to previous page</a>

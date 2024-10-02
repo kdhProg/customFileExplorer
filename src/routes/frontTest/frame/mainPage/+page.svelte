@@ -1,11 +1,18 @@
 <script lang="ts">
 
-import { onMount, afterUpdate } from 'svelte';
+    import fs from 'fs';
+    import path from 'path';
+
+    import { onMount, afterUpdate } from 'svelte';
 
     import { isDirectory, listFilesInDirectory, openFileWithDefaultProgram } from "$lib/api";
     import { invoke } from "@tauri-apps/api/tauri";
     import Folder from '$lib/components/Folder.svelte';
     import { drives,updateDrives } from '$lib/store';
+
+    import DiscInfo from '$lib/components/discInfo.svelte';
+
+    import TitleBar from '$lib/components/titleBar.svelte';
 
     import { language } from '$lib/language';
     import { translations } from '$lib/i18n/translations';
@@ -13,9 +20,6 @@ import { onMount, afterUpdate } from 'svelte';
     // import - css
     import "$lib/style/global_features.css"
     import "/src/lib/style/mainpage.css"
-
-    // import - components
-    import Navi from "$lib/components/navi.svelte";
 
 
     let showSettings = false;
@@ -61,7 +65,6 @@ import { onMount, afterUpdate } from 'svelte';
     // 디렉토리 리스트에서 파일 클릭
     async function handleFolderSelected(event) {
         curFolderName = event.detail;
-        // Todo : 더블클릭 대상이 폴더면 해당 파일리스트 반환 수행 / 일반파일이면 기본설정프로그램으로 실행
 
 
         filesInCurrentFolder = await listFilesInDirectory(curFolderName);
@@ -85,7 +88,7 @@ import { onMount, afterUpdate } from 'svelte';
     let default_mp4 = "/icons/exe_mp4.png";
     let default_exe = "/icons/exe_default.png";
 
-    // 파일 아이콘 설정 (파일 이름에 따라 아이콘을 다르게 설정하는 함수)
+    // Set File icon
     function getFileIcon(file: string): string {
         if (file.includes(".txt")) return default_txt;
         if (file.includes(".jpg") || file.includes(".png")) return default_jpg;
@@ -95,18 +98,18 @@ import { onMount, afterUpdate } from 'svelte';
         return currentLogo;
     }
 
-    // 파일명 추출
+    // Extract fileName
     function getFileName(filePath:string) {
         const parts = filePath.split(/[/\\]/);
         return parts[parts.length - 1];
     }
 
 
-    // 테마
-    // 기본 CSS 파일 로드
+    // Theme
+    // default theme ]
     let currentTheme = '/src/lib/style/themes/default_theme.css';
 
-    // CSS 파일을 동적으로 변경하는 함수
+    // Change CSS
     function applyTheme(themePath) {
         const existingLink = document.querySelector('#dynamic-theme');
         
@@ -234,10 +237,55 @@ import { onMount, afterUpdate } from 'svelte';
             
         }
     }
+
+
+    // util bars
+    async function load_util_buttons(){
+        let jsonData = {};
+
+        try {
+            const response = await invoke('read_json_file');
+            jsonData = JSON.parse(response);
+        } catch (error) {
+            console.error('JSON 파일을 가져오는 중 오류 발생:', error);
+        }
+
+    return jsonData;
+    }   
+
+    let utilButtons = []
+
+    // util_buttons toggle checkbox
+    function toggleItem(value, checked) {
+        if (checked) {
+        // 체크된 경우 배열에 추가
+        utilButtons = [...utilButtons, value];
+        } else {
+        // 체크 해제된 경우 배열에서 제거
+        utilButtons = utilButtons.filter(item => item !== value);
+        }
+
+        // apply when item changed
+        util_apply();
+    }
+
+    // check if utilButtons have values
+    function isChecked(value) {
+     return utilButtons.includes(value);
+    }
+
+    // utilButtons apply button - backend
+    async function util_apply() {
+    try {
+      await invoke('save_util_buttons', { buttons: utilButtons });
+    } catch (error) {
+      console.error('Failed to send buttons:', error);
+    }
+  }
     
 
-    // 분할바 관련
-    let sidebarWidth = 250; // 초기 사이드바 너비를 전역 변수로 관리
+// 분할바 관련
+let sidebarWidth = 250; // 초기 사이드바 너비를 전역 변수로 관리
 
 function updateSidebarWidth(width) {
     sidebarWidth = width;
@@ -246,7 +294,15 @@ function updateSidebarWidth(width) {
     document.getElementById('sidebar').style.maxWidth = `${sidebarWidth}px`;
 }
 
+
+// onMount -> load when page starts
 onMount(() => {
+
+    load_util_buttons().then(data => {
+      utilButtons = data.buttons; // 받아온 데이터를 utilButtons에 할당
+    });
+
+
     // 컴포넌트 첫 로드 시 드라이브 목록 업데이트
     updateDrives();
 
@@ -304,7 +360,7 @@ afterUpdate(() => {
 });
 
 
-// 언어설정
+// Set Language
 function switchLanguage(lang: string) {
     language.set(lang);
 }
@@ -316,63 +372,71 @@ $: currentTranslations = translations[$language];
 // 디버깅용 -> <button on:click={()=>{console.log(driveList)}}>test</button>와 같이 활용
 // $: driveList = $drives;
 
+// main logo click event (open github-repo)
+function openGitgubRepo(){
+    window.open('https://github.com/kdhProg/customFileExplorer', '_blank');
+}
+
+
+// ---- util bar ----
+
+
+
 
 </script>
 
-<!-- 메인 화면 -->
- <!-- <button on:click={()=>{console.log('curFolderName'+curFolderName)}}>testtest</button> -->
+<!-- Main Screen -->
+ <!-- <button on:click={()=>{console.log('curFolderName'+curFolderName)}}>test</button> -->
 <div class="main-container">
-
-    <!-- 네비게이션 바 -->
-    <!-- <div class="navi-container">
-        <div>
-            {currentTranslations.nav_file}
-        </div>
-        <div>
-            {currentTranslations.nav_home}
-        </div>
-        <div>
-            {currentTranslations.nav_view}
-        </div>
-        <div>
-            {currentTranslations.nav_help}
-        </div>
-    </div> -->
-
-    <!-- 현재 디렉토리 / 검색박스 / 이동버튼 -->
+    <TitleBar/>
+    <!-- Current Directory / SearchBox / MovementButton -->
     <div class="header-container">
 
         <!-- logo -->
-        <div class="logo-container">pathFinder</div>
+        <div class="logo-container">
+            <!-- pathFinder -->
+             <div class="main-logo-img-wrapper" on:click={openGitgubRepo}>
+                <img class="main-logo-img" src="/mainLogo.png" alt="">
+             </div>
+        </div>
 
         <!-- movementBox -->
         <div class="movement-button-container">
             <div>
-                ←
+                <!-- ← -->
+                 <img id="movement-btn-left" class="movement-button" src="/arrows/thick_arrows_left.png" alt="">
             </div>
             <div>
-                →
+                <!-- → -->
+                <img id="movement-btn-right" class="movement-button" src="/arrows/thick_arrows_right.png" alt="">
             </div>
             <div>
-                ↑
+                <!-- ↑ -->
+                <img id="movement-btn-up" class="movement-button" src="/arrows/thick_arrows_up.png" alt="">
             </div>
         </div>
 
         <!-- current directory -->
         <div class="current-directory-container">
-            <input type="text" class="current-directory-inputbox" value={curFolderName}>
+            <input type="text" class="current-directory-inputbox" value={curFolderName} readonly>
             <div class="current-dir-inputBox-height">
 
             </div>
         </div>
 
         <!-- search box -->
+        <!-- 🔍 -->
         <div class="search-container">
             <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}">
             {#if isSearching}
-            <button id="searchButton" class="searchbox-button" disabled>🔍</button>
+            <!-- <button id="searchButton" class="searchbox-button-wrapper" disabled>
+                <img class="searchBox-button-img" src="/icons/magnifying_glass.png" alt="">
+            </button> -->
+            <button class="searchbox-button-wrapper">❌</button>
             {:else}
-            <button id="searchButton" class="searchbox-button" on:click={searchFilesInDirectory}>🔍</button>
+            <button id="searchButton" class="searchbox-button-wrapper" on:click={searchFilesInDirectory}>
+                <img class="searchBox-button-img" src="/icons/magnifying_glass.png" alt="">
+            </button>
             {/if}
         </div>
     </div>
@@ -382,13 +446,32 @@ $: currentTranslations = translations[$language];
     <div class="util-container">
 
         <div class="util-btns-container">
-
+            {#each utilButtons as btns}
+                <div class="util-button-wrapper">
+                    {#if btns === "Home"}
+                        <img id={btns} class="util-button" src="/utilbuttons/util_home.png" alt="">
+                    {:else if btns === "Cut"}
+                        <img id={btns} class="util-button" src="/utilbuttons/util_cut.png" alt="">
+                    {:else if btns === "Copy"}
+                        <img id={btns} class="util-button" src="/utilbuttons/util_copy.png" alt="">
+                    {:else if btns === "Paste"}
+                        <img id={btns} class="util-button" src="/utilbuttons/util_paste.png" alt="">
+                    {:else if btns === "Delete"}
+                        <img id={btns} class="util-button" src="/utilbuttons/util_delete.png" alt="">
+                    {/if}
+                </div>
+            {/each}
         </div>
 
         <!-- settings -->
-        <div class="settings-icon-wrapper" on:click={toggleSettings}>⚙️</div>
+        <div class="settings-icon-wrapper" on:click={toggleSettings}>
+            <!-- ⚙️ -->
+             <img class="gear-image" src="/icons/gear.png" alt="">
+        </div>
     </div>
     
+    <!-- Just for height set -->
+    <div style="margin-bottom: 140px;"></div>
 
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
         <!-- 좌측 패널: 드라이브 및 폴더 탐색기 -->
@@ -396,6 +479,7 @@ $: currentTranslations = translations[$language];
             {#each Object.keys($drives) as drive}
                 <Folder path={drive} name={drive} items={$drives[drive]} on:folderSelected={handleFolderSelected}/>
             {/each}
+            <DiscInfo/>
         </aside>
 
 
@@ -452,7 +536,7 @@ $: currentTranslations = translations[$language];
         {/if}
     </div>
 
-    <!-- 설정 모달 -->
+    <!-- Setting Modal -->
     {#if showSettings}
         <div class="settings-modal">
             <div class="modal-content">
@@ -482,6 +566,12 @@ $: currentTranslations = translations[$language];
                     >
                     {currentTranslations.language}
                     </li>
+                    <li
+                        class:active={activeTab === "utils"}
+                        on:click={() => changeTab("utils")}
+                    >
+                    {currentTranslations.utils}
+                    </li>
                 </ul>
                 <div class="tab-content">
                     {#if activeTab === "interface"}
@@ -508,6 +598,16 @@ $: currentTranslations = translations[$language];
                     <h3>{currentTranslations.language}</h3>
                     <button id="lang_btn_en" class="lang_btn" on:click={() => switchLanguage('en')}>English</button>
                     <button class="lang_btn" on:click={() => switchLanguage('ko')}>한국어</button>
+                    {:else if activeTab === "utils"}
+                    <h3>{currentTranslations.utils}</h3>
+                    <label for="">{currentTranslations.util_home}</label><input type="checkbox" checked={isChecked("Home")} on:change="{(e) => toggleItem('Home', e.target.checked)}"> 
+                    &nbsp;<label for="">{currentTranslations.util_cut}</label><input type="checkbox" checked={isChecked("Cut")} on:change="{(e) => toggleItem('Cut', e.target.checked)}">
+                    &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}"> 
+                    &nbsp;<label for="">{currentTranslations.util_paste}</label><input type="checkbox" checked={isChecked("Paste")} on:change="{(e) => toggleItem('Paste', e.target.checked)}">
+                    <br/>
+                    <label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
+                    <br/>
+                    <!-- <button on:click={util_apply}>{currentTranslations.util_apply_button}</button> -->
                     {/if}
                 </div>
                 <button class="close-modal" on:click={toggleSettings}>{currentTranslations.modal_close}</button
@@ -516,5 +616,4 @@ $: currentTranslations = translations[$language];
         </div>
     {/if}
 </div>
-<a href="/frontTest/frame">Go to previous page</a>
-
+<!-- <a href="/frontTest/frame">Go to previous page</a> -->

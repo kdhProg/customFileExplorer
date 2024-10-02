@@ -1,5 +1,6 @@
 .main-container {
-    background: linear-gradient(135deg, #cde5fc 0%, #8dbdff 100%);
+    /* background: linear-gradient(135deg, #cde5fc 0%, #8dbdff 100%); */
+    background-color: #f1f1f1;
 }
 
 .top-bar {
@@ -14,7 +15,7 @@
 
 .sidebar {
     color: #333;
-    background-color: #cae0ff;
+    background-color: #f1f1f1;
     box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -32,7 +33,7 @@
 }
 
 .file-viewer {
-    background-color: #bcd4f5;
+    background-color: #FFFFFF;
 }
 
 .file-item {
@@ -50,11 +51,11 @@
 }
 
 .tabs .active {
-    color: #005082;
+    color: #4a4a4a;
 }
 
 .close-modal {
-    background-color: #005082;
+    background-color: #4a4a4a;
     color: white;
 }
 
@@ -70,29 +71,47 @@
 
 .current-directory-inputbox{
     border-color: transparent;
-    background: white;
+    background: #FFFFFF;
 }
 
 .searchbox-input{
     border-color: transparent;
-    background: white;
+    background: #FFFFFF;
 }
 
-.searchbox-button{ 
+.searchbox-button-wrapper{ 
     border-color: transparent;
     background: white;
 }
 
 .theme_btn{
-    background-color: #005082;
+    background-color: #4a4a4a;
     border-color: transparent;
     border-radius: 5px;
     color: white;
 }
 
 .lang_btn{
-    background-color: #005082;
+    background-color: #4a4a4a;
     border-color: transparent;
     border-radius: 5px;
+    color: white;
+}
+
+
+.header-container{
+    background-color: #f1f1f1;
+}
+
+.util-container{
+    background-color: #f1f1f1;
+}
+
+/* title-bar (highest component) */
+.title-bar{
+    background-color: #333;
+}
+
+.window-controls button {
     color: white;
 }

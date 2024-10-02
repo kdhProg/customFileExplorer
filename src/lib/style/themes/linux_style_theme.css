@@ -126,7 +126,7 @@ a:hover {
     background: white;
 }
 
-.searchbox-button{ 
+.searchbox-button-wrapper{ 
     border:1px solid gray;
     border-radius: 5px;
     background: white;
@@ -147,5 +147,22 @@ a:hover {
     background-color: #870b6e;
     border-color: transparent;
     border-radius: 5px;
+    color: white;
+}
+
+.header-container{
+    background-color: #f1f1f1;
+}
+
+.util-container{
+    background-color: #f1f1f1;
+}
+
+/* title-bar (highest component) */
+.title-bar{
+    background-color: #333;
+}
+
+.window-controls button {
     color: white;
 }

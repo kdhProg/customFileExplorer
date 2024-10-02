@@ -15,7 +15,9 @@ fn main() {
     commands::move_to_trash,
     commands::is_directory,
     commands::open_file_with_default_program,
-    commands::get_drive_info
+    commands::get_drive_info,
+    commands::read_json_file,
+    commands::save_util_buttons
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

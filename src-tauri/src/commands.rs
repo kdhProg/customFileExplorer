@@ -4,11 +4,14 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use trash;
 use std::process::Command;
+use serde::{Serialize, Deserialize};
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use std::future::Future;
 use std::pin::Pin;
+use std::fs::File;
+use std::io::Write;
 
 use tokio::fs as async_fs;
 use tokio::task;
@@ -350,5 +353,50 @@ pub fn get_drive_info() -> Vec<DriveInfo> {
             available_space: disk.available_space() as f64 / 1_000_000_000.0, // GB 단위
         }
     }).collect()
+}
+
+
+/// Return properties/util_buttons.json
+///
+/// # Returns
+///
+/// * `Result<String, String>`
+#[tauri::command]
+pub fn read_json_file() -> Result<String, String> {
+
+    let file_path = "../src/properties/util_buttons.json";
+    match fs::read_to_string(file_path) {
+        
+        Ok(contents) => {Ok(contents)},
+        Err(err) => Err(format!("Error has been occurred during reading files : {}", err)),
+    }
+}
+
+
+#[derive(Serialize, Deserialize)]
+struct Buttons {
+    buttons: Vec<String>,
+}
+
+/// Apply util buttons to properties/util_buttons.json
+///
+/// # Returns
+///
+/// * 
+#[tauri::command]
+pub fn save_util_buttons(buttons: Vec<String>) -> Result<(), String> {
+    let buttons_data = Buttons { buttons };
+
+    let mut path = PathBuf::from("../src/properties/util_buttons.json");
+
+    let json_data = serde_json::to_string_pretty(&buttons_data)
+        .map_err(|e| format!("Failed to serialize JSON: {}", e))?;
+
+    let mut file = File::create(&path)
+        .map_err(|e| format!("Failed to create file: {}", e))?;
+    file.write_all(json_data.as_bytes())
+        .map_err(|e| format!("Failed to write to file: {}", e))?;
+
+    Ok(())
 }
 
