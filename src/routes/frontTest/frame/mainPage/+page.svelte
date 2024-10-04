@@ -23,34 +23,24 @@
 
 
     let showSettings = false;
-    let activeTab = "interface";
+    let activeTab = "resize";
     let viewMode = "single"; // 기본 모드는 single (하나의 파일 탐색기)
     let fileSize = 80; // 기본 파일 아이템 크기
     let selectedDriveLeft = null; // 왼쪽 패널에서 선택된 드라이브
     let selectedDriveRight = null; // 오른쪽 패널에서 선택된 드라이브
     let selectedFolderLeft = null; // 왼쪽 패널에서 선택된 폴더
-    let selectedFolderRight = null; // 오른쪽 패널에서 선택된 폴더
-    let filesInFolderLeft = []; // 왼쪽 패널에서 선택된 폴더의 파일들
-    let filesInFolderRight = []; // 오른쪽 패널에서 선택된 폴더의 파일들
-    let openedDrives = {}; // 드라이브 토글 상태 관리
 
-    // 설정 모달 열기/닫기
+    // Settings Modal On / Off
     function toggleSettings() {
         showSettings = !showSettings;
     }
 
-    // 탭 변경
+    // Changing Tab
     function changeTab(tab) {
         activeTab = tab;
     }
 
-    // 보기 모드 변경
-    function changeViewMode(mode) {
-        viewMode = mode;
-        showSettings = false; // 설정 모달 닫기
-    }
-
-    // 파일사이즈
+    // File size
     function updateFileSize(event: Event){
         const target = event.target as HTMLInputElement;
         fileSize = parseInt(target.value);
@@ -58,9 +48,9 @@
 
 
 
-    // 현재폴더 경로
+    // Current Path
     let curFolderName = '';
-    let filesInCurrentFolder: string[] = []; // 현재 폴더의 파일 목록을 저장할 배열
+    let filesInCurrentFolder: string[] = []; // File list on Current Path
 
     // 디렉토리 리스트에서 파일 클릭
     async function handleFolderSelected(event) {
@@ -72,7 +62,7 @@
     }
 
 
-    // 테마에 따라 로고 이미지를 설정하는 객체
+    // Icon depends
     const themeLogos = {
     default: "/icons/dir_logo_default.png",
     retro: "/icons/dir_logo_retro.png",
@@ -80,7 +70,7 @@
     linux: "/icons/dir_logo_linux.png"
     };
 
-    // 기본 로고
+    // Default file icon
     let currentLogo = themeLogos.default; 
 
     let default_txt = "/icons/exe_txt.png";
@@ -479,6 +469,7 @@ function openGitgubRepo(){
             {#each Object.keys($drives) as drive}
                 <Folder path={drive} name={drive} items={$drives[drive]} on:folderSelected={handleFolderSelected}/>
             {/each}
+            <hr>
             <DiscInfo/>
         </aside>
 
@@ -505,34 +496,6 @@ function openGitgubRepo(){
                 <p>{currentTranslations.sel_folder}</p>
             {/if}
         </div>
-
-        {#if viewMode === "dual"}
-            <!-- 우측 패널: 드라이브 및 폴더 탐색기 -->
-            <aside class="sidebar">
-                {#each Object.keys($drives) as drive}
-                    <Folder path={drive} name={drive} items={$drives[drive]} />
-                {/each}
-            </aside>
-
-            <!-- 우측 파일 탐색기 -->
-            <div class="file-viewer">
-                {#if filesInCurrentFolder.length > 0}
-                    {#each filesInCurrentFolder as file}
-                        <div
-                            class="file-item"
-                            style="width: {fileSize}px; height: {fileSize}px;"
-                        >
-                            <span class="file-icon">{getFileIcon(file)}</span>
-                            <span class="file-name">{file}</span>
-                        </div>
-                    {/each}
-                {:else if selectedDriveRight && selectedFolderRight}
-                    <p>{currentTranslations.no_folder}</p>
-                {:else}
-                    <p>{currentTranslations.sel_folder}</p>
-                {/if}
-            </div>
-        {/if}
     </div>
 
     <!-- Setting Modal -->
@@ -541,12 +504,6 @@ function openGitgubRepo(){
             <div class="modal-content">
                 <h2>{currentTranslations.settings}</h2>
                 <ul class="tabs">
-                    <li
-                        class:active={activeTab === "interface"}
-                        on:click={() => changeTab("interface")}
-                    >
-                    {currentTranslations.interface}
-                    </li>
                     <li
                         class:active={activeTab === "resize"}
                         on:click={() => changeTab("resize")}
@@ -571,13 +528,15 @@ function openGitgubRepo(){
                     >
                     {currentTranslations.utils}
                     </li>
+                    <li
+                        class:active={activeTab === "search"}
+                        on:click={() => changeTab("search")}
+                    >
+                    {currentTranslations.search}
+                    </li>
                 </ul>
                 <div class="tab-content">
-                    {#if activeTab === "interface"}
-                        <h3>{currentTranslations.interface_set}</h3>
-                        <button on:click={() => changeViewMode("single")}>{currentTranslations.inter_one_panel}</button>
-                        <button on:click={() => changeViewMode("dual")}>{currentTranslations.inter_two_panel}</button>
-                    {:else if activeTab === "resize"}
+                    {#if activeTab === "resize"}
                         <h3>{currentTranslations.resize}</h3>
                         <input
                             type="range"
@@ -588,25 +547,106 @@ function openGitgubRepo(){
                         />
                         <p>{currentTranslations.file_icon_size}: {fileSize}px</p>
                     {:else if activeTab === "themes"}
-                    <h3>{currentTranslations.themes}</h3>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>{currentTranslations.default_theme}</button>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>{currentTranslations.retro_theme}</button>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>{currentTranslations.sf_style_theme}</button>
-                    <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/linux_style_theme.css')}>{currentTranslations.linux_theme}</button>
+                        <h3>{currentTranslations.themes}</h3>
+                        <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/default_theme.css')}>{currentTranslations.default_theme}</button>
+                        <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/retro_theme.css')}>{currentTranslations.retro_theme}</button>
+                        <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/sf_style_theme.css')}>{currentTranslations.sf_style_theme}</button>
+                        <button class="theme_btn" on:click={() => applyTheme('/src/lib/style/themes/linux_style_theme.css')}>{currentTranslations.linux_theme}</button>
                     {:else if activeTab === "language"}
-                    <h3>{currentTranslations.language}</h3>
-                    <button id="lang_btn_en" class="lang_btn" on:click={() => switchLanguage('en')}>English</button>
-                    <button class="lang_btn" on:click={() => switchLanguage('ko')}>한국어</button>
+                        <h3>{currentTranslations.language}</h3>
+                        <button id="lang_btn_en" class="lang_btn" on:click={() => switchLanguage('en')}>English</button>
+                        <button class="lang_btn" on:click={() => switchLanguage('ko')}>한국어</button>
                     {:else if activeTab === "utils"}
-                    <h3>{currentTranslations.utils}</h3>
-                    <label for="">{currentTranslations.util_home}</label><input type="checkbox" checked={isChecked("Home")} on:change="{(e) => toggleItem('Home', e.target.checked)}"> 
-                    &nbsp;<label for="">{currentTranslations.util_cut}</label><input type="checkbox" checked={isChecked("Cut")} on:change="{(e) => toggleItem('Cut', e.target.checked)}">
-                    &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}"> 
-                    &nbsp;<label for="">{currentTranslations.util_paste}</label><input type="checkbox" checked={isChecked("Paste")} on:change="{(e) => toggleItem('Paste', e.target.checked)}">
-                    <br/>
-                    <label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
-                    <br/>
-                    <!-- <button on:click={util_apply}>{currentTranslations.util_apply_button}</button> -->
+                        <h3>{currentTranslations.utils}</h3>
+                        <label for="">{currentTranslations.util_home}</label><input type="checkbox" checked={isChecked("Home")} on:change="{(e) => toggleItem('Home', e.target.checked)}"> 
+                        &nbsp;<label for="">{currentTranslations.util_cut}</label><input type="checkbox" checked={isChecked("Cut")} on:change="{(e) => toggleItem('Cut', e.target.checked)}">
+                        &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}"> 
+                        &nbsp;<label for="">{currentTranslations.util_paste}</label><input type="checkbox" checked={isChecked("Paste")} on:change="{(e) => toggleItem('Paste', e.target.checked)}">
+                        <br/>
+                        <label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
+                        <br/>
+                    {:else if activeTab === "search"}
+                        <h3>{currentTranslations.search}</h3>
+                        <div class="modal-sch-wrapper">
+                            <div class="modal-sch-basic-wrapper">
+                                <h3>{currentTranslations.modal_sch_basic_title}</h3>
+                                <p>- {currentTranslations.modal_sch_basic_async}</p>
+                                <p>- {currentTranslations.modal_sch_basic_filename}</p>
+                                <p>- {currentTranslations.modal_sch_basic_realtime}</p>
+                            </div>
+                            
+                            <div class="modal-sch-advanced-wrapper">
+                                <br>
+                                <h3>{currentTranslations.modal_sch_advanced_title}</h3>
+                            
+                                <!-- Async -->
+                                 <div class="modal-set-thread-pool-wrapper">
+                                    <br>
+                                    <label>
+                                    <input type="checkbox" id="async_custom">
+                                    {currentTranslations.modal_sch_advanced_thread_pool_set}
+                                    </label><br>
+                                    <label for="thread_pool">
+                                        {currentTranslations.modal_sch_advanced_thread_pool_size}
+                                    </label>
+                                    <select id="thread_pool" disabled>
+                                        <option value="4">4</option>
+                                        <option value="8">8</option>
+                                        <option value="16">16</option>
+                                        <option value="32">32</option>
+                                    </select>
+                                    <br>
+                                </div>
+                                <br>
+                                <!-- File Search Option -->
+                                <div class="modal-set-file-sch-option-wrapper">
+                                    <br/>
+                                    <label>
+                                    <input type="checkbox" id="content_search">
+                                        {currentTranslations.modal_sch_advanced_file_content_sch}
+                                    </label><br>
+                                    <label>
+                                    <input type="checkbox" id="recent_modified_search">
+                                        {currentTranslations.modal_sch_advanced_recent_sch}
+                                    </label><br/>
+                                    <div>
+
+                                    </div>
+                                    <label>
+                                    <input type="checkbox" id="recent_modified_search">
+                                        {currentTranslations.modal_sch_advanced_file_property}
+                                    </label>
+                                    
+                                    <div>
+                                        <!-- 파일 속성 선택 -->
+                                    </div>
+                                    <label>
+                                    <input type="checkbox" id="symbolic_link_search">
+                                        {currentTranslations.modal_sch_advanced_symbolic_link}
+                                    </label>
+                                    <br/>
+                                </div>
+                                <br/>
+                                <!-- Search Method -->
+                                <div class="modal-set-sch-method-wrapper">
+                                    <br>
+                                    <label>
+                                        <input type="radio" id="regex_search">
+                                            {currentTranslations.modal_sch_advanced_regex}
+                                        </label><br>
+                                        <label>
+                                        <input type="radio" id="fuzzy_matching">
+                                            {currentTranslations.modal_sch_advanced_fuzzy}
+                                        </label><br>
+                                        <label>
+                                        <input type="radio" id="index_search">
+                                            {currentTranslations.modal_sch_advanced_index}
+                                        </label>
+                                        <br>
+                                </div>
+                                
+                            </div>
+                        </div>
                     {/if}
                 </div>
                 <button class="close-modal" on:click={toggleSettings}>{currentTranslations.modal_close}</button

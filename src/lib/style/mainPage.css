@@ -285,6 +285,10 @@
     height:20px
 }
 
+.searchBox-button-img:hover{
+    transform: scale(1.1);
+}
+
 
 
 
@@ -405,4 +409,17 @@
 
 .main-logo-img:hover{
     transform: scale(1.1);
+}
+
+
+.modal-sch-wrapper{
+    height: 300px;
+    overflow-y: scroll;
+
+    box-shadow: 0 4px 4px rgba(0,0,0,0.3);
+}
+
+.modal-set-thread-pool-wrapper, .modal-set-file-sch-option-wrapper, .modal-set-sch-method-wrapper{
+    border: 1px solid black;
+    border-radius: 10px;
 }

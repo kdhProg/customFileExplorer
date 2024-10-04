@@ -1,9 +1,9 @@
 {
   "buttons": [
-    "Delete",
     "Home",
-    "Paste",
+    "Delete",
     "Copy",
+    "Paste",
     "Cut"
   ]
 }

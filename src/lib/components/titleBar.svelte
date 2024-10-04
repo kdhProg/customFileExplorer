@@ -3,7 +3,7 @@
     working : data-tauri-drag-region
     not working : javascript - drag code
     -->
-    <span class="title"></span>
+    <span class="title">PathFinder</span>
     <div class="window-controls">
       <button on:click={minimizeWindow}>_</button>
       <button on:click={maximizeWindow}>[ ]</button>
@@ -27,6 +27,9 @@
     }
 </script>
 <style>
+.title{
+    font-size: large;
+}  
 .title-bar {
 
     position: fixed;

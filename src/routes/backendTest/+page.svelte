@@ -1,6 +1,8 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/tauri";
 
+    import SelectBox from "$lib/components/selectBox.svelte";
+
     let cur_dir = "";
 
     let dir_lists = "";
@@ -197,5 +199,9 @@
         available_space : {available_space}
     </p>
 </div>
+<hr>
+<!-- <SelectBox/> -->
+<hr>
+
 
 <a href="/">Go to previous page</a>
