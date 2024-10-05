@@ -420,6 +420,11 @@
 }
 
 .modal-set-thread-pool-wrapper, .modal-set-file-sch-option-wrapper, .modal-set-sch-method-wrapper{
-    border: 1px solid black;
+    /* border: 1px solid black; */
+    /* border-radius: 10px; */
+}
+
+.modal-set-file-sch-property-wrapper{
+    border: 1px solid black; 
     border-radius: 10px;
 }

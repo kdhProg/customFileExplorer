@@ -33,20 +33,50 @@ export const translations = {
         linux_theme:'Linux style Theme',
 
         modal_sch_basic_title : 'Basic Features',
-        modal_sch_basic_async : 'Async (Thread pools automatically sets by CPU Core)',
+        modal_sch_basic_async : 'Async (Thread pools automatically set by CPU Core)',
         modal_sch_basic_filename : 'Search depends on file`s name',
         modal_sch_basic_realtime: 'Realtime show',
 
         modal_sch_advanced_title:'Advanced Options',
+
+        modal_thread_pool_title:'Thread Pool Settings',
         modal_sch_advanced_thread_pool_set:'Async Thread pool custom set',
         modal_sch_advanced_thread_pool_size:'Thread pool size',
+        modal_sch_advanced_thread_pool_size_default:'Default',
+
+        modal_sch_advanced_sch_target:'Search Target',
+        modal_sch_advanced_sch_target_fileNfolder:'Both File & Folder',
+        modal_sch_advanced_sch_target_file:'Only File',
+        modal_sch_advanced_sch_target_folder:'Only Folder',
+
+        modal_sch_advanced_sch_options_title:'Search Options',
         modal_sch_advanced_file_content_sch:'File Content Search',
-        modal_sch_advanced_recent_sch:'Recently Modified File Prioritize',
+
+        modal_sch_advanced_date_start:'Start',
+        modal_sch_advanced_date_end:'End',
+
+        modal_sch_advanced_max:'Max',
+        modal_sch_advanced_min:'Min',
+
         modal_sch_advanced_file_property:'File Property',
+        modal_sch_advanced_file_property_size:'File Size',
+        modal_sch_advanced_file_property_type:'File Type',
+        modal_sch_advanced_file_property_modified:'Modified Date',
+        modal_sch_advanced_file_property_creation:'Creation Date',
+        modal_sch_advanced_file_property_owner:'File Owner',
+         
         modal_sch_advanced_symbolic_link:'Search Symbolic Link',
+
+        modal_sch_advanced_sch_methods:'Advanced Search Options',
+        modal_sch_advanced_default:'Default(None)',
         modal_sch_advanced_regex:'Use Regex',
         modal_sch_advanced_fuzzy:'Fuzzy Matching with Trie',
-        modal_sch_advanced_index:'Use Index'
+        modal_sch_advanced_index:'Use Index',
+
+        modal_sch_advanced_log_title:'Log Options',
+        modal_sch_advanced_log_check:'Save Log',
+
+        modal_sch_advanced_save_values:'Save Values'
     },
     ko: {
         settings: '설정',
@@ -87,16 +117,44 @@ export const translations = {
         modal_sch_basic_realtime: '실시간 반영',
 
         modal_sch_advanced_title:'고급 옵션',
+
+        modal_thread_pool_title:'스레드 풀 설정',
         modal_sch_advanced_thread_pool_set:'비동기 처리 (스레드 풀 크기 사용자 설정)',
         modal_sch_advanced_thread_pool_size:'스레드 풀 크기',
+        modal_sch_advanced_thread_pool_size_default:'자동설정값',
+
+        modal_sch_advanced_sch_target:'탐색 대상',
+        modal_sch_advanced_sch_target_fileNfolder:'파일/폴더 모두 탐색',
+        modal_sch_advanced_sch_target_file:'파일만 탐색',
+        modal_sch_advanced_sch_target_folder:'폴더만 탐색',
+
+        modal_sch_advanced_sch_options_title:'탐색 옵션',
         modal_sch_advanced_file_content_sch:'파일 내용 탐색',
-        modal_sch_advanced_recent_sch:'최근 수정된 파일 탐색',
+        
+        modal_sch_advanced_date_start:'시작',
+        modal_sch_advanced_date_end:'끝',
+
+        modal_sch_advanced_max:'최대',
+        modal_sch_advanced_min:'최소',
+
         modal_sch_advanced_file_property:'파일 속성(메타데이터) 탐색',
+        modal_sch_advanced_file_property_size:'파일 크기',
+        modal_sch_advanced_file_property_type:'파일 유형(확장자)',
+        modal_sch_advanced_file_property_modified:'수정일',
+        modal_sch_advanced_file_property_creation:'생성일',
+        modal_sch_advanced_file_property_owner:'파일 소유자',
+
         modal_sch_advanced_symbolic_link:'심볼릭 링크 탐색',
+
+        modal_sch_advanced_sch_methods:'고급 탐색 유형',
+        modal_sch_advanced_default:'기본탐색',
         modal_sch_advanced_regex:'정규식 이용',
         modal_sch_advanced_fuzzy:'퍼지 매칭법 / Trie 이용',
-        modal_sch_advanced_index:'색인법 이용'
+        modal_sch_advanced_index:'색인법 이용',
 
-        
+        modal_sch_advanced_log_title:'검색 로그 설정',
+        modal_sch_advanced_log_check:'로그 기록',
+
+        modal_sch_advanced_save_values:'설정값 저장'
     },
 };

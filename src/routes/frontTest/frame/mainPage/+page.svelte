@@ -30,23 +30,6 @@
     let selectedDriveRight = null; // 오른쪽 패널에서 선택된 드라이브
     let selectedFolderLeft = null; // 왼쪽 패널에서 선택된 폴더
 
-    // Settings Modal On / Off
-    function toggleSettings() {
-        showSettings = !showSettings;
-    }
-
-    // Changing Tab
-    function changeTab(tab) {
-        activeTab = tab;
-    }
-
-    // File size
-    function updateFileSize(event: Event){
-        const target = event.target as HTMLInputElement;
-        fileSize = parseInt(target.value);
-    }
-
-
 
     // Current Path
     let curFolderName = '';
@@ -371,6 +354,60 @@ function openGitgubRepo(){
 // ---- util bar ----
 
 
+// ------------ modal ------------------------
+// Settings Modal On / Off
+function toggleSettings() {
+        showSettings = !showSettings;
+    }
+
+// Changing Tab
+function changeTab(tab) {
+    activeTab = tab;
+}
+
+// File size
+function updateFileSize(event: Event){
+    const target = event.target as HTMLInputElement;
+    fileSize = parseInt(target.value);
+}
+
+// advanced modal sch options
+let isFilePropertyChk : boolean = false;
+
+function isPropertyChkToggle(){
+    isFilePropertyChk = !isFilePropertyChk;
+}
+
+let isFileSizeChk : boolean = false;
+let isFileModifiedDateChk : boolean = false;
+let isFileTypeChk : boolean = false;
+let isFileOwnerChk : boolean = false;
+let isFileCreateChk : boolean = false;
+
+function isFileSizeChkToggle(){
+    isFileSizeChk = !isFileSizeChk;
+}
+
+function isFileModifiedDateChkToggle(){
+    isFileModifiedDateChk = !isFileModifiedDateChk;
+}
+
+function isFileTypeChkToggle(){
+    isFileTypeChk = !isFileTypeChk;
+}
+
+function isFileOwnerChkToggle(){
+    isFileOwnerChk = !isFileOwnerChk;
+}
+
+function isFileCreateChkToggle(){
+    isFileCreateChk = !isFileCreateChk;
+}
+// 파일탐색 전송객체
+// 검색어 / 현재 디렉토리
+// 기본 : 비동기 처리(스레드 풀 기본지정) / 파일명 기반 / 실시간
+// 스레드 풀 개수 지정 / 메타데이터(속성) : 파일크기 / 수정일 / 오너 / 확장자 타입
+// 방법 : 정규식 / 색인법 / 퍼지법
 
 
 </script>
@@ -576,20 +613,15 @@ function openGitgubRepo(){
                             </div>
                             
                             <div class="modal-sch-advanced-wrapper">
-                                <br>
                                 <h3>{currentTranslations.modal_sch_advanced_title}</h3>
-                            
                                 <!-- Async -->
-                                 <div class="modal-set-thread-pool-wrapper">
-                                    <br>
-                                    <label>
-                                    <input type="checkbox" id="async_custom">
-                                    {currentTranslations.modal_sch_advanced_thread_pool_set}
-                                    </label><br>
+                                <h4>{currentTranslations.modal_thread_pool_title}</h4>
+                                <div class="modal-set-thread-pool-wrapper">
                                     <label for="thread_pool">
                                         {currentTranslations.modal_sch_advanced_thread_pool_size}
                                     </label>
-                                    <select id="thread_pool" disabled>
+                                    <select id="thread_pool">
+                                        <option value="default">{currentTranslations.modal_sch_advanced_thread_pool_size_default}</option>
                                         <option value="4">4</option>
                                         <option value="8">8</option>
                                         <option value="16">16</option>
@@ -597,56 +629,170 @@ function openGitgubRepo(){
                                     </select>
                                     <br>
                                 </div>
-                                <br>
-                                <!-- File Search Option -->
-                                <div class="modal-set-file-sch-option-wrapper">
-                                    <br/>
+                                <hr>
+                                <!-- Search Target : both file + folder / only file / only folder -->
+                                <h4>{currentTranslations.modal_sch_advanced_sch_target}</h4>
+                                <div>
                                     <label>
-                                    <input type="checkbox" id="content_search">
-                                        {currentTranslations.modal_sch_advanced_file_content_sch}
-                                    </label><br>
-                                    <label>
-                                    <input type="checkbox" id="recent_modified_search">
-                                        {currentTranslations.modal_sch_advanced_recent_sch}
-                                    </label><br/>
-                                    <div>
-
-                                    </div>
-                                    <label>
-                                    <input type="checkbox" id="recent_modified_search">
-                                        {currentTranslations.modal_sch_advanced_file_property}
+                                        <input type="radio" name="modal-adv-sch-target" checked>
+                                        {currentTranslations.modal_sch_advanced_sch_target_fileNfolder}
                                     </label>
-                                    
-                                    <div>
-                                        <!-- 파일 속성 선택 -->
-                                    </div>
-                                    <label>
-                                    <input type="checkbox" id="symbolic_link_search">
-                                        {currentTranslations.modal_sch_advanced_symbolic_link}
-                                    </label>
-                                    <br/>
-                                </div>
-                                <br/>
-                                <!-- Search Method -->
-                                <div class="modal-set-sch-method-wrapper">
                                     <br>
                                     <label>
-                                        <input type="radio" id="regex_search">
-                                            {currentTranslations.modal_sch_advanced_regex}
-                                        </label><br>
-                                        <label>
-                                        <input type="radio" id="fuzzy_matching">
-                                            {currentTranslations.modal_sch_advanced_fuzzy}
-                                        </label><br>
-                                        <label>
-                                        <input type="radio" id="index_search">
-                                            {currentTranslations.modal_sch_advanced_index}
-                                        </label>
-                                        <br>
+                                        <input type="radio" name="modal-adv-sch-target">
+                                        {currentTranslations.modal_sch_advanced_sch_target_file}
+                                    </label>
+                                    <br>
+                                    <!-- If this option chekced -> File Search Option - property-size will be disabled -->
+                                    <label>
+                                        <input type="radio" name="modal-adv-sch-target">
+                                        {currentTranslations.modal_sch_advanced_sch_target_folder}
+                                    </label>
                                 </div>
-                                
+                                <hr>
+                                <!-- File Search Option -->
+                                <h4>{currentTranslations.modal_sch_advanced_sch_options_title}</h4>
+                                <div class="modal-set-file-sch-option-wrapper">
+                                    <!-- Alert : file content check may cause decrease of speed -->
+                                    <label>
+                                        {currentTranslations.modal_sch_advanced_file_content_sch}
+                                        <input type="checkbox" id="content-search-btn">
+                                    </label>
+                                    <br>
+                                    <label>{currentTranslations.modal_sch_advanced_file_property}
+                                        <input type="checkbox" id="recent-modified-search-btn" on:change={isPropertyChkToggle} bind:checked={isFilePropertyChk}>  
+                                    </label>
+                                    {#if isFilePropertyChk}
+                                        <div class="modal-set-file-sch-property-wrapper">
+                                            <!-- File Property size / type / modified date / creation date / owner -->
+                                            <label for="">
+                                                {currentTranslations.modal_sch_advanced_file_property_size}
+                                                <input type="checkbox" on:change={isFileSizeChkToggle} bind:checked={isFileSizeChk}>
+                                            </label>
+                                            {#if isFileSizeChk}
+                                            <div>
+                                                <!-- fileSize max / min -->
+                                                <label for="">
+                                                    {currentTranslations.modal_sch_advanced_max}
+                                                    <input type="number">
+                                                </label>
+                                                <select class="modal-set-file-sch-size-unit">
+                                                    <option value="B">B</option>
+                                                    <option value="KB">KB</option>
+                                                    <option value="MB">MB</option>
+                                                    <option value="GB">GB</option>
+                                                </select>
+                                                <br>
+                                                <label for="">
+                                                    {currentTranslations.modal_sch_advanced_min}
+                                                    <input type="number">
+                                                </label>
+                                                <select class="modal-set-file-sch-size-unit">
+                                                    <option value="B">B</option>
+                                                    <option value="KB">KB</option>
+                                                    <option value="MB">MB</option>
+                                                    <option value="GB">GB</option>
+                                                </select>
+                                            </div>
+                                            {/if}
+                                            <br>
+                                            <label for="">
+                                                {currentTranslations.modal_sch_advanced_file_property_type}
+                                                <input type="checkbox" on:change={isFileTypeChkToggle} bind:checked={isFileTypeChk}>
+                                            </label>
+                                            {#if isFileTypeChk}
+                                                <input type="text">
+                                            {/if}
+                                            <br>
+                                            <label for="">
+                                                {currentTranslations.modal_sch_advanced_file_property_creation}
+                                                <input type="checkbox" on:change={isFileCreateChkToggle} bind:checked={isFileCreateChk}>
+                                            </label>
+                                            {#if isFileCreateChk}
+                                            <div>
+                                                <!-- Creation Date -->
+                                                <label for="">
+                                                    {currentTranslations.modal_sch_advanced_date_start}
+                                                    <input type="date">
+                                                </label>
+                                                <br>
+                                                <label for="">
+                                                    {currentTranslations.modal_sch_advanced_date_end}
+                                                    <input type="date">
+                                                </label>
+                                            </div>
+                                            {/if}
+                                            <br>
+                                            <label for="">
+                                                {currentTranslations.modal_sch_advanced_file_property_modified}
+                                                <input type="checkbox" on:change={isFileModifiedDateChkToggle} bind:checked={isFileModifiedDateChk}>
+                                            </label>
+                                            {#if isFileModifiedDateChk}
+                                            <div>
+                                                <!-- Modified Date -->
+                                                <label for="">
+                                                    {currentTranslations.modal_sch_advanced_date_start}
+                                                    <input type="date">
+                                                </label>
+                                                <br>
+                                                <label for="">
+                                                    {currentTranslations.modal_sch_advanced_date_end}
+                                                    <input type="date">
+                                                </label>
+                                            </div>
+                                            {/if}
+                                            <br>
+                                            <label for="">
+                                                {currentTranslations.modal_sch_advanced_file_property_owner}
+                                                <input type="checkbox" on:change={isFileOwnerChkToggle} bind:checked={isFileOwnerChk}>
+                                            </label>
+                                            {#if isFileOwnerChk}
+                                                <input type="text">
+                                            {/if}
+                                        </div>
+                                    {/if}
+                                    <br>
+                                    <label>{currentTranslations.modal_sch_advanced_symbolic_link}
+                                        <input type="checkbox" id="symbolic-link-search-btn">  
+                                    </label>
+                                </div>
+                                <hr>
+                                <!-- Search Method -->
+                                <h4>{currentTranslations.modal_sch_advanced_sch_methods}</h4>
+                                <div class="modal-set-sch-method-wrapper">
+                                    <label>
+                                        <input type="radio" id="none-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" checked>
+                                        {currentTranslations.modal_sch_advanced_default}
+                                    </label>
+                                    <br>
+                                    <label>
+                                        <input type="radio" id="regex-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method">
+                                        {currentTranslations.modal_sch_advanced_regex}
+                                    </label>
+                                    <br>
+                                    <label>
+                                        <input type="radio" id="fuzzy-matching-btn" class="modal-adv-sch-method" name="modal-adv-sch-method">
+                                        {currentTranslations.modal_sch_advanced_fuzzy}
+                                    </label>
+                                    <br>
+                                    <label>
+                                        <input type="radio" id="index-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method">
+                                        {currentTranslations.modal_sch_advanced_index}
+                                    </label>
+                                </div>
+                                <hr>
+                                <!-- Search Log -->
+                                <h4>{currentTranslations.modal_sch_advanced_log_title}</h4>
+                                <div>
+                                    <label>
+                                        {currentTranslations.modal_sch_advanced_log_check}
+                                        <input type="checkbox">
+                                    </label>
+                                </div>
                             </div>
                         </div>
+                        <br>
+                        <button>{currentTranslations.modal_sch_advanced_save_values}</button>
                     {/if}
                 </div>
                 <button class="close-modal" on:click={toggleSettings}>{currentTranslations.modal_close}</button
