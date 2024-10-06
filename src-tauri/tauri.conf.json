@@ -47,6 +47,9 @@
         "setIgnoreCursorEvents": true,
         "startDragging": true,
         "print": true
+      },
+      "dialog": {
+        "all": true
       }
     },
     "bundle": {

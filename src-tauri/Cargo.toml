@@ -19,7 +19,7 @@ trash = "2.0"
 sysinfo = { version = "0.31.4", features = ["disk"] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.7.0", features = ["window-all"] }
+tauri = { version = "1.7.0", features = [ "dialog-all", "window-all"] }
 
 tokio = { version = "1.39.3", features = ["full"] }
 

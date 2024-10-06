@@ -428,3 +428,23 @@
     border: 1px solid black; 
     border-radius: 10px;
 }
+
+
+.adv-slot-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    height: 100px;
+    overflow-y: scroll;
+}
+.adv-slot {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+.adv-slot input {
+    width: 70px;
+}

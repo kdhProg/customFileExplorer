@@ -35,7 +35,7 @@
     let curFolderName = '';
     let filesInCurrentFolder: string[] = []; // File list on Current Path
 
-    // 디렉토리 리스트에서 파일 클릭
+    // File Click Event - Directory List
     async function handleFolderSelected(event) {
         curFolderName = event.detail;
 
@@ -86,11 +86,11 @@
     function applyTheme(themePath) {
         const existingLink = document.querySelector('#dynamic-theme');
         
-        // 기존의 link 태그가 존재하면 경로를 변경
+        // Change line path if [link] already exists
         if (existingLink) {
             existingLink.href = themePath;
         } else {
-            // 새로운 link 태그를 생성하여 추가
+            // create new [link] tag
             const linkElement = document.createElement('link');
             linkElement.rel = 'stylesheet';
             linkElement.id = 'dynamic-theme';
@@ -98,7 +98,7 @@
             document.head.appendChild(linkElement);
         }
 
-            // 테마에 따라 로고 이미지를 변경
+            // change logo image by themes
         if (themePath.includes('default')) {
             currentLogo = themeLogos.default;
         } else if (themePath.includes('retro')) {
@@ -108,17 +108,17 @@
         } else if(themePath.includes('linux')) {
             currentLogo = themeLogos.linux;
         }
-        // 현재 테마 경로 업데이트
+        // update current page theme
         currentTheme = themePath;
 
         filesInCurrentFolder = [...filesInCurrentFolder];
     }
 
-    // 페이지 로드 시 기본 테마 적용
+    // Load default theme when page load
     applyTheme(currentTheme);
 
 
-    // 검색실행여부 변수
+    // Check If searching is on
     let isSearching:boolean = false;
 
     // 검색박스
@@ -220,7 +220,7 @@
             const response = await invoke('read_json_file');
             jsonData = JSON.parse(response);
         } catch (error) {
-            console.error('JSON 파일을 가져오는 중 오류 발생:', error);
+            console.error('Error while loading util json:', error);
         }
 
     return jsonData;
@@ -231,10 +231,10 @@
     // util_buttons toggle checkbox
     function toggleItem(value, checked) {
         if (checked) {
-        // 체크된 경우 배열에 추가
+        // check - add to array
         utilButtons = [...utilButtons, value];
         } else {
-        // 체크 해제된 경우 배열에서 제거
+        // unchekced - remove from array
         utilButtons = utilButtons.filter(item => item !== value);
         }
 
@@ -257,8 +257,8 @@
   }
     
 
-// 분할바 관련
-let sidebarWidth = 250; // 초기 사이드바 너비를 전역 변수로 관리
+// --- divide bar ---
+let sidebarWidth = 250;
 
 function updateSidebarWidth(width) {
     sidebarWidth = width;
@@ -272,11 +272,10 @@ function updateSidebarWidth(width) {
 onMount(() => {
 
     load_util_buttons().then(data => {
-      utilButtons = data.buttons; // 받아온 데이터를 utilButtons에 할당
+      utilButtons = data.buttons;
     });
 
 
-    // 컴포넌트 첫 로드 시 드라이브 목록 업데이트
     updateDrives();
 
 
@@ -302,7 +301,7 @@ onMount(() => {
         let newWidth = startWidth + dx;
 
         const minWidth = 150;
-        const maxWidth = 500; // 사용자가 조정 가능한 최대 너비
+        const maxWidth = 500;
 
         if (newWidth < minWidth) {
             newWidth = minWidth;
@@ -328,7 +327,7 @@ onMount(() => {
 });
 
 afterUpdate(() => {
-    // 폴더를 펼치거나 접을 때 사이드바의 너비를 재설정
+    // re-setting sidebar width when folder open/close
     updateSidebarWidth(sidebarWidth);
 });
 
@@ -371,49 +370,334 @@ function updateFileSize(event: Event){
     fileSize = parseInt(target.value);
 }
 
-// advanced modal sch options
+// ---------- advanced modal sch options ----------
+
+// custom thread pools
+let isThreadPoolsChk : boolean = false;
+
+function isThreadPoolsChkToggle(){
+    isThreadPoolsChk = !isThreadPoolsChk;
+
+    // Change searchObj's boolean value
+    searchValObj.customThreadPoolUse = !searchValObj.customThreadPoolUse;
+
+    if(!isThreadPoolsChk){
+        searchValObj.threadPoolNum = "0"; // reset to "default" val
+    }
+}
+
+
+// custom property
 let isFilePropertyChk : boolean = false;
 
 function isPropertyChkToggle(){
     isFilePropertyChk = !isFilePropertyChk;
+
+    // Change searchObj's boolean value
+    searchValObj.customPropertyUse = !searchValObj.customPropertyUse;
+    
+    // reset All detail booleans & property custom values;
+    if(!isFilePropertyChk){
+
+        isFileSizeChk = false;
+        isFileCrtDateChk = false;
+        isFileModifiedDateChk = false;
+        isFileTypeChk = false;
+        isFileOwnerChk = false;
+
+        searchValObj.customFileSizeUse = false;
+        searchValObj.sizeMax = 0; 
+        searchValObj.sizeMin = 0;
+        searchValObj.fileMaxRawVal = 0;
+        searchValObj.fileMinRawVal = 0;
+        searchValObj.fileMaxUnit = 'B';
+        searchValObj.fileMinUnit = 'B';
+        fileMaxRawVal = 0;
+        fileMinRawVal = 0;
+        fileMaxUnit = 'B';
+        fileMinUnit = 'B';
+
+        searchValObj.customFileCrtDateUse = false;
+        searchValObj.crtStart = ''; 
+        searchValObj.crtEnd = '';
+
+        searchValObj.customFileModiDateUse = false;
+        searchValObj.modiStart = ''; 
+        searchValObj.modiEnd = '';
+
+        searchValObj.customFileTypeUse = false;
+        searchValObj.fileTypeList = ''; 
+
+        searchValObj.customFileOwnerUse = false;
+        searchValObj.ownerName = '';
+
+    }
 }
 
 let isFileSizeChk : boolean = false;
+let isFileCrtDateChk : boolean = false;
 let isFileModifiedDateChk : boolean = false;
 let isFileTypeChk : boolean = false;
 let isFileOwnerChk : boolean = false;
-let isFileCreateChk : boolean = false;
+
 
 function isFileSizeChkToggle(){
     isFileSizeChk = !isFileSizeChk;
+
+    // Change searchObj's boolean value
+    searchValObj.customFileSizeUse = !searchValObj.customFileSizeUse;
+    
+    // reset max & min size;
+    if(!isFileSizeChk){
+        searchValObj.sizeMax = 0; 
+        searchValObj.sizeMin = 0;
+
+        fileMaxRawVal = 0;
+        fileMinRawVal = 0;
+        fileMaxUnit = 'B';
+        fileMinUnit = 'B';
+    }
+}
+
+
+function isFileCrtDateChkToggle(){
+    isFileCrtDateChk = !isFileCrtDateChk;
+
+    // Change searchObj's boolean value
+    searchValObj.customFileCrtDateUse = !searchValObj.customFileCrtDateUse;
+
+    // reset date value;
+    if(!isFileCrtDateChk){
+        searchValObj.crtStart = ''; 
+        searchValObj.crtEnd = '';
+    }
+
 }
 
 function isFileModifiedDateChkToggle(){
     isFileModifiedDateChk = !isFileModifiedDateChk;
+
+    // Change searchObj's boolean value
+    searchValObj.customFileModiDateUse = !searchValObj.customFileModiDateUse;
+
+    // reset date value;
+    if(!isFileCrtDateChk){
+        searchValObj.modiStart = ''; 
+        searchValObj.modiEnd = '';
+    }
 }
 
 function isFileTypeChkToggle(){
     isFileTypeChk = !isFileTypeChk;
+
+    // Change searchObj's boolean value
+    searchValObj.customFileTypeUse = !searchValObj.customFileTypeUse;
+
+    // reset fileType value;
+    if(!isFileTypeChk){
+        searchValObj.fileTypeList = ''; 
+    }
 }
 
 function isFileOwnerChkToggle(){
     isFileOwnerChk = !isFileOwnerChk;
+
+    // Change searchObj's boolean value
+    searchValObj.customFileOwnerUse = !searchValObj.customFileOwnerUse;
+
+    // reset fileOwner value;
+    if(!isFileOwnerChk){
+        searchValObj.ownerName = ''; 
+    }
 }
 
-function isFileCreateChkToggle(){
-    isFileCreateChk = !isFileCreateChk;
+
+// file property - max & min calculation
+let fileMaxRawVal = 0;
+let fileMinRawVal = 0;
+let fileMaxUnit = 'B';
+let fileMinUnit = 'B';
+
+function fileSizeCalc(){
+    const unitValArr: { [key in 'B' | 'KB' | 'MB' | 'GB']: number } = {
+        'B': 1,
+        'KB': 1024,
+        'MB': 1024 * 1024,
+        'GB': 1024 * 1024 * 1024
+    };
+     
+    searchValObj.sizeMax = fileMaxRawVal * unitValArr[fileMaxUnit as 'B' | 'KB' | 'MB' | 'GB'];
+    searchValObj.sizeMin  = fileMinRawVal * unitValArr[fileMinUnit as 'B' | 'KB' | 'MB' | 'GB'];
+
+    // save settings
+    searchValObj.fileMaxRawVal = fileMaxRawVal;
+    searchValObj.fileMinRawVal = fileMinRawVal;
+    searchValObj.fileMaxUnit = fileMaxUnit;
+    searchValObj.fileMinUnit = fileMinUnit;
 }
+
+
+
 // 파일탐색 전송객체
 // 검색어 / 현재 디렉토리
-// 기본 : 비동기 처리(스레드 풀 기본지정) / 파일명 기반 / 실시간
-// 스레드 풀 개수 지정 / 메타데이터(속성) : 파일크기 / 수정일 / 오너 / 확장자 타입
-// 방법 : 정규식 / 색인법 / 퍼지법
+// 기본 : 비동기 처리(스레드 풀 기본지정) / 파일명 기반 / 실시간 / 캐싱
+// 탐색스코프 : 파일+폴더 or 폴더 or 파일
+// 스레드 풀 개수 지정 / 메타데이터(속성) : 파일크기 / 생성일 / 수정일 / 오너 / 확장자 타입
+// 파일 내용까지 탐색?  /  심볼릭 링크까지 탐색?
+// 방법 : 기본값 / 정규식 / 색인법 / 퍼지법
+// 주요정책
+// - 검색 정규식 방법은 RUST기반 문법 강제
+// - 파일 타입의 경우  .txt .pdf 등으로 입력
+// - 심볼릭 링크는 순환참조 방지 적용
+// - 파일내용만 체크하고 속성을 체크안하면 최대 100MB의 파일만 탐색함(성능이슈)
+// - 검색 설정값 기록 만들기(슬롯시스템) + 불러오기
 
+// File Search - Advanced settings values Object
+// All of selectable options are false when init
+let searchValObj = {
+
+    /*
+    Policy : "0" means default
+    (default => Use Automatic Settings => backend will calculate appropriate number of thread nums depends CPU core)
+    */
+    customThreadPoolUse:false,
+        threadPoolNum : "0",
+
+    /* 
+    Policy : This Type should be "String" not "Number"
+    0 : Folder + File   
+    1 : File Only
+    2 : Folder Only
+    */
+    searchScope : "0",
+
+    /*
+    File Content
+    */
+    customFileContUse:false,
+
+    /*
+    File Detail Property
+    */
+    customPropertyUse:false,
+        customFileSizeUse:false,
+            sizeMax:0,
+            sizeMin:0,
+        customFileCrtDateUse:false,
+            crtStart:'',
+            crtEnd:'',
+        customFileModiDateUse:false,
+            modiStart:'',
+            modiEnd:'',
+        customFileOwnerUse:false,
+            ownerName:'',
+        customFileTypeUse:false,
+            fileTypeList:'',
+
+    customSymbolicChk : false,
+
+    /* 
+    Policy : This Type should be "String" not "Number"
+    0 : Default(Not Use advanced Methods)
+    1 : Regex
+    2 : Fuzzy
+    3 : Index
+    */
+    customSchMethod:"0",
+
+
+    /*
+    Search Log
+    */
+    customLogUse:false,
+
+
+    /*
+     Just used to load_value
+    */
+    fileMaxRawVal : 0,
+    fileMinRawVal : 0,
+    fileMaxUnit : "B",
+    fileMinUnit : "B",
+}
+
+
+
+// Sch Advanced value Slot Modal
+
+let showAdvSlotModal:boolean = false;
+
+function advModalToggle(){
+    showAdvSlotModal = !showAdvSlotModal;
+}
+
+let slots = [
+    { number: 1, name: "", hasValue: false },
+    { number: 2, name: "", hasValue: false },
+    { number: 3, name: "", hasValue: false },
+    { number: 4, name: "", hasValue: false },
+    { number: 5, name: "", hasValue: false }
+  ];
+
+  // Slot Init
+  onMount(async () => {
+    for (let i = 0; i < slots.length; i++) {
+      const result = await invoke("load_settings", { slotNumber: slots[i].number });
+      if (result.name.length !== 0) {
+        slots[i].name = result.name;
+        slots[i].hasValue = true;
+      }
+    }
+  });
+
+  // Save Custom Values
+  async function saveSlot(slotIndex:number) {
+    const slot = slots[slotIndex];
+    await invoke("save_settings", {
+        slotNumber: slot.number,
+        name: slot.name,
+        settings: searchValObj
+    });
+    slots[slotIndex].hasValue = true; // activate load & reset btn after save
+  }
+
+// Load Slot 
+  async function loadSlot(slotIndex:number) {
+    const slot = slots[slotIndex];
+    const result = await invoke("load_settings", { slotNumber: slot.number });
+    if (result) {
+      slots[slotIndex].name = result.name;
+      const loaded_obj = result.val;
+      // -- update searchValObj
+      searchValObj = loaded_obj;
+
+      // -- update bind - vars
+    isThreadPoolsChk = loaded_obj.customThreadPoolUse;
+    isFilePropertyChk = loaded_obj.customPropertyUse;
+    isFileSizeChk = loaded_obj.customFileSizeUse;
+    isFileCrtDateChk = loaded_obj.customFileCrtDateUse;
+    isFileModifiedDateChk = loaded_obj.customFileModiDateUse;
+    isFileTypeChk = loaded_obj.customFileTypeUse;
+    isFileOwnerChk = loaded_obj.customFileOwnerUse;
+
+    fileMaxRawVal = loaded_obj.fileMaxRawVal;
+    fileMinRawVal = loaded_obj.fileMinRawVal;
+    fileMaxUnit = loaded_obj.fileMaxUnit;
+    fileMinUnit = loaded_obj.fileMinUnit;
+    }
+  }
+
+  // Slot reset(= delete custom values and reset)
+  async function deleteSlot(slotIndex:number) {
+    const slot = slots[slotIndex];
+    await invoke("delete_settings", { slotNumber: slot.number });
+    slots[slotIndex].name = "";
+    slots[slotIndex].hasValue = false;
+  }
 
 </script>
 
 <!-- Main Screen -->
- <!-- <button on:click={()=>{console.log('curFolderName'+curFolderName)}}>test</button> -->
 <div class="main-container">
     <TitleBar/>
     <!-- Current Directory / SearchBox / MovementButton -->
@@ -501,7 +785,7 @@ function isFileCreateChkToggle(){
     <div style="margin-bottom: 140px;"></div>
 
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
-        <!-- 좌측 패널: 드라이브 및 폴더 탐색기 -->
+        <!-- Directory List -->
         <aside class="sidebar" id="sidebar">
             {#each Object.keys($drives) as drive}
                 <Folder path={drive} name={drive} items={$drives[drive]} on:folderSelected={handleFolderSelected}/>
@@ -511,10 +795,10 @@ function isFileCreateChkToggle(){
         </aside>
 
 
-        <!-- 추가: 사이드바와 파일 뷰어 사이의 분할자 -->
+        <!-- division bar between sidebar & file-viewer -->
         <div class="resizer" id="resizer"></div>
 
-        <!-- 좌측 파일 탐색기 -->
+        <!-- file viewer -->
         <div class="file-viewer" id="fileViewer">
             {#if filesInCurrentFolder.length > 0}
                 {#each filesInCurrentFolder as file}
@@ -602,6 +886,7 @@ function isFileCreateChkToggle(){
                         <br/>
                         <label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
                         <br/>
+                    <!-- Modal : Search Tab -->
                     {:else if activeTab === "search"}
                         <h3>{currentTranslations.search}</h3>
                         <div class="modal-sch-wrapper">
@@ -610,18 +895,24 @@ function isFileCreateChkToggle(){
                                 <p>- {currentTranslations.modal_sch_basic_async}</p>
                                 <p>- {currentTranslations.modal_sch_basic_filename}</p>
                                 <p>- {currentTranslations.modal_sch_basic_realtime}</p>
+                                <p>- {currentTranslations.modal_sch_basic_cache}</p>
                             </div>
                             
                             <div class="modal-sch-advanced-wrapper">
                                 <h3>{currentTranslations.modal_sch_advanced_title}</h3>
                                 <!-- Async -->
                                 <h4>{currentTranslations.modal_thread_pool_title}</h4>
+                                <label>
+                                    {currentTranslations.modal_thread_pool_use_box}
+                                    <input type="checkbox" on:change={isThreadPoolsChkToggle} bind:checked={isThreadPoolsChk}>
+                                </label>
+                                {#if isThreadPoolsChk}
                                 <div class="modal-set-thread-pool-wrapper">
                                     <label for="thread_pool">
                                         {currentTranslations.modal_sch_advanced_thread_pool_size}
                                     </label>
-                                    <select id="thread_pool">
-                                        <option value="default">{currentTranslations.modal_sch_advanced_thread_pool_size_default}</option>
+                                    <select id="thread_pool" bind:value={searchValObj.threadPoolNum}>
+                                        <option value="0">{currentTranslations.modal_sch_advanced_thread_pool_size_default}</option>
                                         <option value="4">4</option>
                                         <option value="8">8</option>
                                         <option value="16">16</option>
@@ -629,23 +920,24 @@ function isFileCreateChkToggle(){
                                     </select>
                                     <br>
                                 </div>
+                                {/if}
                                 <hr>
                                 <!-- Search Target : both file + folder / only file / only folder -->
                                 <h4>{currentTranslations.modal_sch_advanced_sch_target}</h4>
                                 <div>
                                     <label>
-                                        <input type="radio" name="modal-adv-sch-target" checked>
+                                        <input type="radio" name="modal-adv-sch-target" value="0" bind:group={searchValObj.searchScope}>
                                         {currentTranslations.modal_sch_advanced_sch_target_fileNfolder}
                                     </label>
                                     <br>
                                     <label>
-                                        <input type="radio" name="modal-adv-sch-target">
+                                        <input type="radio" name="modal-adv-sch-target" value="1" bind:group={searchValObj.searchScope}>
                                         {currentTranslations.modal_sch_advanced_sch_target_file}
                                     </label>
                                     <br>
                                     <!-- If this option chekced -> File Search Option - property-size will be disabled -->
                                     <label>
-                                        <input type="radio" name="modal-adv-sch-target">
+                                        <input type="radio" name="modal-adv-sch-target" value="2" bind:group={searchValObj.searchScope}>
                                         {currentTranslations.modal_sch_advanced_sch_target_folder}
                                     </label>
                                 </div>
@@ -656,7 +948,7 @@ function isFileCreateChkToggle(){
                                     <!-- Alert : file content check may cause decrease of speed -->
                                     <label>
                                         {currentTranslations.modal_sch_advanced_file_content_sch}
-                                        <input type="checkbox" id="content-search-btn">
+                                        <input type="checkbox" id="content-search-btn" bind:checked={searchValObj.customFileContUse}>
                                     </label>
                                     <br>
                                     <label>{currentTranslations.modal_sch_advanced_file_property}
@@ -672,22 +964,22 @@ function isFileCreateChkToggle(){
                                             {#if isFileSizeChk}
                                             <div>
                                                 <!-- fileSize max / min -->
-                                                <label for="">
+                                                <label>
                                                     {currentTranslations.modal_sch_advanced_max}
-                                                    <input type="number">
+                                                    <input type="number" bind:value={fileMaxRawVal} on:change={fileSizeCalc}>
                                                 </label>
-                                                <select class="modal-set-file-sch-size-unit">
+                                                <select class="modal-set-file-sch-size-unit" bind:value={fileMaxUnit} on:change={fileSizeCalc}>
                                                     <option value="B">B</option>
                                                     <option value="KB">KB</option>
                                                     <option value="MB">MB</option>
                                                     <option value="GB">GB</option>
                                                 </select>
                                                 <br>
-                                                <label for="">
+                                                <label>
                                                     {currentTranslations.modal_sch_advanced_min}
-                                                    <input type="number">
+                                                    <input type="number" bind:value={fileMinRawVal} on:change={fileSizeCalc}>
                                                 </label>
-                                                <select class="modal-set-file-sch-size-unit">
+                                                <select class="modal-set-file-sch-size-unit" bind:value={fileMinUnit} on:change={fileSizeCalc}>
                                                     <option value="B">B</option>
                                                     <option value="KB">KB</option>
                                                     <option value="MB">MB</option>
@@ -696,64 +988,64 @@ function isFileCreateChkToggle(){
                                             </div>
                                             {/if}
                                             <br>
-                                            <label for="">
+                                            <label>
                                                 {currentTranslations.modal_sch_advanced_file_property_type}
                                                 <input type="checkbox" on:change={isFileTypeChkToggle} bind:checked={isFileTypeChk}>
                                             </label>
                                             {#if isFileTypeChk}
-                                                <input type="text">
+                                                <input type="text" bind:value={searchValObj.fileTypeList}>
                                             {/if}
                                             <br>
-                                            <label for="">
+                                            <label>
                                                 {currentTranslations.modal_sch_advanced_file_property_creation}
-                                                <input type="checkbox" on:change={isFileCreateChkToggle} bind:checked={isFileCreateChk}>
+                                                <input type="checkbox" on:change={isFileCrtDateChkToggle} bind:checked={isFileCrtDateChk}>
                                             </label>
-                                            {#if isFileCreateChk}
+                                            {#if isFileCrtDateChk}
                                             <div>
                                                 <!-- Creation Date -->
-                                                <label for="">
+                                                <label>
                                                     {currentTranslations.modal_sch_advanced_date_start}
-                                                    <input type="date">
+                                                    <input type="date" bind:value={searchValObj.crtStart}>
                                                 </label>
                                                 <br>
-                                                <label for="">
+                                                <label>
                                                     {currentTranslations.modal_sch_advanced_date_end}
-                                                    <input type="date">
+                                                    <input type="date" bind:value={searchValObj.crtEnd}>
                                                 </label>
                                             </div>
                                             {/if}
                                             <br>
-                                            <label for="">
+                                            <label>
                                                 {currentTranslations.modal_sch_advanced_file_property_modified}
                                                 <input type="checkbox" on:change={isFileModifiedDateChkToggle} bind:checked={isFileModifiedDateChk}>
                                             </label>
                                             {#if isFileModifiedDateChk}
                                             <div>
                                                 <!-- Modified Date -->
-                                                <label for="">
+                                                <label>
                                                     {currentTranslations.modal_sch_advanced_date_start}
-                                                    <input type="date">
+                                                    <input type="date" bind:value={searchValObj.modiStart}>
                                                 </label>
                                                 <br>
-                                                <label for="">
+                                                <label>
                                                     {currentTranslations.modal_sch_advanced_date_end}
-                                                    <input type="date">
+                                                    <input type="date" bind:value={searchValObj.modiEnd}>
                                                 </label>
                                             </div>
                                             {/if}
                                             <br>
-                                            <label for="">
+                                            <label>
                                                 {currentTranslations.modal_sch_advanced_file_property_owner}
                                                 <input type="checkbox" on:change={isFileOwnerChkToggle} bind:checked={isFileOwnerChk}>
                                             </label>
                                             {#if isFileOwnerChk}
-                                                <input type="text">
+                                                <input type="text" bind:value={searchValObj.ownerName}>
                                             {/if}
                                         </div>
                                     {/if}
                                     <br>
                                     <label>{currentTranslations.modal_sch_advanced_symbolic_link}
-                                        <input type="checkbox" id="symbolic-link-search-btn">  
+                                        <input type="checkbox" id="symbolic-link-search-btn" bind:checked={searchValObj.customSymbolicChk}>  
                                     </label>
                                 </div>
                                 <hr>
@@ -761,22 +1053,22 @@ function isFileCreateChkToggle(){
                                 <h4>{currentTranslations.modal_sch_advanced_sch_methods}</h4>
                                 <div class="modal-set-sch-method-wrapper">
                                     <label>
-                                        <input type="radio" id="none-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" checked>
+                                        <input type="radio" id="none-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" value="0" bind:group={searchValObj.customSchMethod}>
                                         {currentTranslations.modal_sch_advanced_default}
                                     </label>
                                     <br>
                                     <label>
-                                        <input type="radio" id="regex-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method">
+                                        <input type="radio" id="regex-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" value="1" bind:group={searchValObj.customSchMethod}>
                                         {currentTranslations.modal_sch_advanced_regex}
                                     </label>
                                     <br>
                                     <label>
-                                        <input type="radio" id="fuzzy-matching-btn" class="modal-adv-sch-method" name="modal-adv-sch-method">
+                                        <input type="radio" id="fuzzy-matching-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" value="2" bind:group={searchValObj.customSchMethod}>
                                         {currentTranslations.modal_sch_advanced_fuzzy}
                                     </label>
                                     <br>
                                     <label>
-                                        <input type="radio" id="index-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method">
+                                        <input type="radio" id="index-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" value="3" bind:group={searchValObj.customSchMethod}>
                                         {currentTranslations.modal_sch_advanced_index}
                                     </label>
                                 </div>
@@ -786,13 +1078,37 @@ function isFileCreateChkToggle(){
                                 <div>
                                     <label>
                                         {currentTranslations.modal_sch_advanced_log_check}
-                                        <input type="checkbox">
+                                        <input type="checkbox" bind:checked={searchValObj.customLogUse}>
                                     </label>
                                 </div>
                             </div>
                         </div>
                         <br>
-                        <button>{currentTranslations.modal_sch_advanced_save_values}</button>
+                        <button on:click={()=>{console.log(searchValObj)}}>DEBUG</button>
+                        <br>
+                        <button on:click={advModalToggle}>
+                            {currentTranslations.modal_sch_advanced_open_val_slots}
+                        </button>
+                        <!-- Search Advanced custom Value Slot Modal -->
+                        {#if showAdvSlotModal}
+                        <div class="adv-slot-wrapper">
+                            {#each slots as slot, index}
+                              <div class="adv-slot">
+                                <div>
+                                    {currentTranslations.modal_sch_advanced_slots_slotTxt} {slot.number}
+                                </div>
+                                <div>
+                                  <label>
+                                    <input type="text" bind:value={slot.name} placeholder="{currentTranslations.modal_sch_advanced_slots_name_ph}">
+                                  </label>
+                                </div>
+                                <button on:click={() => saveSlot(index)}>{currentTranslations.modal_sch_advanced_slots_save}</button>
+                                <button on:click={() => loadSlot(index)} disabled={!slot.hasValue}>{currentTranslations.modal_sch_advanced_slots_load}</button>
+                                <button on:click={() => deleteSlot(index)} disabled={!slot.hasValue}>{currentTranslations.modal_sch_advanced_slots_reset}</button>
+                              </div>
+                            {/each}
+                        </div>
+                        {/if}
                     {/if}
                 </div>
                 <button class="close-modal" on:click={toggleSettings}>{currentTranslations.modal_close}</button

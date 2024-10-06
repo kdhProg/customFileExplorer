@@ -36,10 +36,12 @@ export const translations = {
         modal_sch_basic_async : 'Async (Thread pools automatically set by CPU Core)',
         modal_sch_basic_filename : 'Search depends on file`s name',
         modal_sch_basic_realtime: 'Realtime show',
+        modal_sch_basic_cache:'Use Cache',
 
         modal_sch_advanced_title:'Advanced Options',
 
         modal_thread_pool_title:'Thread Pool Settings',
+        modal_thread_pool_use_box:'Modify Number of Thread Pools',
         modal_sch_advanced_thread_pool_set:'Async Thread pool custom set',
         modal_sch_advanced_thread_pool_size:'Thread pool size',
         modal_sch_advanced_thread_pool_size_default:'Default',
@@ -76,7 +78,16 @@ export const translations = {
         modal_sch_advanced_log_title:'Log Options',
         modal_sch_advanced_log_check:'Save Log',
 
-        modal_sch_advanced_save_values:'Save Values'
+        modal_sch_advanced_open_val_slots:'Value Slots',
+        modal_sch_advanced_load_values:'Load Values',
+        modal_sch_advanced_save_values:'Save Values',
+        modal_sch_advanced_delete_values:'Delete Values',
+
+        modal_sch_advanced_slots_slotTxt:'Slot',
+        modal_sch_advanced_slots_name_ph:'Slot Name',
+        modal_sch_advanced_slots_save:'Save',
+        modal_sch_advanced_slots_load:'Load',
+        modal_sch_advanced_slots_reset:'Reset'
     },
     ko: {
         settings: '설정',
@@ -115,10 +126,12 @@ export const translations = {
         modal_sch_basic_async : '비동기 처리(코어 수 기반 스레드 풀 자동 설정)',
         modal_sch_basic_filename : '파일명 기반 탐색',
         modal_sch_basic_realtime: '실시간 반영',
+        modal_sch_basic_cache:'캐시 이용',
 
         modal_sch_advanced_title:'고급 옵션',
 
         modal_thread_pool_title:'스레드 풀 설정',
+        modal_thread_pool_use_box:'사용자 지정 스레드 풀 지정',
         modal_sch_advanced_thread_pool_set:'비동기 처리 (스레드 풀 크기 사용자 설정)',
         modal_sch_advanced_thread_pool_size:'스레드 풀 크기',
         modal_sch_advanced_thread_pool_size_default:'자동설정값',
@@ -155,6 +168,15 @@ export const translations = {
         modal_sch_advanced_log_title:'검색 로그 설정',
         modal_sch_advanced_log_check:'로그 기록',
 
-        modal_sch_advanced_save_values:'설정값 저장'
+        modal_sch_advanced_open_val_slots:'설정값 슬롯',
+        modal_sch_advanced_load_values:'불러오기',
+        modal_sch_advanced_save_values:'저장하기',
+        modal_sch_advanced_delete_values:'삭제하기',
+
+        modal_sch_advanced_slots_slotTxt:'슬롯',
+        modal_sch_advanced_slots_name_ph:'슬롯 이름',
+        modal_sch_advanced_slots_save:'저장',
+        modal_sch_advanced_slots_load:'불러오기',
+        modal_sch_advanced_slots_reset:'초기화',
     },
 };

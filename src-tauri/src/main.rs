@@ -3,6 +3,7 @@
 
 
 mod commands;
+mod sch_adv_properties_slot;
 
 fn main() {
   tauri::Builder::default()
@@ -17,7 +18,11 @@ fn main() {
     commands::open_file_with_default_program,
     commands::get_drive_info,
     commands::read_json_file,
-    commands::save_util_buttons
+    commands::save_util_buttons,
+
+    sch_adv_properties_slot::save_settings,
+    sch_adv_properties_slot::load_settings,
+    sch_adv_properties_slot::delete_settings,
     ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
