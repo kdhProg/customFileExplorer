@@ -94,11 +94,11 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 800,
+        "height": 600,
         "resizable": true,
         "title": "pathfinder",
-        "width": 1200,
-        "decorations": false
+        "width": 800,
+        "decorations": true
       }
     ]
   }

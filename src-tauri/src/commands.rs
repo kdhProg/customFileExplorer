@@ -19,12 +19,6 @@ use tokio::task;
 use sysinfo::Disks;
 
 
-
-// Todo
-// - 검색 알고리즘 개선(CPU 점유율 낮추기)
-// - 드라이브는 API를 통해서 목록 가져오기
-
-
 // struct for Drive Infos
 #[derive(serde::Serialize)]
 pub struct DriveInfo {
@@ -168,7 +162,8 @@ pub fn create_new_folder(path: String) -> Result<(), String> {
 }
 
 
-/// 파일 검색
+/// Deprecated 
+/// 파일 검색 
 ///
 /// 주어진 경로에서 특정 문자열을 포함하는 파일을 탐색
 /// tokio를 이용한 비동기처리, 병렬처리 적용
@@ -182,7 +177,7 @@ pub fn create_new_folder(path: String) -> Result<(), String> {
 ///
 /// * `Result<Vec<FileItem>, String>` - FileItem을 각 원소로 하는 배열 반환
 #[tauri::command]
-pub async fn search_files(directory: String, keyword: String) -> Result<Vec<FileItem>, String> {
+pub async fn search_files_legacy(directory: String, keyword: String) -> Result<Vec<FileItem>, String> {
     let dir_path = PathBuf::from(directory);
 
     if !dir_path.exists() {

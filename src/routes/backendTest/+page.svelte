@@ -1,6 +1,7 @@
 <script lang="ts">
     import { invoke } from "@tauri-apps/api/tauri";
-
+    import { listen } from '@tauri-apps/api/event';
+    import { onMount } from "svelte";
     import SelectBox from "$lib/components/selectBox.svelte";
 
     let cur_dir = "";
@@ -54,25 +55,25 @@
         }
     }
 
-    // 검색 테스트
-    let searchRst = {};
-    let schfin = '';
-    let schCount = 0;
-    async function searchFilesInDirectory() {
-        schfin = '검색중....';
-        // const directory ="D://entire_workspace//2024opensw_competition//pathFinder//src//routes";
-        const directory ="D://";
-        const keyword = "테스트_찾기파일";
-        try {
-            console.time("search_API_time_analysis");
-            searchRst = await invoke("search_files", { directory, keyword });
-            console.timeEnd("search_API_time_analysis");
-            schfin='완료';
-            schCount = searchRst.length;
-        } catch (error) {
-            console.error("err:", error);
-        }
-    }
+    // 검색 테스트 - Deprecated
+    // let searchRst = {};
+    // let schfin = '';
+    // let schCount = 0;
+    // async function searchFilesInDirectory() {
+    //     schfin = '검색중....';
+    //     // const directory ="D://entire_workspace//2024opensw_competition//pathFinder//src//routes";
+    //     const directory ="D://";
+    //     const keyword = "테스트_찾기파일";
+    //     try {
+    //         console.time("search_API_time_analysis");
+    //         searchRst = await invoke("search_files", { directory, keyword });
+    //         console.timeEnd("search_API_time_analysis");
+    //         schfin='완료';
+    //         schCount = searchRst.length;
+    //     } catch (error) {
+    //         console.error("err:", error);
+    //     }
+    // }
 
     let doOtherTasksVal = 1;
     function doOtherTasks(){
@@ -129,15 +130,117 @@
     let available_space = 0;
 
     async function get_drive_info() {
+        try {
+            drives_infos = await invoke('get_drive_info');
+            mount_point = drives_infos[0].mount_point;
+            total_space = drives_infos[0].total_space;
+            available_space = drives_infos[0].available_space;
+        } catch (error) {
+            console.error('Failed to fetch drive list:', error);
+        }
+    }
+
+// ----------------------- new 검색테스트 -----------------------
+let searchProcessId = null;
+let unlisten;
+let receivedFiles = new Set();
+
+async function startSearch() {
+    // 기존 리스너 제거 및 초기화
+    if (unlisten) {
+        await unlisten();
+        unlisten = null;
+    }
+
+    receivedFiles.clear();
+    
+    // 탐색 프로세스 ID를 미리 받아오기 위한 리스너
+    unlisten = await listen('process-info', (event) => {
+        const processInfo = event.payload;
+        if (processInfo && processInfo.id) {
+            searchProcessId = processInfo.id;  // Process ID를 저장
+            console.log("Process ID from backend:", searchProcessId);
+        }
+    });
+
+    // 실시간 탐색 결과 리스너 등록
+    unlisten = await listen('search-result', (event) => {
+        const file = event.payload;
+        if (!receivedFiles.has(file.file_path)) {
+            receivedFiles.add(file.file_path);
+            console.log("Real-time search result:", file);
+        }
+    });
+
     try {
-        drives_infos = await invoke('get_drive_info');
-        mount_point = drives_infos[0].mount_point;
-        total_space = drives_infos[0].total_space;
-        available_space = drives_infos[0].available_space;
+        await invoke('search_files', {
+            keyword: 'temp', 
+            directory: 'D://entire_workspace//2024opensw_competition//pathFinder',
+            options: {
+                customThreadPoolUse: false,
+                threadPoolNum: "0",
+                searchScope: "0",
+                customFileContUse: false,
+                customPropertyUse: false,
+                customFileSizeUse: false,
+                sizeMax: 0,
+                sizeMin: 0,
+                customFileCrtDateUse: false,
+                crtStart: '',
+                crtEnd: '',
+                customFileModiDateUse: false,
+                modiStart: '',
+                modiEnd: '',
+                customFileOwnerUse: false,
+                ownerName: '',
+                customFileTypeUse: false,
+                fileTypeList: '',
+                customSymbolicChk: false,
+                customSchMethod: "0",
+            }
+        });
     } catch (error) {
-        console.error('Failed to fetch drive list:', error);
+        console.error("Search failed:", error);
+        searchProcessId = null;
     }
+}
+
+async function cancelSearch() {
+    console.log("searchProcessId ID: ", searchProcessId);
+    if (searchProcessId) {
+        try {
+            console.log("Cancel request sent for process ID: ", searchProcessId);
+            await invoke('cancel_search', { processId: searchProcessId });
+            console.log(`Cancel request for process: ${searchProcessId} has been acknowledged`);
+        } catch (error) {
+            console.error("Failed to invoke cancel_search:", error);
+        }
+    } else {
+        console.log("No active search process to cancel.");
     }
+}
+
+async function testState() {
+    try {
+        const result = await invoke('test_state_function');
+        console.log(result);
+    } catch (error) {
+        console.error("State test function failed:", error);
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </script>
 
@@ -169,14 +272,14 @@
 <button on:click={getMetaData}>metaData Test</button>
 <button on:click={mk_new_dir}>new dir</button>
 <hr />
-<button on:click={searchFilesInDirectory}>searchFilesInDirectory</button>
+<!-- <button on:click={searchFilesInDirectory}>searchFilesInDirectory</button> -->
 <button on:click={doOtherTasks}>다른 task : {doOtherTasksVal}</button>
-<div style="color: red">
+<!-- <div style="color: red">
     탐색여부 : {schfin}
 </div>
 <div>
     찾은 파일 개수 : {schCount}
-</div>
+</div> -->
 <hr />
 <button on:click={deleteFile}>deleteFile</button>
 <hr>
@@ -200,8 +303,9 @@
     </p>
 </div>
 <hr>
-<!-- <SelectBox/> -->
+<!-- NEW 검색 테스트 -->
+<button on:click={startSearch}>Start Search</button>
+<button on:click={cancelSearch}>Cancel Search</button>
+<button on:click={testState}>TESTTESTSETESTSET</button>
 <hr>
-
-
 <a href="/">Go to previous page</a>
