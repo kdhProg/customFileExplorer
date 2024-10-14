@@ -33,6 +33,7 @@ uuid = { version = "1.10.0", features = ["serde"] }
 winapi = { version = "0.3.9", features = ["fileapi", "handleapi", "winbase", "winnt", "securitybaseapi", "processthreadsapi", "sddl", "aclapi"] }
 wmi = "0.14.0"
 
+regex = "1.11.0"
 
 
 

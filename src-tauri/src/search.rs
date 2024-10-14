@@ -22,6 +22,7 @@ use std::process::Command;
 use std::env;
 use windows::Win32::UI::Shell::IsUserAnAdmin;
 use std::thread::ThreadId;
+use regex::Regex;
 
 
 #[derive(Serialize, Deserialize, Debug,Clone)]
@@ -650,7 +651,7 @@ async fn search_default(
     metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
-    let file_name = path.file_name().and_then(|name| name.to_str()).unwrap_or_default();
+    let file_name = path.file_stem().and_then(|name| name.to_str()).unwrap_or_default();
 
     // 탐색 스코프에 따른 분기 처리
     if options.search_scope == "1" && metadata.is_dir() {
@@ -659,19 +660,20 @@ async fn search_default(
         return Ok(()); // 파일은 결과에 포함하지 않음
     }
 
-    // 파일명 또는 폴더명 검색
-    let mut is_match = file_name.contains(keyword);
+    // 파일명 매칭
+    let is_file_name_match = file_name.contains(keyword);
 
-    // 파일 내용 검색
+    // 파일 내용 매칭 - 사용자가 파일 내용 검색을 원하고, 해당 파일이 텍스트 파일일 경우에만
+    let mut is_file_content_match = false;
     if metadata.is_file() && options.custom_file_cont_use && is_text_file(path) {
         let content = async_fs::read_to_string(&path).await.unwrap_or_else(|_| String::new());
         if content.contains(keyword) {
-            is_match = true;
+            is_file_content_match = true;
         }
     }
 
-    // 매칭된 경우 전송
-    if is_match {
+    // 파일명 또는 파일 내용 중 하나라도 매칭되면 결과로 전송
+    if is_file_name_match || is_file_content_match {
         let file_item = FileItem {
             file_name: file_name.to_string(),
             file_path: path.to_string_lossy().to_string(),
@@ -686,16 +688,54 @@ async fn search_default(
 }
 
 
+
 async fn search_with_regex(
     path: &Path,
-    keyword: &str,
+    keyword: &str, // 정규식 패턴
     options: &SearchOptions,
     metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
-    println!("Performing regex search on: {:?}", path);
+    let file_name = path.file_stem().and_then(|name| name.to_str()).unwrap_or_default();
+
+    // 탐색 스코프에 따른 분기 처리
+    if options.search_scope == "1" && metadata.is_dir() {
+        return Ok(()); // 폴더는 결과에 포함하지 않음
+    } else if options.search_scope == "2" && !metadata.is_dir() {
+        return Ok(()); // 파일은 결과에 포함하지 않음
+    }
+
+    // 정규식 컴파일
+    let regex = match Regex::new(keyword) {
+        Ok(r) => r,
+        Err(e) => return Err(format!("Invalid regex pattern: {}", e)), // 정규식 패턴 오류 처리
+    };
+
+    // 파일명과 파일 내용 각각에 대해 매칭 여부를 개별적으로 확인
+    let is_file_name_match = regex.is_match(file_name);
+    let mut is_file_content_match = false;
+
+    // 파일 내용 검색 - 사용자가 파일 내용 검색을 원하고, 파일이 텍스트 파일인 경우에 한해 검색 수행
+    if metadata.is_file() && options.custom_file_cont_use && is_text_file(path) {
+        let content = async_fs::read_to_string(&path).await.unwrap_or_else(|_| String::new());
+        is_file_content_match = regex.is_match(&content); // 파일 내용 매칭 결과
+    }
+
+    // 파일명 또는 파일 내용 중 하나라도 매칭되면 결과로 전송
+    if is_file_name_match || is_file_content_match {
+        let file_item = FileItem {
+            file_name: file_name.to_string(),
+            file_path: path.to_string_lossy().to_string(),
+        };
+
+        let tx_lock = tx.lock().await;
+        tx_lock.send(file_item).await.unwrap();
+        println!("File or directory matched with regex");
+    }
+
     Ok(())
 }
+
 
 async fn search_with_fuzzy(
     path: &Path,
