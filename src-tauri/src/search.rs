@@ -18,6 +18,10 @@ use tauri::Window;
 use num_cpus;
 use std::collections::HashSet;  // 중복된 파일 전송 방지용
 use std::collections::HashMap;
+use std::process::Command;
+use std::env;
+use windows::Win32::UI::Shell::IsUserAnAdmin;
+use std::thread::ThreadId;
 
 
 #[derive(Serialize, Deserialize, Debug,Clone)]
@@ -165,6 +169,14 @@ impl AppState {
     }
 }
 
+// For Check ThreadPool
+async fn track_and_print_thread_ids(thread_ids: Arc<Mutex<HashSet<ThreadId>>>) {
+    let ids_lock = thread_ids.lock().await;
+    println!("Unique thread IDs used: {:?}", ids_lock);
+    println!("Total number of unique threads: {}", ids_lock.len());
+}
+
+
 
 #[tauri::command]
 pub async fn cancel_search(
@@ -222,15 +234,21 @@ pub async fn search_files<'a>(
     let (tx, mut rx) = mpsc::channel(100);
     let tx = Arc::new(Mutex::new(tx));
 
+    // For Check ThreadPool
+    let thread_ids = Arc::new(Mutex::new(HashSet::<ThreadId>::new())); // 스레드 ID 추적용
+
     let process_clone = Arc::clone(&process);
     let result_clone = Arc::clone(&result);
     let tx_clone = Arc::clone(&tx);
+    
+    // For Check ThreadPool
+    let thread_ids_clone = Arc::clone(&thread_ids);
 
     tokio::spawn(async move {
         let process_clone_for_cancel = Arc::clone(&process_clone);
         
         tokio::select! {
-            _ = search_in_directory(dir_path, keyword, result_clone, process_clone, options, tx_clone) => {
+            _ = search_in_directory(dir_path, keyword, result_clone, process_clone, options, tx_clone, thread_ids_clone) => {
                 println!("Search completed");
             }
             _ = async {
@@ -267,6 +285,9 @@ pub async fn search_files<'a>(
         result_lock.push(file_item);
     }
 
+    // 탐색 완료 후 스레드 ID 출력
+    track_and_print_thread_ids(Arc::clone(&thread_ids)).await;
+
     // 탐색이 완료되면 프로세스 완료 처리
     process.mark_as_completed().await;
     
@@ -283,18 +304,53 @@ pub async fn search_files<'a>(
 
 
 
+fn request_admin_privileges() -> bool {
+    // 현재 실행 파일의 경로를 가져옴
+    let executable_path = env::current_exe().expect("Failed to get current executable path.");
 
+    // 관리자 권한으로 다시 실행하기 위한 PowerShell 명령어
+    let output = Command::new("powershell")
+        .arg("-Command")
+        .arg(format!(
+            "Start-Process -FilePath \"{}\" -Verb runAs",
+            executable_path.display()
+        ))
+        .output()
+        .expect("Failed to execute PowerShell command");
 
+    // 출력 검사 - 성공 여부 확인
+    if output.status.success() {
+        println!("Admin privileges requested successfully");
+        std::process::exit(0); // 프로세스를 종료하고 관리자 권한으로 재시작
+    } else {
+        eprintln!("Failed to request admin privileges");
+        return false;
+    }
+}
 
 #[cfg(windows)]
 fn can_perform_owner_based_search() -> bool {
-    use windows::Win32::UI::Shell::IsUserAnAdmin;
+
+    // 개발 모드에서는 권한 요청을 건너뛴다.
+    if cfg!(debug_assertions) {
+        println!("Running in development mode, skipping admin check.");
+        return true; // 개발 모드에서는 권한을 체크하지 않고 통과
+    }
 
     println!("Checking if user is admin");
+
     unsafe {
-        IsUserAnAdmin().as_bool()
+        // 관리자 권한 여부 확인
+        if IsUserAnAdmin().as_bool() {
+            return true; // 이미 관리자 권한이 있음
+        } else {
+            // 관리자 권한이 없으면 요청
+            println!("User is not admin, requesting admin privileges via UAC...");
+            return request_admin_privileges(); // 관리자 권한 요청 후 결과 반환
+        }
     }
 }
+
 
 #[cfg(unix)]
 fn can_perform_owner_based_search() -> bool {
@@ -302,31 +358,57 @@ fn can_perform_owner_based_search() -> bool {
     unsafe { libc::geteuid() == 0 }
 }
 
+use wmi::{COMLibrary, WMIConnection};
+
+#[derive(Deserialize, Debug)]
+struct FileOwnerInfo {
+    Owner: String,
+}
+
 #[cfg(windows)]
-fn get_file_owner(path: &Path) -> Option<String> {
+fn get_file_owner(path: &std::path::Path) -> Option<String> {
     use std::process::Command;
 
-    println!("Getting file owner for: {:?}", path);
+    // 파일 경로를 얻고 파워쉘 명령어로 파일 소유자 정보를 요청
+    let path_str = path.to_string_lossy();
     let output = Command::new("powershell")
         .arg("-Command")
-        .arg(format!("(Get-Acl \"{}\" | Select-Object -ExpandProperty Owner).User", path.display()))
+        .arg(format!("(Get-Acl \"{}\" | Select-Object -ExpandProperty Owner)", path_str))
         .output()
-        .expect("Failed to execute PowerShell");
+        .expect("Failed to execute PowerShell command");
 
+    // 파워쉘 명령이 성공적으로 실행되었는지 확인
     if output.status.success() {
+        // 결과를 UTF-8 문자열로 변환
         let owner = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        if !owner.is_empty() {
-            println!("Owner found: {}", owner);
-            return Some(owner);
+        // 소유자 정보가 비어있지 않으면 반환
+        if let Some(actual_owner) = owner.split('\\').last() {
+            if !actual_owner.is_empty() {
+                println!("Owner found: {}", actual_owner);
+                return Some(actual_owner.to_string());
+            }
         }
     }
+
+    // 실패 시 None 반환
     println!("Failed to get file owner");
     None
+}
+
+
+
+
+fn parse_date_to_rfc3339(date_str: &str) -> Result<DateTime<Utc>, String> {
+    let rfc3339_str = format!("{}T00:00:00+00:00", date_str);
+    DateTime::parse_from_rfc3339(&rfc3339_str)
+        .map(|dt| dt.with_timezone(&Utc))
+        .map_err(|e| format!("Failed to parse date: {}", e))
 }
 
 fn should_filter_file_by_metadata(path: &Path, options: &SearchOptions) -> bool {
     println!("Filtering file by metadata: {:?}", path);
     if let Ok(metadata) = fs::metadata(path) {
+        // 파일 크기 필터링 - 파일인 경우에만 적용
         if options.custom_file_size_use && metadata.is_file() {
             let file_size = metadata.len();
             if file_size > options.size_max || file_size < options.size_min {
@@ -335,56 +417,69 @@ fn should_filter_file_by_metadata(path: &Path, options: &SearchOptions) -> bool 
             }
         }
 
+        // 생성일 필터링 - 폴더와 파일 모두에 적용 가능
         if options.custom_file_crt_date_use {
             if let Ok(created) = metadata.created() {
                 let crt_date = DateTime::<Utc>::from(created);
-                if let Ok(start_time) = DateTime::parse_from_rfc3339(&options.crt_start).map(|dt| dt.with_timezone(&Utc)) {
+                
+                if let Ok(start_time) = parse_date_to_rfc3339(&options.crt_start) {
                     if crt_date < start_time {
-                        println!("File filtered by creation date: {:?}", crt_date);
+                        println!("File or folder filtered by creation date: {:?}", crt_date);
                         return true;
                     }
                 }
-                if let Ok(end_time) = DateTime::parse_from_rfc3339(&options.crt_end).map(|dt| dt.with_timezone(&Utc)) {
+                
+                if let Ok(end_time) = parse_date_to_rfc3339(&options.crt_end) {
                     if crt_date > end_time {
-                        println!("File filtered by end date: {:?}", crt_date);
+                        println!("File or folder filtered by end date: {:?}", crt_date);
                         return true;
                     }
                 }
             }
         }
 
+        // 수정일 필터링 - 폴더와 파일 모두에 적용 가능
         if options.custom_file_modi_date_use {
             if let Ok(modified) = metadata.modified() {
                 let modi_date = DateTime::<Utc>::from(modified);
-                if let Ok(start_time) = DateTime::parse_from_rfc3339(&options.modi_start).map(|dt| dt.with_timezone(&Utc)) {
+                
+                if let Ok(start_time) = parse_date_to_rfc3339(&options.modi_start) {
                     if modi_date < start_time {
-                        println!("File filtered by modified date: {:?}", modi_date);
+                        println!("File or folder filtered by modified date: {:?}", modi_date);
                         return true;
                     }
                 }
-                if let Ok(end_time) = DateTime::parse_from_rfc3339(&options.modi_end).map(|dt| dt.with_timezone(&Utc)) {
+                
+                if let Ok(end_time) = parse_date_to_rfc3339(&options.modi_end) {
                     if modi_date > end_time {
-                        println!("File filtered by end modified date: {:?}", modi_date);
+                        println!("File or folder filtered by end modified date: {:?}", modi_date);
                         return true;
                     }
                 }
             }
         }
+        
 
-        if options.custom_file_owner_use && !can_perform_owner_based_search() {
-            println!("Insufficient permissions to perform owner-based search.");
-            return true;
-        }
+        
 
         if options.custom_file_owner_use {
+            // 소유자 필터링 - 폴더와 파일 모두에 적용 가능
+            if !can_perform_owner_based_search() {
+                println!("Insufficient permissions to perform owner-based search.");
+                return true;
+            }
+
             let owner_name = options.owner_name.to_lowercase();
             #[cfg(windows)]
             {
                 if let Some(actual_owner_name) = get_file_owner(path) {
                     if !actual_owner_name.to_lowercase().contains(&owner_name) {
-                        println!("File filtered by owner: {}", actual_owner_name);
+                        println!("File or folder filtered by owner: {}", actual_owner_name);
                         return true;
                     }
+                } else {
+                    println!("Failed to retrieve owner information. Skipping file or folder.");
+                    return true;  // 소유자 정보를 가져오지 못한 경우 필터링 처리
                 }
             }
 
@@ -394,13 +489,14 @@ fn should_filter_file_by_metadata(path: &Path, options: &SearchOptions) -> bool 
                 let owner_uid = metadata.uid();
                 let actual_owner_name = Uid::from_raw(owner_uid).to_string();
                 if !actual_owner_name.to_lowercase().contains(&owner_name) {
-                    println!("File filtered by owner: {}", actual_owner_name);
+                    println!("File or folder filtered by owner: {}", actual_owner_name);
                     return true;
                 }
             }
         }
 
-        if options.custom_file_type_use {
+        // 파일 확장자 필터링 - 파일인 경우에만 적용
+        if options.custom_file_type_use && metadata.is_file() {
             if let Some(ext) = path.extension().and_then(|s| s.to_str()) {
                 let allowed_extensions: Vec<&str> = options.file_type_list.split_whitespace().collect();
                 if !allowed_extensions.iter().any(|&allowed_ext| ext == allowed_ext.trim_start_matches('.')) {
@@ -413,6 +509,7 @@ fn should_filter_file_by_metadata(path: &Path, options: &SearchOptions) -> bool 
 
     false
 }
+
 
 fn is_text_file(path: &Path) -> bool {
     println!("Checking if file is text: {:?}", path);
@@ -429,6 +526,7 @@ fn search_in_directory<'a>(
     process: Arc<SearchProcess>,
     options: SearchOptions,
     tx: Arc<Mutex<Sender<FileItem>>>,
+    thread_ids: Arc<Mutex<HashSet<ThreadId>>>, // For Check ThreadPool
 ) -> Pin<Box<dyn Future<Output = Result<(), String>> + Send + 'a>> {
     Box::pin(async move {
         let mut handles = Vec::new();
@@ -437,14 +535,19 @@ fn search_in_directory<'a>(
             Ok(mut entries) => {
                 while let Ok(Some(entry)) = entries.next_entry().await {
 
-                    tokio::task::yield_now().await;  // CPU 점유 양보
+                    tokio::task::yield_now().await;
+
+                    // 현재 스레드의 ID를 가져와 추적
+                    let thread_id = std::thread::current().id();
+                    let mut thread_ids_lock = thread_ids.lock().await;
+                    thread_ids_lock.insert(thread_id);
 
                     let path = entry.path();
                     let keyword = keyword.clone();
 
                     if process.is_cancelled().await {
                         println!("Search cancelled during directory scan.");
-                        return Ok(()); // 반환하는 곳에서 반드시 Ok(())로 비동기 함수에 맞게 반환
+                        return Ok(());
                     }
 
                     let metadata = match fs::metadata(&path) {
@@ -463,20 +566,7 @@ fn search_in_directory<'a>(
                         continue;
                     }
 
-                    match options.search_scope.as_str() {
-                        "1" => {
-                            if !metadata.is_file() {
-                                continue;
-                            }
-                        }
-                        "2" => {
-                            if !metadata.is_dir() {
-                                continue;
-                            }
-                        }
-                        _ => {}
-                    }
-
+                    // Metadata ( file Property chk)
                     if options.custom_property_use {
                         if should_filter_file_by_metadata(&path, &options) {
                             println!("File filtered by metadata: {:?}", path);
@@ -484,7 +574,23 @@ fn search_in_directory<'a>(
                         }
                     }
 
+                    // 각 검색 방식에 따라 바로 분기
+                    match options.custom_sch_method.as_str() {
+                        "1" => {
+                            search_with_regex(&path, &keyword, &options, &metadata, &tx).await?;
+                        }
+                        "2" => {
+                            search_with_fuzzy(&path, &keyword, &options, &metadata, &tx).await?;
+                        }
+                        "3" => {
+                            search_with_index(&path, &keyword, &options, &metadata, &tx).await?;
+                        }
+                        _ => {
+                            search_default(&path, &keyword, &options, &metadata, &tx).await?;
+                        }
+                    }
 
+                    // 폴더일 경우 내부 폴더도 재귀적으로 검색
                     if metadata.is_dir() {
                         let handle = tokio::spawn({
                             let process = Arc::clone(&process);
@@ -492,9 +598,12 @@ fn search_in_directory<'a>(
                             let result_clone = Arc::clone(&result);
                             let options_clone = options.clone();
 
+                            // For Check ThreadPool
+                            let thread_ids_clone = Arc::clone(&thread_ids);
+
                             async move {
                                 let sub_result = Vec::new();
-                                if let Err(e) = search_in_directory(path, keyword, result_clone, process, options_clone, tx).await {
+                                if let Err(e) = search_in_directory(path, keyword, result_clone, process, options_clone, tx, thread_ids_clone).await {
                                     if e.contains("Access is denied") || e.contains("Permission denied") {
                                         println!("Skipping directory due to access error: {}", e);
                                     } else {
@@ -505,21 +614,6 @@ fn search_in_directory<'a>(
                             }
                         });
                         handles.push(handle);
-                    } else {
-                        match options.custom_sch_method.as_str() {
-                            "1" => {
-                                search_with_regex(&path, &keyword, &options, &tx).await?;
-                            }
-                            "2" => {
-                                search_with_fuzzy(&path, &keyword, &options, &tx).await?;
-                            }
-                            "3" => {
-                                search_with_index(&path, &keyword, &options, &tx).await?;
-                            }
-                            _ => {
-                                search_default(&path, &keyword, &options, &tx).await?;
-                            }
-                        }
                     }
                 }
 
@@ -534,14 +628,14 @@ fn search_in_directory<'a>(
                     }
                 }
 
-                Ok(()) // 반드시 Ok(())로 끝내야 함
+                Ok(())
             }
             Err(e) => {
                 if e.kind() == std::io::ErrorKind::PermissionDenied {
                     println!("Skipping directory due to access error: {}", e);
-                    Ok(()) // 여기도 Ok(())로 마무리
+                    Ok(())
                 } else {
-                    Err(format!("Failed to read directory: {}", e.to_string())) // 실패시 Err()
+                    Err(format!("Failed to read directory: {}", e.to_string()))
                 }
             }
         }
@@ -553,42 +647,50 @@ async fn search_default(
     path: &Path,
     keyword: &str,
     options: &SearchOptions,
+    metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
-    println!("Performing default search on: {:?}", path);
-    if let Some(file_name) = path.file_name().and_then(|name| name.to_str()) {
-        let mut is_match = false;
+    let file_name = path.file_name().and_then(|name| name.to_str()).unwrap_or_default();
 
-        if file_name.contains(keyword) {
+    // 탐색 스코프에 따른 분기 처리
+    if options.search_scope == "1" && metadata.is_dir() {
+        return Ok(()); // 폴더는 결과에 포함하지 않음
+    } else if options.search_scope == "2" && !metadata.is_dir() {
+        return Ok(()); // 파일은 결과에 포함하지 않음
+    }
+
+    // 파일명 또는 폴더명 검색
+    let mut is_match = file_name.contains(keyword);
+
+    // 파일 내용 검색
+    if metadata.is_file() && options.custom_file_cont_use && is_text_file(path) {
+        let content = async_fs::read_to_string(&path).await.unwrap_or_else(|_| String::new());
+        if content.contains(keyword) {
             is_match = true;
         }
+    }
 
-        if options.custom_file_cont_use && is_text_file(path) {
-            let content = async_fs::read_to_string(&path).await.unwrap_or_else(|_| String::new());
-            if content.contains(keyword) {
-                is_match = true;
-            }
-        }
+    // 매칭된 경우 전송
+    if is_match {
+        let file_item = FileItem {
+            file_name: file_name.to_string(),
+            file_path: path.to_string_lossy().to_string(),
+        };
 
-        if is_match {
-            let file_item = FileItem {
-                file_name: file_name.to_string(),
-                file_path: path.to_string_lossy().to_string(),
-            };
-
-            let tx_lock = tx.lock().await;
-            tx_lock.send(file_item).await.unwrap();
-            println!("File matched");
-        }
+        let tx_lock = tx.lock().await;
+        tx_lock.send(file_item).await.unwrap();
+        println!("File or directory matched");
     }
 
     Ok(())
 }
 
+
 async fn search_with_regex(
     path: &Path,
     keyword: &str,
     options: &SearchOptions,
+    metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
     println!("Performing regex search on: {:?}", path);
@@ -599,6 +701,7 @@ async fn search_with_fuzzy(
     path: &Path,
     keyword: &str,
     options: &SearchOptions,
+    metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
     println!("Performing fuzzy search on: {:?}", path);
@@ -609,32 +712,12 @@ async fn search_with_index(
     path: &Path,
     keyword: &str,
     options: &SearchOptions,
+    metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
     println!("Performing index-based search on: {:?}", path);
     Ok(())
 }
 
-
-
-
-
-
-
-// Temp test
-#[tauri::command]
-pub async fn test_state_function(process: State<'_, Arc<SearchProcess>>) -> Result<String, String> {
-    // SearchProcess의 상태를 콘솔에 출력
-    let process_info = process.get_info().await;
-    println!("Test State Function called, process ID: {}", process_info.id);
-    println!("Is cancelled: {}", process_info.is_cancelled);
-    println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-    println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-    println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-    println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-    println!("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-
-    Ok("State test function executed".to_string())
-}
 
 

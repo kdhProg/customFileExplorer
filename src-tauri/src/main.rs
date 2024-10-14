@@ -36,8 +36,7 @@ fn main() {
      sch_adv_properties_slot::delete_settings,
 
      search::search_files,
-     search::cancel_search,
-     search::test_state_function
+     search::cancel_search
    ])
    .run(tauri::generate_context!())
    .expect("error while running tauri application");

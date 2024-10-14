@@ -175,7 +175,7 @@ async function startSearch() {
     try {
         await invoke('search_files', {
             keyword: 'temp', 
-            directory: 'D://entire_workspace//2024opensw_competition//pathFinder',
+            directory: 'D://entire_workspace//2024opensw_competition',
             options: {
                 customThreadPoolUse: false,
                 threadPoolNum: "0",
@@ -219,24 +219,6 @@ async function cancelSearch() {
         console.log("No active search process to cancel.");
     }
 }
-
-async function testState() {
-    try {
-        const result = await invoke('test_state_function');
-        console.log(result);
-    } catch (error) {
-        console.error("State test function failed:", error);
-    }
-}
-
-
-
-
-
-
-
-
-
 
 
 
@@ -306,6 +288,5 @@ async function testState() {
 <!-- NEW 검색 테스트 -->
 <button on:click={startSearch}>Start Search</button>
 <button on:click={cancelSearch}>Cancel Search</button>
-<button on:click={testState}>TESTTESTSETESTSET</button>
 <hr>
 <a href="/">Go to previous page</a>
