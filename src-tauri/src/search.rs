@@ -1,5 +1,4 @@
 
-// 2024 10 11 20 09
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -24,6 +23,109 @@ use windows::Win32::UI::Shell::IsUserAnAdmin;
 use std::thread::ThreadId;
 use regex::Regex;
 use strsim::levenshtein;
+use serde_json::Value;
+use std::fs::File;
+use std::io::{Read, Write};
+
+
+
+
+const CACHE_FILE_PATH: &str = "../backend_properties/cache/search_cache.json"; // 캐시 JSON 파일 경로
+const CACHE_SIZE_LIMIT: usize = 50; // 캐시의 최대 크기
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct CacheEntry {
+    pub name: String,          // 검색어
+    pub result: Vec<String>,   // 검색 결과 경로 리스트
+    pub hit: u32,              // 조회 수
+    pub search_options: SearchOptions,
+}
+
+// 1. 캐시 파일을 읽고 JSON 객체로 변환하는 함수
+pub fn read_cache() -> Vec<CacheEntry> {
+    let mut file = File::open(CACHE_FILE_PATH).unwrap_or_else(|_| File::create(CACHE_FILE_PATH).unwrap());
+    let mut data = String::new();
+    file.read_to_string(&mut data).unwrap();
+    if data.is_empty() {
+        return vec![];
+    }
+    let cache: Vec<CacheEntry> = serde_json::from_str(&data).unwrap_or_else(|_| vec![]);
+    cache
+}
+
+// 2. 캐시에 검색어가 있는지 확인하는 함수
+// 캐시에서 검색어와 검색 옵션이 모두 일치하는 경우만 반환
+pub fn find_in_cache(keyword: &str, current_options: &SearchOptions) -> Option<Vec<String>> {
+    let cache = read_cache();  // 캐시 파일에서 불러오기
+    
+    // 캐시 내에서 검색어와 옵션이 일치하는 항목을 찾음
+    let entry_opt = cache.iter().find(|entry| {
+        entry.name == keyword && entry.search_options == *current_options // 옵션 일치 여부도 확인
+    });
+
+    // 검색어와 옵션이 모두 일치하는 항목이 있으면 결과 반환
+    if let Some(entry) = entry_opt {
+        return Some(entry.result.clone());  // 검색 결과 반환
+    }
+
+    None  // 일치하는 항목이 없으면 None 반환
+}
+
+
+
+
+// 3. 캐시 파일을 업데이트하는 함수
+pub fn write_cache(cache: &Vec<CacheEntry>) {
+    let mut file = File::create(CACHE_FILE_PATH).unwrap();
+    let data = serde_json::to_string_pretty(&cache).unwrap();
+    file.write_all(data.as_bytes()).unwrap();
+}
+
+// 4. 새로운 검색 결과를 캐시에 추가하는 함수
+pub fn update_cache(keyword: &str, new_results: Vec<String>, current_options: &SearchOptions) {
+    let mut cache = read_cache();  // 기존 캐시를 불러옴
+    
+    let mut found = false;
+    
+    // 캐시에 이미 해당 키워드와 옵션이 있는지 확인
+    for entry in cache.iter_mut() {
+        if entry.name == keyword && entry.search_options == *current_options {
+            entry.hit += 1;  // hit 증가
+            entry.result = new_results.clone();  // 결과 업데이트
+            found = true;
+            break;
+        }
+    }
+
+    // 기존에 동일한 키워드와 옵션이 없다면 새로운 항목을 추가
+    if !found {
+        cache.push(CacheEntry {
+            name: keyword.to_string(),
+            result: new_results,
+            hit: 1,
+            search_options: current_options.clone(),  // 검색 옵션 복사 저장
+        });
+    }
+
+    // 캐시 크기 제한이 초과되었을 때 hit가 가장 낮은 항목 제거
+    if cache.len() > CACHE_SIZE_LIMIT {
+        if let Some(min_hit_entry) = cache.iter().min_by_key(|entry| entry.hit) {
+            let index = cache.iter().position(|entry| entry.name == min_hit_entry.name).unwrap();
+            cache.remove(index);  // hit가 가장 낮은 항목 제거
+        }
+    }
+
+    write_cache(&cache);
+}
+
+
+
+
+
+
+
+
+
 
 
 #[derive(Serialize, Deserialize, Debug,Clone)]
@@ -32,7 +134,7 @@ pub struct FileItem {
     pub file_path: String,
 }
 
-#[derive(Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone,PartialEq,Debug)]
 pub struct SearchOptions {
     #[serde(rename = "customThreadPoolUse")]
     custom_thread_pool_use: bool,
@@ -212,13 +314,52 @@ pub async fn search_files<'a>(
         return Err(format!("Directory does not exist: {:?}", dir_path));
     }
 
+    // 캐시된 경로를 추적할 HashSet
+    let cached_paths: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
+
+    // 캐시 확인
+    if let Some(cached_results) = find_in_cache(&keyword, &options) {
+
+        let mut cached_paths_lock = cached_paths.lock().await;
+
+        // 캐시에서 발견된 결과를 바로 프론트엔드에 전송
+        for file_path in cached_results {
+            let path = Path::new(&file_path);
+
+            // 파일/폴더의 존재 여부 확인
+            if !path.exists() {
+                continue; // 존재하지 않는 파일 또는 폴더는 무시
+            }
+
+            // searchScope 값에 따라 필터링
+            let is_file = path.is_file();
+            let is_dir = path.is_dir();
+
+            match options.search_scope.as_str() {
+                "1" if !is_file => continue, // 파일만 검색하는 경우 폴더는 제외
+                "2" if !is_dir => continue,  // 폴더만 검색하는 경우 파일은 제외
+                _ => {},  // "0"인 경우는 파일과 폴더 모두 전송
+            }
+
+            // 캐시된 파일 경로를 HashSet에 저장
+            cached_paths_lock.insert(file_path.clone());
+
+            let file_item = FileItem {
+                file_name: path.file_name().unwrap().to_string_lossy().to_string(),
+                file_path: file_path.clone(),
+            };
+
+            window.emit("search-result", file_item).expect("Failed to emit search result from cache");
+        }
+    }
+
+
     if options.custom_thread_pool_use {
         rayon::ThreadPoolBuilder::new()
             .num_threads(options.thread_pool_num.parse::<usize>().unwrap_or_else(|_| num_cpus::get()))  // 시스템 CPU 코어 수로 설정
             .build_global()
             .unwrap_or_else(|_| println!("Failed to set custom thread pool, using default."));
     }
-
 
     let process = Arc::new(SearchProcess::new());
     let process_info = process.get_info().await;
@@ -246,11 +387,15 @@ pub async fn search_files<'a>(
     // For Check ThreadPool
     let thread_ids_clone = Arc::clone(&thread_ids);
 
+    // spawn에서 복사본을 만들고 전달
+    let keyword_for_spawn = keyword.clone();  // 소유권 문제를 피하기 위해 `clone()`
+    let options_for_spawn = options.clone();  // options도 clone
+
     tokio::spawn(async move {
         let process_clone_for_cancel = Arc::clone(&process_clone);
         
         tokio::select! {
-            _ = search_in_directory(dir_path, keyword, result_clone, process_clone, options, tx_clone, thread_ids_clone) => {
+            _ = search_in_directory(dir_path, keyword_for_spawn.clone(), result_clone, process_clone, options_for_spawn, tx_clone, thread_ids_clone) => {
                 println!("Search completed");
             }
             _ = async {
@@ -270,22 +415,38 @@ pub async fn search_files<'a>(
         drop(tx);  // 채널 닫기
     });
     
-    
-    
 
     // 파일 수신 및 전송
     while let Some(file_item) = rx.recv().await {
         let mut sent_files_lock = sent_files.lock().await;
+        
+        // 이미 전송된 파일은 건너뜀
         if sent_files_lock.contains(&file_item.file_path) {
             continue;
         }
-        sent_files_lock.insert(file_item.file_path.clone());
-        if let Err(e) = window.emit("search-result", file_item.clone()) {
-            println!("Failed to emit search result: {:?}", e);
+    
+        // 캐시에서 중복된 검색어와 파일 경로 확인
+        if let Some(cached_results) = find_in_cache(&keyword, &options) {
+            // 캐시에 이미 존재하는 파일 경로라면 프론트엔드로 전송하지 않음 (continue 하지 않음)
+            if cached_results.contains(&file_item.file_path) {
+                // 캐시에는 있지만 전송되지 않은 파일 경로는 continue하지 않고 넘어감
+                println!("File already in cache, skipping frontend emit: {}", file_item.file_path);
+            } else {
+                // 캐시에 없는 파일은 전송
+                if let Err(e) = window.emit("search-result", file_item.clone()) {
+                    println!("Failed to emit search result: {:?}", e);
+                }
+            }
         }
+    
+        // 전송된 파일 경로를 sent_files에 추가
+        sent_files_lock.insert(file_item.file_path.clone());
+    
+        // 모든 파일을 result에 추가해 최종 결과에 포함되도록 함
         let mut result_lock = result.lock().await;
         result_lock.push(file_item);
     }
+    
 
     // 탐색 완료 후 스레드 ID 출력
     track_and_print_thread_ids(Arc::clone(&thread_ids)).await;
@@ -300,8 +461,16 @@ pub async fn search_files<'a>(
     // 검색 완료 후 AppState에서 삭제
     state.remove_process(&process_id).await;
 
+    // 검색 결과를 캐시에 저장
+    let final_results = {
+        let result_lock = result.lock().await;
+        result_lock.iter().map(|file_item| file_item.file_path.clone()).collect::<Vec<String>>()
+    };
+    update_cache(&keyword, final_results, &options);  // 옵션도 함께 저장
+
     Ok(process_info)  // processInfo 반환
 }
+
 
 
 

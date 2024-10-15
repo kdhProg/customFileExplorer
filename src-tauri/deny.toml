@@ -1,0 +1,4 @@
+[licenses]
+
+allow = ["*"]
+exceptions = []

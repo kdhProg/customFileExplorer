@@ -1,0 +1,127 @@
+[
+  {
+    "name": "temp",
+    "result": [
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep1\\temp1.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep3\\temp4.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep1\\dep1_1\\dep1_1_1\\temp2.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\temp3.txt"
+    ],
+    "hit": 5,
+    "search_options": {
+      "customThreadPoolUse": false,
+      "threadPoolNum": "0",
+      "searchScope": "0",
+      "customFileContUse": false,
+      "customPropertyUse": false,
+      "customFileSizeUse": false,
+      "sizeMax": 0,
+      "sizeMin": 0,
+      "customFileCrtDateUse": false,
+      "crtStart": "",
+      "crtEnd": "",
+      "customFileModiDateUse": false,
+      "modiStart": "",
+      "modiEnd": "",
+      "customFileOwnerUse": false,
+      "ownerName": "",
+      "customFileTypeUse": false,
+      "fileTypeList": "",
+      "customSymbolicChk": false,
+      "customSchMethod": "0"
+    }
+  },
+  {
+    "name": "temp",
+    "result": [
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep1\\temp1.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep3\\temp4.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\temp3.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep1\\dep1_1\\dep1_1_1\\temp2.txt"
+    ],
+    "hit": 2,
+    "search_options": {
+      "customThreadPoolUse": false,
+      "threadPoolNum": "0",
+      "searchScope": "0",
+      "customFileContUse": true,
+      "customPropertyUse": false,
+      "customFileSizeUse": false,
+      "sizeMax": 0,
+      "sizeMin": 0,
+      "customFileCrtDateUse": false,
+      "crtStart": "",
+      "crtEnd": "",
+      "customFileModiDateUse": false,
+      "modiStart": "",
+      "modiEnd": "",
+      "customFileOwnerUse": false,
+      "ownerName": "",
+      "customFileTypeUse": false,
+      "fileTypeList": "",
+      "customSymbolicChk": false,
+      "customSchMethod": "0"
+    }
+  },
+  {
+    "name": "temp",
+    "result": [
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep1\\temp1.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep3\\temp4.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\temp3.txt",
+      "D://entire_workspace//2024opensw_competition//find_dir\\dep1\\dep1_1\\dep1_1_1\\temp2.txt"
+    ],
+    "hit": 3,
+    "search_options": {
+      "customThreadPoolUse": true,
+      "threadPoolNum": "0",
+      "searchScope": "0",
+      "customFileContUse": true,
+      "customPropertyUse": false,
+      "customFileSizeUse": false,
+      "sizeMax": 0,
+      "sizeMin": 0,
+      "customFileCrtDateUse": false,
+      "crtStart": "",
+      "crtEnd": "",
+      "customFileModiDateUse": false,
+      "modiStart": "",
+      "modiEnd": "",
+      "customFileOwnerUse": false,
+      "ownerName": "",
+      "customFileTypeUse": false,
+      "fileTypeList": "",
+      "customSymbolicChk": false,
+      "customSchMethod": "0"
+    }
+  },
+  {
+    "name": "^i.*a$",
+    "result": [
+      "D://entire_workspace//2024opensw_competition//find_dir\\apple.txt"
+    ],
+    "hit": 1,
+    "search_options": {
+      "customThreadPoolUse": false,
+      "threadPoolNum": "0",
+      "searchScope": "0",
+      "customFileContUse": true,
+      "customPropertyUse": false,
+      "customFileSizeUse": false,
+      "sizeMax": 0,
+      "sizeMin": 0,
+      "customFileCrtDateUse": false,
+      "crtStart": "",
+      "crtEnd": "",
+      "customFileModiDateUse": false,
+      "modiStart": "",
+      "modiEnd": "",
+      "customFileOwnerUse": false,
+      "ownerName": "",
+      "customFileTypeUse": false,
+      "fileTypeList": "",
+      "customSymbolicChk": false,
+      "customSchMethod": "1"
+    }
+  }
+]
