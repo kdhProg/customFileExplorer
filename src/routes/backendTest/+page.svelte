@@ -174,12 +174,12 @@ async function startSearch() {
 
     try {
         await invoke('search_files', {
-            keyword: 'temp',  // 정규식 테스트 : ^t.*p$
+            keyword: 'temp_di',  // 정규식 테스트 : ^t.*p$
             directory: 'D://entire_workspace//2024opensw_competition//pathFinder//src//routes//backendTest',
             options: {
                 customThreadPoolUse: false,
                 threadPoolNum: "0",
-                searchScope: "2",
+                searchScope: "0",
                 customFileContUse: false,
                 customPropertyUse: false,
                 customFileSizeUse: false,
@@ -196,7 +196,7 @@ async function startSearch() {
                 customFileTypeUse: false,
                 fileTypeList: '',
                 customSymbolicChk: false,
-                customSchMethod: "1",
+                customSchMethod: "2",
             }
         });
     } catch (error) {

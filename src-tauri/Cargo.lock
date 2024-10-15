@@ -74,6 +74,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "strsim",
  "sysinfo",
  "tauri",
  "tauri-build",

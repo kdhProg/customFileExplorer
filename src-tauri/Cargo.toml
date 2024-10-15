@@ -34,7 +34,7 @@ winapi = { version = "0.3.9", features = ["fileapi", "handleapi", "winbase", "wi
 wmi = "0.14.0"
 
 regex = "1.11.0"
-
+strsim = "0.11.1"
 
 
 

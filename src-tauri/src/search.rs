@@ -23,6 +23,7 @@ use std::env;
 use windows::Win32::UI::Shell::IsUserAnAdmin;
 use std::thread::ThreadId;
 use regex::Regex;
+use strsim::levenshtein;
 
 
 #[derive(Serialize, Deserialize, Debug,Clone)]
@@ -739,14 +740,39 @@ async fn search_with_regex(
 
 async fn search_with_fuzzy(
     path: &Path,
-    keyword: &str,
+    keyword: &str,               // 사용자가 입력한 검색어
     options: &SearchOptions,
     metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
-    println!("Performing fuzzy search on: {:?}", path);
+    println!("Performing fuzzy-based search on: {:?}", path);
+
+    let file_name = path.file_stem().and_then(|name| name.to_str()).unwrap_or_default();
+
+    // 탐색 스코프에 따른 분기 처리
+    if options.search_scope == "1" && metadata.is_dir() {
+        return Ok(()); // 폴더는 결과에 포함하지 않음
+    } else if options.search_scope == "2" && !metadata.is_dir() {
+        return Ok(()); // 파일은 결과에 포함하지 않음
+    }
+    
+    // Levenshtein 거리로 파일명과 키워드가 얼마나 유사한지 계산
+    let distance = levenshtein(file_name, keyword);
+    println!("distance: {:?}", distance);
+    if distance <= 2 {  // 거리 임계값 설정
+        let file_item = FileItem {
+            file_name: file_name.to_string(),
+            file_path: path.to_string_lossy().to_string(),
+        };
+
+        let tx_lock = tx.lock().await;
+        tx_lock.send(file_item).await.unwrap();
+        println!("File or directory matched by fuzzy search");
+    }
+    
     Ok(())
 }
+
 
 async fn search_with_index(
     path: &Path,
