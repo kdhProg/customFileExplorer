@@ -28,7 +28,9 @@
 
     // Current Path
     let curFolderName = '';
-    let filesInCurrentFolder: string[] = []; // File list on Current Path
+
+    // File List on Current Path
+    let filesInCurrentFolder: string[] = [];
 
     // File Click Event - Directory List
     async function handleFolderSelected(event) {
@@ -39,30 +41,53 @@
         // console.log(typeof filesInCurrentFolder[0])
     }
 
+    // -------------------- File Icon ----------------------------
+
+    let fileIcons: { [key: string]: string } = {}; // 파일 경로별 아이콘 저장 객체
+
+    // 파일 경로에 따른 아이콘 비동기 로드
+    async function loadIcons(files) {
+        const icons = {};
+        for (const file of files) {
+            icons[file] = await getFileIcon(file); // 비동기 아이콘 로드
+        }
+        fileIcons = icons; // 아이콘 저장
+    }
+
+    // load icons when filesInCurrentFolder change
+    $: if (filesInCurrentFolder.length > 0) {
+        loadIcons(filesInCurrentFolder);
+    }
 
     // Icon depends
     const themeLogos = {
-    default: "/icons/dir_logo_default.png",
-    retro: "/icons/dir_logo_retro.png",
-    sf: "/icons/dir_logo_sf.png",
-    linux: "/icons/dir_logo_linux.png"
+        default: "/icons/dir_logo_default.png",
+        retro: "/icons/dir_logo_retro.png",
+        sf: "/icons/dir_logo_sf.png",
+        linux: "/icons/dir_logo_linux.png"
     };
 
     // Default file icon
     let currentLogo = themeLogos.default; 
 
-    let default_txt = "/icons/exe_txt.png";
-    let default_jpg = "/icons/exe_jpg.png";
-    let default_mp4 = "/icons/exe_mp4.png";
-    let default_exe = "/icons/exe_default.png";
+    let file_exe = "/icons/file_exe.png";
+    let file_jpg = "/icons/file_jpg.png";
+    let file_mp4 = "/icons/file_mp4.png";
+    let file_txt = "/icons/file_txt.png";
+    let file_default = "/icons/file_default.png";
 
     // Set File icon
-    function getFileIcon(file: string): string {
-        if (file.includes(".txt")) return default_txt;
-        if (file.includes(".jpg") || file.includes(".png")) return default_jpg;
-        if (file.includes(".mp4")) return default_mp4;
-        if (file.includes(".exe")) return default_exe;
-        return currentLogo;
+    async function getFileIcon(file_path: string):Promise<string> {
+        let isDir:boolean = await invoke('is_directory', { path: file_path });
+        if (isDir){
+            return currentLogo;
+        }else{
+            if (file_path.includes(".txt")) return file_txt;
+            if (file_path.includes(".jpg") || file_path.includes(".png")) return file_jpg;
+            if (file_path.includes(".mp4")) return file_mp4;
+            if (file_path.includes(".exe")) return file_exe;
+            return file_default;
+        }
     }
 
     // Extract fileName
@@ -73,7 +98,7 @@
 
 
     // Theme
-    // default theme ]
+    // default theme
     let currentTheme = '/src/lib/style/themes/default_theme.css';
 
     // Change CSS
@@ -914,7 +939,7 @@ let slots = [
                         style="width: {fileSize}px; height: {fileSize}px;"
                         on:dblclick={() => eachFolderClick(file)}
                     >
-                        <img src="{getFileIcon(file)}" alt="File Icon" class="file-icon">
+                        <img src="{fileIcons[file] || ''}" alt="File Icon" class="file-icon" />
                         <span class="file-name">{getFileName(file)}</span>
                     </div>
                 {/each}

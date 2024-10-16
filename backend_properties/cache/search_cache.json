@@ -1,1 +1,42 @@
-{}
+[
+  {
+    "name": "temp",
+    "result": [
+      "D:\\entire_workspace\\2024opensw_competition\\find_dir\\dep1\\temp1.txt",
+      "D:\\entire_workspace\\2024opensw_competition\\find_dir\\dep1\\dep1_1\\dep1_1_1\\temp2.txt",
+      "D:\\entire_workspace\\2024opensw_competition\\find_dir\\dep3\\temp4.txt",
+      "D:\\entire_workspace\\2024opensw_competition\\find_dir\\temp3.txt",
+      "D:\\entire_workspace\\2024opensw_competition\\pathFinder\\.svelte-kit\\types\\src\\routes\\temp",
+      "D:\\entire_workspace\\2024opensw_competition\\testProj1\\node_modules\\concat-map\\test",
+      "D:\\entire_workspace\\2024opensw_competition\\pathFinder\\node_modules\\concat-map\\test",
+      "D:\\entire_workspace\\2024opensw_competition\\testProj1\\node_modules\\minimist\\test",
+      "D:\\entire_workspace\\2024opensw_competition\\pathFinder\\node_modules\\minimist\\test",
+      "D:\\entire_workspace\\2024opensw_competition\\testProj1\\node_modules\\sorcery\\bin\\help.md",
+      "D:\\entire_workspace\\2024opensw_competition\\pathFinder\\node_modules\\sorcery\\bin\\help.md"
+    ],
+    "hit": 1,
+    "search_options": {
+      "customThreadPoolUse": false,
+      "threadPoolNum": "0",
+      "searchScope": "0",
+      "customFileContUse": false,
+      "customPropertyUse": false,
+      "customFileSizeUse": false,
+      "sizeMax": 0,
+      "sizeMin": 0,
+      "customFileCrtDateUse": false,
+      "crtStart": "",
+      "crtEnd": "",
+      "customFileModiDateUse": false,
+      "modiStart": "",
+      "modiEnd": "",
+      "customFileOwnerUse": false,
+      "ownerName": "",
+      "customFileTypeUse": false,
+      "fileTypeList": "",
+      "customSymbolicChk": false,
+      "customSchMethod": "2",
+      "customLogUse": false
+    }
+  }
+]
