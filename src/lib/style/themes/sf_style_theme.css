@@ -59,6 +59,17 @@
     border-left: 1px solid #444;
 }
 
+/* selection Box */
+.selection-rect {
+    background-color: rgba(0, 123, 255, 0.3);
+    border-color: #00c8ff;
+}
+
+.selected {
+    border-color: #00c8ff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
 .file-item {
     background-color: transparent;
     color:#00c8ff;

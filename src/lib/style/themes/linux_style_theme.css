@@ -54,6 +54,17 @@
     margin-top: 5px;
 }
 
+/* selection Box */
+.selection-rect {
+    background-color: rgba(255, 215, 254, 0.3);
+    border-color: rgba(255, 93, 204, 0.8);
+}
+
+.selected {
+    border-color: #cb2694;
+    background-color: rgba(255, 205, 250, 0.1);
+}
+
 .file-viewer {
     background-color: #ffffff;
     border-left: 1px solid #444;

@@ -1,19 +1,14 @@
 <script lang="ts">
     import { listen } from '@tauri-apps/api/event';
-    import fs from 'fs';
-    import path from 'path';
-
     import { onMount, afterUpdate } from 'svelte';
+    import { writable } from 'svelte/store';
+    import { invoke } from "@tauri-apps/api/tauri";
 
     import { isDirectory, listFilesInDirectory, openFileWithDefaultProgram } from "$lib/api";
-    import { invoke } from "@tauri-apps/api/tauri";
     import Folder from '$lib/components/Folder.svelte';
     import { drives,updateDrives } from '$lib/store';
-
     import DiscInfo from '$lib/components/discInfo.svelte';
-
     import TitleBar from '$lib/components/titleBar.svelte';
-
     import { language } from '$lib/language';
     import { translations } from '$lib/i18n/translations';
 
@@ -67,7 +62,6 @@
         if (file.includes(".jpg") || file.includes(".png")) return default_jpg;
         if (file.includes(".mp4")) return default_mp4;
         if (file.includes(".exe")) return default_exe;
-        // return "📁";
         return currentLogo;
     }
 
@@ -117,11 +111,10 @@
     // Load default theme when page load
     applyTheme(currentTheme);
 
+// ---------------------------------------  Search ------------------------------------------
 
     // Check If searching is on
     let isSearching:boolean = false;
-
-    // ---------------------------------------  Search ------------------------------------------
     let searchProcessId = null;
     let unlisten;
     let receivedFiles = new Set();
@@ -225,7 +218,7 @@
     }
 
     
-    // Click Each Folder / Files
+    // --------------------------------- Click Each Folder / Files ---------------------------------
     // Folder - update current folder list
     // File - execute with default enrolled programs
     async function eachFolderClick(file:string){
@@ -241,8 +234,96 @@
         }
     }
 
+    // ---------------------------------------  File Drag  ------------------------------------------
+    // 상태 관리
+  let isDragging = writable(false);  // 드래그 상태
+  let startX = 0, startY = 0;        // 드래그 시작 좌표
+  let endX = 0, endY = 0;            // 드래그 끝 좌표
+  let selectedFiles = writable<string[]>([]);  // 선택된 파일 경로 저장
 
-    // util bars
+  const dragThreshold = 5;  // 최소 이동 거리 (5px 이상만 드래그로 처리)
+  let rectStyle = writable('');  // 직사각형 CSS 스타일
+
+  // 마우스 다운: 클릭/드래그 시작 지점 초기화
+  function handleMouseDown(event: MouseEvent) {
+    event.preventDefault();  // 기본 브라우저 동작 방지
+    clearSelection();
+
+    // 클릭 및 드래그 초기화
+    startX = event.clientX;
+    startY = event.clientY;
+    endX = startX;
+    endY = startY;
+    
+    rectStyle.set('');
+    isDragging.set(true);  // 드래그 상태 시작
+  }
+
+  // 마우스 이동: 일정 거리 이상 이동하면 드래그로 간주
+  function handleMouseMove(event: MouseEvent) {
+    if (!$isDragging) return;  // 드래그 상태가 아니면 종료
+
+    const dx = Math.abs(event.clientX - startX);
+    const dy = Math.abs(event.clientY - startY);
+
+    // 드래그로 간주되는 최소 거리 이상 이동했을 때만 처리
+    if (dx > dragThreshold || dy > dragThreshold) {
+      endX = event.clientX;
+      endY = event.clientY;
+      updateRectStyle();  // 직사각형 스타일 업데이트
+    }
+  }
+
+  // 마우스 업: 클릭 또는 드래그 종료 처리
+  function handleMouseUp(event: MouseEvent) {
+    isDragging.set(false);  // 드래그 상태 해제
+    detectFilesInside();  // 직사각형 내 파일 탐지
+  }
+
+  // 직사각형 스타일 업데이트
+  function updateRectStyle() {
+    const x1 = Math.min(startX, endX);
+    const y1 = Math.min(startY, endY);
+    const width = Math.abs(endX - startX);
+    const height = Math.abs(endY - startY);
+
+    rectStyle.set(`left: ${x1}px; top: ${y1}px; width: ${width}px; height: ${height}px;`);
+  }
+
+  // 기존 선택된 파일 해제
+  function clearSelection() {
+    const selectedElements = document.querySelectorAll('.file-item.selected');
+    selectedElements.forEach((el) => el.classList.remove('selected'));
+  }
+
+  // 직사각형 내 포함된 파일 탐지
+  function detectFilesInside() {
+    const fileElements = document.querySelectorAll('.file-item');
+    const rect = new DOMRect(
+      Math.min(startX, endX) + window.scrollX,
+      Math.min(startY, endY) + window.scrollY,
+      Math.abs(endX - startX),
+      Math.abs(endY - startY)
+    );
+
+    const selected = Array.from(fileElements).filter((el) => {
+      const elRect = el.getBoundingClientRect();
+      return (
+        rect.left <= elRect.right &&
+        rect.right >= elRect.left &&
+        rect.top <= elRect.bottom &&
+        rect.bottom >= elRect.top
+      );
+    });
+
+    selected.forEach((el) => el.classList.add('selected'));
+    const selectedPaths = selected.map((el) => el.getAttribute('data-file-path') || '');
+    console.log(`Selected items count: ${selected.length}`);
+    selectedFiles.set(selectedPaths);
+  }
+
+
+    // --------------------------------- util bars ---------------------------------
     async function load_util_buttons(){
         let jsonData = {};
 
@@ -287,7 +368,7 @@
   }
     
 
-// --- divide bar ---
+// --------------------------------- divide bar ---------------------------------
 let sidebarWidth = 250;
 
 function updateSidebarWidth(width) {
@@ -815,11 +896,21 @@ let slots = [
         <div class="resizer" id="resizer"></div>
 
         <!-- file viewer -->
-        <div class="file-viewer" id="fileViewer">
+        <div 
+            class="file-viewer" 
+            id="fileViewer"
+            on:mousedown={handleMouseDown} 
+            on:mousemove={handleMouseMove} 
+            on:mouseup={handleMouseUp}
+        >
+            {#if $isDragging}
+                <div class="selection-rect" style={$rectStyle}></div>
+            {/if}
             {#if filesInCurrentFolder.length > 0}
                 {#each filesInCurrentFolder as file}
                     <div
                         class="file-item"
+                        data-file-path={file}
                         style="width: {fileSize}px; height: {fileSize}px;"
                         on:dblclick={() => eachFolderClick(file)}
                     >
@@ -835,7 +926,7 @@ let slots = [
         </div>
     </div>
 
-    <!-- Setting Modal -->
+    <!------------------------ Setting Modal ------------------------>
     {#if showSettings}
         <div class="settings-modal">
             <div class="modal-content">

@@ -163,7 +163,7 @@ export const translations = {
         modal_sch_advanced_default:'기본탐색',
         modal_sch_advanced_regex:'정규식 이용',
         modal_sch_advanced_fuzzy_dame:'퍼지 매칭법 : 다메라우-레벤슈타인 거리',
-        modal_sch_advanced_fuzzy_jac:'퍼지 매칭법 : 자카드 유사도ㄴ',
+        modal_sch_advanced_fuzzy_jac:'퍼지 매칭법 : 자카드 유사도',
 
         modal_sch_advanced_log_title:'검색 로그 설정',
         modal_sch_advanced_log_check:'로그 기록',

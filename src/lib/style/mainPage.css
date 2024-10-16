@@ -98,6 +98,24 @@
 
 }
 
+/* selection Box */
+.selection-rect {
+    position: absolute;
+    pointer-events: none; /* prevent select rectangle */
+    user-select: none; /* prevent select text */
+
+    border-width: 1px;
+    border-style: dashed;
+}
+
+.selected {
+    border-width: 1px;
+    border-style: solid;
+    /* box-sizing -> If not exists, border will push nearby tags */
+    box-sizing: border-box; 
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
 .file-item {
     /* background-color: rgba(255, 255, 255, 0.8); */
     margin: 15px;
