@@ -27,6 +27,7 @@ use serde_json::Value;
 use std::fs::File;
 use std::io::{Read, Write};
 use std::time::Instant;
+use chrono::Local;
 
 
 
@@ -119,7 +120,55 @@ pub fn update_cache(keyword: &str, new_results: Vec<String>, current_options: &S
 }
 
 
+// SearchLog 구조체 정의
+#[derive(Serialize)]
+struct SearchLog {
+    keyword: String,
+    options: SearchOptions,
+    directory: String,
+    start_time: String,
+    end_time: String,
+    duration: f64,
+    results: Vec<String>,
+    results_count: usize,
+}
 
+// 로그 파일 저장 함수
+fn save_log(log: &SearchLog) -> Result<(), String> {
+    // 로그 파일 이름을 현재 시간 기반으로 생성
+    let timestamp = Local::now().format("%Y-%m-%d_%H-%M-%S").to_string();
+    let filename = format!("../logs/{}_log.json", timestamp);
+
+    // 파일 생성 및 로그 데이터 저장
+    let file_path = PathBuf::from(&filename);
+    let mut file = File::create(&file_path).map_err(|e| e.to_string())?;
+    let data = serde_json::to_string_pretty(log).map_err(|e| e.to_string())?;
+    file.write_all(data.as_bytes()).map_err(|e| e.to_string())?;
+    
+    println!("Search log saved at: {}", filename);
+    Ok(())
+}
+
+// 로그 생성 함수
+fn create_search_log(
+    keyword: String,
+    options: SearchOptions,
+    directory: String,
+    start_time: Instant,
+    end_time: Instant,
+    results: Vec<String>,
+) -> SearchLog {
+    SearchLog {
+        keyword,
+        options,
+        directory,
+        start_time: format!("{}", start_time.elapsed().as_secs_f64()),
+        end_time: format!("{}", end_time.elapsed().as_secs_f64()),
+        duration: end_time.duration_since(start_time).as_secs_f64(),
+        results_count: results.len(),
+        results,
+    }
+}
 
 
 
@@ -128,28 +177,28 @@ pub fn update_cache(keyword: &str, new_results: Vec<String>, current_options: &S
 #[derive(Deserialize, Debug)]
 struct AlgorithmConfig {
     name: String,
-    threshold: u32,
+    threshold: f64,
 }
 
+// use by fuzzy-matching
+fn read_threshold_from_json(algorithm_name: &str) -> Result<f64, String> {
+    let data = fs::read_to_string("../backend_properties/search_properties/fuzzy_properties.json")
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+    println!("File read successfully: {:?}", data);
 
-fn read_threshold_from_json(algorithm_name: &str) -> Result<u32, String> {
-    // JSON 파일 읽기
-    let data = fs::read_to_string("temp.json").map_err(|e| format!("Failed to read file: {}", e))?;
-
-    // JSON을 파싱하여 Vec<AlgorithmConfig>로 변환
     let configs: Vec<AlgorithmConfig> = serde_json::from_str(&data)
         .map_err(|e| format!("Failed to parse JSON: {}", e))?;
 
-    // 해당 알고리즘의 임계값을 찾아 반환
     for config in configs {
+        println!("json config name: {:?}", config.name);
         if config.name == algorithm_name {
-            return Ok(config.threshold);
+            return Ok(config.threshold);  // 그대로 f64 반환
         }
     }
 
-    // 알맞은 알고리즘이 없을 경우 오류 반환
     Err(format!("Algorithm not found: {}", algorithm_name))
 }
+
 
 
 #[derive(Serialize, Deserialize, Debug,Clone)]
@@ -200,6 +249,9 @@ pub struct SearchOptions {
     custom_symbolic_chk: bool,
     #[serde(rename = "customSchMethod")]
     custom_sch_method: String,
+
+    #[serde(rename = "customLogUse")]
+    custom_log_use: bool,
 }
 
 #[derive(Clone)]
@@ -332,6 +384,8 @@ pub async fn search_files<'a>(
     options: SearchOptions,
     state: State<'_, AppState>,
 ) -> Result<SearchProcessInfo, String> {
+
+    let directory_clone = directory.clone(); // It will be used at making Log
     let dir_path = PathBuf::from(directory);
     
     if !dir_path.exists() {
@@ -507,7 +561,32 @@ pub async fn search_files<'a>(
      // 수행 시간을 프론트엔드로 전송
      window.emit("search-time", elapsed_time.as_secs_f64()).expect("Failed to emit search time");
 
-     
+    // 로그 기록: 옵션에 따라 로그 생성
+    if options.custom_log_use {
+        let final_results = {
+            let result_lock = result.lock().await;
+            result_lock.iter().map(|file_item| file_item.file_path.clone()).collect::<Vec<String>>()
+        };
+
+        let end_time = Instant::now(); // 종료 시간 기록
+
+        // 로그 생성 및 저장
+        let log = create_search_log(
+            keyword.clone(),
+            options.clone(),
+            directory_clone,
+            start_time,
+            end_time,
+            final_results,
+        );
+
+        if let Err(e) = save_log(&log) {
+            println!("Failed to save log: {}", e);
+        }
+    }
+
+
+
     Ok(process_info)  // processInfo 반환
 }
 
@@ -955,9 +1034,9 @@ async fn search_with_fuzzy_damerau_levenshtein(
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
     println!("Performing fuzzy-based search on: {:?}", path);
-    let threshold = read_threshold_from_json("Damerau-Levenshtein").unwrap_or(2);
+    let threshold = read_threshold_from_json("Damerau-Levenshtein").unwrap_or(2.0);
     let file_name = path.file_stem().and_then(|name| name.to_str()).unwrap_or_default();
-
+    println!("Performing fuzzy-based Damerau-levenshtein threshold: {:?}", threshold);
     // 탐색 스코프에 따른 분기 처리
     if options.search_scope == "1" && metadata.is_dir() {
         return Ok(()); // 폴더는 결과에 포함하지 않음
@@ -968,7 +1047,7 @@ async fn search_with_fuzzy_damerau_levenshtein(
     // Levenshtein 거리로 파일명과 키워드가 얼마나 유사한지 계산
     let distance = damerau_levenshtein(file_name, keyword);
     println!("distance: {:?}", distance);
-    if distance <= threshold.try_into().unwrap() {  // 거리 임계값 설정
+    if (distance as f64) <= threshold {  // 거리 임계값 설정
         let file_item = FileItem {
             file_name: file_name.to_string(),
             file_path: path.to_string_lossy().to_string(),

@@ -183,7 +183,7 @@ async function startSearch() {
     try {
         await invoke('search_files', {
             keyword: 'temp',  // 정규식 테스트 : ^t.*p$
-            directory: 'D://entire_workspace//2024opensw_competition',
+            directory: 'D://entire_workspace//2024opensw_competition//find_dir',
             options: {
                 customThreadPoolUse: false,
                 threadPoolNum: "0",
@@ -204,7 +204,8 @@ async function startSearch() {
                 customFileTypeUse: false,
                 fileTypeList: '',
                 customSymbolicChk: false,
-                customSchMethod: "0",
+                customSchMethod: "2",
+                customLogUse:false,
             }
         });
     } catch (error) {
