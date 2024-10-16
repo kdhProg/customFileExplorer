@@ -172,14 +172,22 @@ async function startSearch() {
         }
     });
 
+    // 검색 수행 시간 리스너
+    await listen('search-time', (event) => {
+        const searchTime = event.payload;  // 전달된 검색 수행 시간
+        console.log(`Search completed in ${searchTime} seconds`);
+        // // 수행 시간을 화면에 표시하거나 다른 로직에 활용할 수 있음
+        // document.getElementById('search-time-display').textContent = `Search time: ${searchTime.toFixed(2)} seconds`;
+    });
+
     try {
         await invoke('search_files', {
-            keyword: 'appel',  // 정규식 테스트 : ^t.*p$
-            directory: 'D://entire_workspace//2024opensw_competition//find_dir',
+            keyword: 'temp',  // 정규식 테스트 : ^t.*p$
+            directory: 'D://entire_workspace//2024opensw_competition',
             options: {
                 customThreadPoolUse: false,
                 threadPoolNum: "0",
-                searchScope: "2",
+                searchScope: "0",
                 customFileContUse: false,
                 customPropertyUse: false,
                 customFileSizeUse: false,
@@ -196,7 +204,7 @@ async function startSearch() {
                 customFileTypeUse: false,
                 fileTypeList: '',
                 customSymbolicChk: false,
-                customSchMethod: "3",
+                customSchMethod: "0",
             }
         });
     } catch (error) {

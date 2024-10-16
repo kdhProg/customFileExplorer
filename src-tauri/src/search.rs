@@ -26,7 +26,7 @@ use strsim::damerau_levenshtein;
 use serde_json::Value;
 use std::fs::File;
 use std::io::{Read, Write};
-
+use std::time::Instant;
 
 
 
@@ -338,6 +338,9 @@ pub async fn search_files<'a>(
         return Err(format!("Directory does not exist: {:?}", dir_path));
     }
 
+    // 검색 시작 시간을 기록
+    let start_time = Instant::now();
+
     // 캐시된 경로를 추적할 HashSet
     let cached_paths: Arc<Mutex<HashSet<String>>> = Arc::new(Mutex::new(HashSet::new()));
 
@@ -497,6 +500,14 @@ pub async fn search_files<'a>(
     };
     update_cache(&keyword, final_results, &options);  // 옵션도 함께 저장
 
+
+     // 검색이 끝났으므로 종료 시간을 기록
+     let elapsed_time = start_time.elapsed();
+
+     // 수행 시간을 프론트엔드로 전송
+     window.emit("search-time", elapsed_time.as_secs_f64()).expect("Failed to emit search time");
+
+     
     Ok(process_info)  // processInfo 반환
 }
 

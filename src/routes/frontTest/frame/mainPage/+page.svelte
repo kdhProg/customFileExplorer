@@ -1,5 +1,5 @@
 <script lang="ts">
-
+    import { listen } from '@tauri-apps/api/event';
     import fs from 'fs';
     import path from 'path';
 
@@ -121,7 +121,11 @@
     // Check If searching is on
     let isSearching:boolean = false;
 
-    // 검색박스
+    // ---------------------------------------  Search ------------------------------------------
+    let searchProcessId = null;
+    let unlisten;
+    let receivedFiles = new Set();
+
     async function searchFilesInDirectory() {
         // console.log('clicked!')
         try {
@@ -129,55 +133,65 @@
             const keyword = document.getElementById('searchInput');
 
             if(curFolderName === '' || curFolderName.length === 0){
-                //현재 파일 경로가 없다면(=초기화면) 기본값은 C,D에서 모두 탐색
-                let C_directory: string = "C://";
-                let D_directory: string = "D://";
-
-                let C_searchRst: string[];
-                let D_searchRst: string[];
-
-                if (keyword instanceof HTMLInputElement) {
-                const inputValue = keyword.value;
-                // console.log(inputValue);
-
-                console.log('searching.......')
-                console.time("search_API_time_analysis");
-
-                C_searchRst = await invoke("search_files", { directory:C_directory, keyword:inputValue });
-                D_searchRst = await invoke("search_files", { directory:D_directory, keyword:inputValue });
-
-                console.log('searching finished!')
-                console.timeEnd("search_API_time_analysis");
-
-                const C_fileNames = C_searchRst.map((item: any) => item.file_name);
-                const D_fileNames = D_searchRst.map((item: any) => item.file_name);
-
-                filesInCurrentFolder = C_fileNames.concat(D_fileNames);
-                // console.log(typeof filesInCurrentFolder[0])
-                // const temp = filesInCurrentFolder = C_searchRst.concat(D_searchRst);
-                // console.log(temp);
-                } else {
-                    console.error("Input element not found or is not of type HTMLInputElement");
-                }
+                // 현재 파일 경로가 없다면(=초기화면) 검색불가
+                
 
             }else{
                 // 현재 디렉토리에서 검색
                 if (keyword instanceof HTMLInputElement) {
-                const inputValue = keyword.value;
+                    // Get User-input Search Keyword
+                    const inputValue = keyword.value;
 
-                let searchRst: string[];
+                    // 기존 리스너 제거 및 초기화
+                    if (unlisten) {
+                        await unlisten();
+                        unlisten = null;
+                    }
 
-                console.log('searching.......')
-                console.time("search_API_time_analysis");
+                    receivedFiles.clear();
+                    
+                    // 탐색 프로세스 ID를 미리 받아오기 위한 리스너
+                    unlisten = await listen('process-info', (event) => {
+                        const processInfo = event.payload;
+                        if (processInfo && processInfo.id) {
+                            searchProcessId = processInfo.id;  // Process ID를 저장
+                            console.log("Process ID from backend:", searchProcessId);
+                        }
+                    });
 
-                searchRst = await invoke("search_files", { directory:curFolderName, keyword:inputValue });
+                    // Search Result Array
+                    let searchRst = [];
+                    filesInCurrentFolder = []; // filesInCurrentFolder를 비움
 
-                console.log('searching finished!')
-                console.timeEnd("search_API_time_analysis");
+                    // 실시간 탐색 결과 리스너 등록
+                    unlisten = await listen('search-result', (event) => {
+                        const file = event.payload;
 
-                const searchRstmapped = searchRst.map((item: any) => item.file_name);
+                        // file_path가 중복되지 않도록 확인 후 추가
+                        if (!searchRst.includes(file.file_path)) {
+                            searchRst.push(file.file_path);  // file_path만 추가
+                            filesInCurrentFolder = [...searchRst]; // filesInCurrentFolder를 업데이트
+                            console.log("Real-time search result:", file.file_path);  // file_path 출력
+                        }
+                    });
 
-                filesInCurrentFolder = searchRstmapped;
+                    // 검색 수행 시간 리스너
+                    await listen('search-time', (event) => {
+                        const searchTime = event.payload;  // 전달된 검색 수행 시간
+                        console.log(`Search completed in ${searchTime} seconds`);
+                        // // 수행 시간을 화면에 표시하거나 다른 로직에 활용할 수 있음
+                        // document.getElementById('search-time-display').textContent = `Search time: ${searchTime.toFixed(2)} seconds`;
+                    });
+
+
+                    await invoke("search_files", { 
+                        keyword:inputValue,
+                        directory:curFolderName,
+                        options:searchValObj 
+                    });
+                    
+
+                    // filesInCurrentFolder = searchRst;
                 } else {
                     console.error("Input element not found or is not of type HTMLInputElement");
                 }
@@ -191,6 +205,22 @@
             
         } catch (error) {
             console.error("err:", error);
+        }
+    }
+
+
+    async function cancelSearch() {
+        console.log("searchProcessId ID: ", searchProcessId);
+        if (searchProcessId) {
+            try {
+                console.log("Cancel request sent for process ID: ", searchProcessId);
+                await invoke('cancel_search', { processId: searchProcessId });
+                console.log(`Cancel request for process: ${searchProcessId} has been acknowledged`);
+            } catch (error) {
+                console.error("Failed to invoke cancel_search:", error);
+            }
+        } else {
+            console.log("No active search process to cancel.");
         }
     }
 
@@ -538,20 +568,6 @@ function fileSizeCalc(){
 
 
 
-// 파일탐색 전송객체
-// 검색어 / 현재 디렉토리
-// 기본 : 비동기 처리(스레드 풀 기본지정) / 파일명 기반 / 실시간 / 캐싱
-// 탐색스코프 : 파일+폴더 or 폴더 or 파일
-// 스레드 풀 개수 지정 / 메타데이터(속성) : 파일크기 / 생성일 / 수정일 / 오너 / 확장자 타입
-// 파일 내용까지 탐색?  /  심볼릭 링크까지 탐색?
-// 방법 : 기본값 / 정규식 / 색인법 / 퍼지법
-// 주요정책
-// - 검색 정규식 방법은 RUST기반 문법 강제
-// - 파일 타입의 경우  .txt .pdf 등으로 입력
-// - 심볼릭 링크는 순환참조 방지 적용
-// - 파일내용만 체크하고 속성을 체크안하면 최대 100MB의 파일만 탐색함(성능이슈)
-// - 검색 설정값 기록 만들기(슬롯시스템) + 불러오기
-
 // File Search - Advanced settings values Object
 // All of selectable options are false when init
 let searchValObj = {
@@ -600,8 +616,8 @@ let searchValObj = {
     Policy : This Type should be "String" not "Number"
     0 : Default(Not Use advanced Methods)
     1 : Regex
-    2 : Fuzzy
-    3 : Index
+    2 : Fuzzy - Damerau Levenshtein
+    3 : Fuzzy - Jaccard Similarity
     */
     customSchMethod:"0",
 
@@ -743,7 +759,7 @@ let slots = [
             <!-- <button id="searchButton" class="searchbox-button-wrapper" disabled>
                 <img class="searchBox-button-img" src="/icons/magnifying_glass.png" alt="">
             </button> -->
-            <button class="searchbox-button-wrapper">❌</button>
+            <button class="searchbox-button-wrapper" on:click={cancelSearch}>❌</button>
             {:else}
             <button id="searchButton" class="searchbox-button-wrapper" on:click={searchFilesInDirectory}>
                 <img class="searchBox-button-img" src="/icons/magnifying_glass.png" alt="">
@@ -1064,12 +1080,12 @@ let slots = [
                                     <br>
                                     <label>
                                         <input type="radio" id="fuzzy-matching-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" value="2" bind:group={searchValObj.customSchMethod}>
-                                        {currentTranslations.modal_sch_advanced_fuzzy}
+                                        {currentTranslations.modal_sch_advanced_fuzzy_dame}
                                     </label>
                                     <br>
                                     <label>
                                         <input type="radio" id="index-search-btn" class="modal-adv-sch-method" name="modal-adv-sch-method" value="3" bind:group={searchValObj.customSchMethod}>
-                                        {currentTranslations.modal_sch_advanced_index}
+                                        {currentTranslations.modal_sch_advanced_fuzzy_jac}
                                     </label>
                                 </div>
                                 <hr>

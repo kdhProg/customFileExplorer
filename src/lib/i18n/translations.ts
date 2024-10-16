@@ -72,8 +72,8 @@ export const translations = {
         modal_sch_advanced_sch_methods:'Advanced Search Options',
         modal_sch_advanced_default:'Default(None)',
         modal_sch_advanced_regex:'Use Regex',
-        modal_sch_advanced_fuzzy:'Fuzzy Matching with Trie',
-        modal_sch_advanced_index:'Use Index',
+        modal_sch_advanced_fuzzy_dame:'Fuzzy Matching : Damerau Levenshtein',
+        modal_sch_advanced_fuzzy_jac:'Fuzzy Matching : Jaccard Similarity',
 
         modal_sch_advanced_log_title:'Log Options',
         modal_sch_advanced_log_check:'Save Log',
@@ -162,8 +162,8 @@ export const translations = {
         modal_sch_advanced_sch_methods:'고급 탐색 유형',
         modal_sch_advanced_default:'기본탐색',
         modal_sch_advanced_regex:'정규식 이용',
-        modal_sch_advanced_fuzzy:'퍼지 매칭법 / Trie 이용',
-        modal_sch_advanced_index:'색인법 이용',
+        modal_sch_advanced_fuzzy_dame:'퍼지 매칭법 : 다메라우-레벤슈타인 거리',
+        modal_sch_advanced_fuzzy_jac:'퍼지 매칭법 : 자카드 유사도ㄴ',
 
         modal_sch_advanced_log_title:'검색 로그 설정',
         modal_sch_advanced_log_check:'로그 기록',
