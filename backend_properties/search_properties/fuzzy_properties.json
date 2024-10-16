@@ -1,0 +1,10 @@
+[
+    {
+        "name":"Damerau-Levenshtein",
+        "threshold":2
+    },
+    {
+        "name":"Jaccard-Similarity",
+        "threshold":0.5
+    }
+]

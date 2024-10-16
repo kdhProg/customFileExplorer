@@ -22,7 +22,7 @@ use std::env;
 use windows::Win32::UI::Shell::IsUserAnAdmin;
 use std::thread::ThreadId;
 use regex::Regex;
-use strsim::levenshtein;
+use strsim::damerau_levenshtein;
 use serde_json::Value;
 use std::fs::File;
 use std::io::{Read, Write};
@@ -124,8 +124,32 @@ pub fn update_cache(keyword: &str, new_results: Vec<String>, current_options: &S
 
 
 
+// use by fuzzy-matching
+#[derive(Deserialize, Debug)]
+struct AlgorithmConfig {
+    name: String,
+    threshold: u32,
+}
 
 
+fn read_threshold_from_json(algorithm_name: &str) -> Result<u32, String> {
+    // JSON 파일 읽기
+    let data = fs::read_to_string("temp.json").map_err(|e| format!("Failed to read file: {}", e))?;
+
+    // JSON을 파싱하여 Vec<AlgorithmConfig>로 변환
+    let configs: Vec<AlgorithmConfig> = serde_json::from_str(&data)
+        .map_err(|e| format!("Failed to parse JSON: {}", e))?;
+
+    // 해당 알고리즘의 임계값을 찾아 반환
+    for config in configs {
+        if config.name == algorithm_name {
+            return Ok(config.threshold);
+        }
+    }
+
+    // 알맞은 알고리즘이 없을 경우 오류 반환
+    Err(format!("Algorithm not found: {}", algorithm_name))
+}
 
 
 #[derive(Serialize, Deserialize, Debug,Clone)]
@@ -436,6 +460,11 @@ pub async fn search_files<'a>(
                 if let Err(e) = window.emit("search-result", file_item.clone()) {
                     println!("Failed to emit search result: {:?}", e);
                 }
+            }
+        }else {
+            // 캐시에 없다면 바로 전송
+            if let Err(e) = window.emit("search-result", file_item.clone()) {
+                println!("Failed to emit search result: {:?}", e);
             }
         }
     
@@ -751,10 +780,10 @@ fn search_in_directory<'a>(
                             search_with_regex(&path, &keyword, &options, &metadata, &tx).await?;
                         }
                         "2" => {
-                            search_with_fuzzy(&path, &keyword, &options, &metadata, &tx).await?;
+                            search_with_fuzzy_damerau_levenshtein(&path, &keyword, &options, &metadata, &tx).await?;
                         }
                         "3" => {
-                            search_with_index(&path, &keyword, &options, &metadata, &tx).await?;
+                            search_with_fuzzy_jaccard_similarity(&path, &keyword, &options, &metadata, &tx).await?;
                         }
                         _ => {
                             search_default(&path, &keyword, &options, &metadata, &tx).await?;
@@ -907,7 +936,7 @@ async fn search_with_regex(
 }
 
 
-async fn search_with_fuzzy(
+async fn search_with_fuzzy_damerau_levenshtein(
     path: &Path,
     keyword: &str,               // 사용자가 입력한 검색어
     options: &SearchOptions,
@@ -915,7 +944,7 @@ async fn search_with_fuzzy(
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
     println!("Performing fuzzy-based search on: {:?}", path);
-
+    let threshold = read_threshold_from_json("Damerau-Levenshtein").unwrap_or(2);
     let file_name = path.file_stem().and_then(|name| name.to_str()).unwrap_or_default();
 
     // 탐색 스코프에 따른 분기 처리
@@ -926,9 +955,9 @@ async fn search_with_fuzzy(
     }
     
     // Levenshtein 거리로 파일명과 키워드가 얼마나 유사한지 계산
-    let distance = levenshtein(file_name, keyword);
+    let distance = damerau_levenshtein(file_name, keyword);
     println!("distance: {:?}", distance);
-    if distance <= 2 {  // 거리 임계값 설정
+    if distance <= threshold.try_into().unwrap() {  // 거리 임계값 설정
         let file_item = FileItem {
             file_name: file_name.to_string(),
             file_path: path.to_string_lossy().to_string(),
@@ -943,14 +972,58 @@ async fn search_with_fuzzy(
 }
 
 
-async fn search_with_index(
+// 유사도 계산 함수 (문자 단위로 n-gram을 사용하는 자카드 유사도)
+fn jaccard_similarity(a: &str, b: &str) -> f64 {
+    let a_grams: HashSet<_> = a.chars().collect();
+    let b_grams: HashSet<_> = b.chars().collect();
+
+    let intersection_size = a_grams.intersection(&b_grams).count();
+    let union_size = a_grams.union(&b_grams).count();
+
+    if union_size == 0 {
+        return 0.0;
+    }
+    intersection_size as f64 / union_size as f64
+}
+
+async fn search_with_fuzzy_jaccard_similarity(
     path: &Path,
     keyword: &str,
     options: &SearchOptions,
     metadata: &fs::Metadata,
     tx: &Arc<Mutex<Sender<FileItem>>>,
 ) -> Result<(), String> {
-    println!("Performing index-based search on: {:?}", path);
+    let file_name = path.file_stem().and_then(|name| name.to_str()).unwrap_or_default();
+    
+    // 탐색 스코프에 따른 분기 처리
+    if options.search_scope == "1" && metadata.is_dir() {
+        return Ok(()); // 폴더는 결과에 포함하지 않음
+    } else if options.search_scope == "2" && !metadata.is_dir() {
+        return Ok(()); // 파일은 결과에 포함하지 않음
+    }
+
+    // 임계값 (threshold)를 JSON 설정값에서 읽어오도록 구현
+    let jaccard_threshold = read_threshold_from_json("Jaccard-Similarity")
+    .map(|threshold| threshold as f64)
+    .unwrap_or(0.5);
+
+    // 자카드 유사도 계산
+    let similarity = jaccard_similarity(file_name, keyword);
+    println!("Jaccard similarity between '{}' and '{}': {}", file_name, keyword, similarity);
+
+    // 자카드 유사도가 임계값 이상이면 매칭된 것으로 간주
+    if similarity >= jaccard_threshold {
+        let file_item = FileItem {
+            file_name: file_name.to_string(),
+            file_path: path.to_string_lossy().to_string(),
+        };
+
+        // 전송
+        let tx_lock = tx.lock().await;
+        tx_lock.send(file_item).await.unwrap();
+        println!("File or directory matched by Jaccard similarity");
+    }
+
     Ok(())
 }
 
