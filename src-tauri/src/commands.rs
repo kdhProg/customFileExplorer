@@ -395,3 +395,13 @@ pub fn save_util_buttons(buttons: Vec<String>) -> Result<(), String> {
     Ok(())
 }
 
+
+/// Check existence of input directory or file Path
+///
+/// # Returns
+///
+/// bool
+#[tauri::command]
+pub fn path_exists(dir_path: String) -> bool {
+    Path::new(&dir_path).exists()
+}

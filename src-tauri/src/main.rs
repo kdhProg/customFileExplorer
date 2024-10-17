@@ -30,6 +30,7 @@ fn main() {
      commands::get_drive_info,
      commands::read_json_file,
      commands::save_util_buttons,
+     commands::path_exists,
 
      sch_adv_properties_slot::save_settings,
      sch_adv_properties_slot::load_settings,

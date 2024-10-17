@@ -36,10 +36,118 @@
     async function handleFolderSelected(event) {
         curFolderName = event.detail;
 
+        addPathHistory(curFolderName); // add to history
 
         filesInCurrentFolder = await listFilesInDirectory(curFolderName);
         // console.log(typeof filesInCurrentFolder[0])
     }
+
+    // -------------------- Back / Forward / Pre movement Button ----------------------
+    let pathHistory: string[] = []; // Maximum size : 10
+    let currentIndex = -1;
+
+    // Check Existence of input Directory or File path
+    async function isPathValid(path: string): Promise<boolean> {
+        return await invoke('path_exists', { dirPath: path });
+    }
+
+    // Add New Member -> used at EachFolderClick / handleFolderSelected
+    function addPathHistory(path: string) {
+    // 배열이 비어 있거나 이전 경로와 다른 경우에만 추가
+        if (pathHistory.length === 0 || pathHistory[pathHistory.length - 1] !== path) {
+            if (pathHistory.length >= 10) {
+                pathHistory.shift();
+            }
+
+            // Add Path & MoveIndex
+            // Set Index to last of Array
+            
+            pathHistory.push(path);
+            currentIndex = pathHistory.length - 1;
+            
+            console.log("pathHistory : "+pathHistory);
+            console.log("currentIndex: "+currentIndex);
+            
+        }
+    }
+
+
+    // 폴더 이동 함수
+    async function moveToFolder(newFolder: string) {
+
+        const isValid = await isPathValid(newFolder); // 경로 유효성 검사
+        if (!isValid) {
+        console.error(`Invalid path: ${newFolder}`);
+        return; // 경로가 유효하지 않으면 이동 중단
+        }
+
+        pathHistory = pathHistory.slice(0, currentIndex + 1); // 현재 인덱스 이후 경로 제거
+        pathHistory.push(newFolder); // 새 경로 추가
+
+        // 최대 크기가 10을 초과하면 첫 번째 경로 삭제
+        if (pathHistory.length > 10) {
+            pathHistory.shift();
+        }
+
+        currentIndex = pathHistory.length - 1; // 현재 인덱스 업데이트
+        curFolderName = newFolder; // 현재 폴더 경로 업데이트
+        filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+    }
+
+    // 뒤로 가기 함수
+    async function goBack() {
+        if (currentIndex > 0) {
+            currentIndex--;
+            curFolderName = pathHistory[currentIndex];
+            filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+        }
+        console.log(pathHistory);
+    }
+
+    // 앞으로 가기 함수
+    async function goForward() {
+        if (currentIndex < pathHistory.length - 1) {
+            currentIndex++;
+            curFolderName = pathHistory[currentIndex];
+            filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+        }
+        console.log(pathHistory);
+    }
+
+    // 상위 폴더 계산 함수
+    function getParentFolder(path: string): string | null {
+        const parts = path.split('\\'); // '\'로 경로 분리
+
+        if (parts.length === 2 && /^[A-Z]:$/.test(parts[0])) {
+            // 현재 또는 부모 폴더가 드라이브 루트 ('D:')
+            return `${parts[0]}\\`; // 'D:' → 'D:\' 형태로 반환
+        }
+
+        const parent = parts.slice(0, -1).join('\\'); // 상위 경로 계산
+        return parent || null; // 유효하지 않으면 null 반환
+    }
+
+    // 상위 폴더 이동 함수
+    async function goUp() {
+        const isRoot = /^[A-Z]:\\?$/.test(curFolderName); // 현재 위치가 루트인지 확인
+        if (isRoot) {
+            console.log('Already at the root folder. Cannot move up.');
+            return; // 루트에서 더 상위로 이동할 수 없음
+        }
+
+        const parentFolder = getParentFolder(curFolderName); // 상위 폴더 계산
+        console.log('Parent folder:', parentFolder);
+
+        if (parentFolder) {
+            await moveToFolder(parentFolder); // 상위 폴더로 이동
+        } else {
+            console.log('Already at the root folder.'); // 더 이상 상위로 이동 불가
+        }
+    }
+
+
+
+
 
     // -------------------- File Icon ----------------------------
 
@@ -252,6 +360,8 @@
         if(isDir){
             // case : this is directory
             filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+
+            addPathHistory(curFolderName); // add to history
         }else{
             // case : this is folder
             openFileWithDefaultProgram(curFolderName);
@@ -837,15 +947,21 @@ let slots = [
         <div class="movement-button-container">
             <div>
                 <!-- ← -->
-                 <img id="movement-btn-left" class="movement-button" src="/arrows/thick_arrows_left.png" alt="">
+                <button class="movement-button-wrapper-btn" on:click={() => goBack()} disabled={currentIndex <= 0}>
+                    <img id="movement-btn-left" class="movement-button" src="/arrows/thick_arrows_left.png" alt="">
+                </button>
             </div>
             <div>
                 <!-- → -->
-                <img id="movement-btn-right" class="movement-button" src="/arrows/thick_arrows_right.png" alt="">
+                <button class="movement-button-wrapper-btn" on:click={() => goForward()} disabled={currentIndex >= pathHistory.length - 1}>
+                    <img id="movement-btn-right" class="movement-button" src="/arrows/thick_arrows_right.png" alt="">
+                </button>
             </div>
             <div>
                 <!-- ↑ -->
-                <img id="movement-btn-up" class="movement-button" src="/arrows/thick_arrows_up.png" alt="">
+                <button class="movement-button-wrapper-btn" on:click={() => goUp()}>
+                    <img id="movement-btn-up" class="movement-button" src="/arrows/thick_arrows_up.png" alt="">
+                </button>
             </div>
         </div>
 

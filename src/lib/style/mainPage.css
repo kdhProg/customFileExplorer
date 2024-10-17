@@ -319,6 +319,11 @@
     margin-left: 20px;
 }
 
+.movement-button-wrapper-btn{
+    border:none;
+    background: none;
+}
+
 .movement-button{
 
     cursor: pointer;
