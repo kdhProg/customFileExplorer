@@ -42,7 +42,7 @@
         // console.log(typeof filesInCurrentFolder[0])
     }
 
-    // -------------------- Back / Forward / Pre movement Button ----------------------
+    // ------------------------------ Back / Forward / Pre movement Button ------------------------------
     let pathHistory: string[] = []; // Maximum size : 10
     let currentIndex = -1;
 
@@ -149,7 +149,7 @@
 
 
 
-    // -------------------- File Icon ----------------------------
+    // ------------------------------ File Icon ------------------------------
 
     let fileIcons: { [key: string]: string } = {}; // 파일 경로별 아이콘 저장 객체
 
@@ -244,7 +244,7 @@
     // Load default theme when page load
     applyTheme(currentTheme);
 
-// ---------------------------------------  Search ------------------------------------------
+// ------------------------------  Search ------------------------------
 
     // Check If searching is on
     let isSearching:boolean = false;
@@ -351,7 +351,7 @@
     }
 
     
-    // --------------------------------- Click Each Folder / Files ---------------------------------
+    // ------------------------------ Click Each Folder / Files ------------------------------
     // Folder - update current folder list
     // File - execute with default enrolled programs
     async function eachFolderClick(file:string){
@@ -369,7 +369,7 @@
         }
     }
 
-    // ---------------------------------------  File Drag  ------------------------------------------
+    // ------------------------------  File Drag  ------------------------------
     // 상태 관리
   let isDragging = writable(false);  // 드래그 상태
   let startX = 0, startY = 0;        // 드래그 시작 좌표
@@ -458,7 +458,7 @@
   }
 
 
-    // --------------------------------- util bars ---------------------------------
+    // ------------------------------ util bars ------------------------------
     async function load_util_buttons(){
         let jsonData = {};
 
@@ -472,6 +472,7 @@
     return jsonData;
     }   
 
+    // Util Button Lists
     let utilButtons = []
 
     // util_buttons toggle checkbox
@@ -495,15 +496,67 @@
 
     // utilButtons apply button - backend
     async function util_apply() {
-    try {
-      await invoke('save_util_buttons', { buttons: utilButtons });
-    } catch (error) {
-      console.error('Failed to send buttons:', error);
-    }
+        try {
+        await invoke('save_util_buttons', { buttons: utilButtons });
+        } catch (error) {
+        console.error('Failed to send buttons:', error);
+        }
   }
+
+
+  // ------------------------------ util buttons detail ------------------------------
+
+  let copyClipboard: string[] = [];
+  let cutClipboard: string[] = [];
+  let message = writable<string>(''); // 에러 메시지 상태
+
+    function copyFiles() {
+        const files = $selectedFiles;
+
+        // cutClipboard에서 중복된 파일 제거
+        cutClipboard = cutClipboard.filter((file) => !files.includes(file));
+
+        // copyClipboard에 selectedFiles의 값 저장
+        copyClipboard = [...files];
+
+        console.log('Copy clipboard:', copyClipboard);
+        console.log('Cut clipboard after removal:', cutClipboard);
+    }
+
+    function cutFiles() {
+        const files = $selectedFiles;
+
+        // copyClipboard에서 중복된 파일 제거
+        copyClipboard = copyClipboard.filter((file) => !files.includes(file));
+
+        // cutClipboard에 selectedFiles의 값 저장
+        cutClipboard = [...files];
+
+        console.log('Cut clipboard:', cutClipboard);
+        console.log('copy clipboard after removal:', copyClipboard);
+
+    }
+    async function pasteFiles(clipboard: string[], targetPath: string, isCut: boolean) {
+        try {
+        const result = await invoke('paste_files', { files: clipboard, targetPath, cut: isCut });
+
+        if (!result.success) {
+            message.set(result.message);
+        } else {
+            message.set('Files pasted successfully.');
+            if (isCut) cutClipboard = [];
+                else copyClipboard = [];
+            }
+        } catch (err) {
+        message.set(`Error: ${err}`);
+        }
+    }
+
+
+  
     
 
-// --------------------------------- divide bar ---------------------------------
+  // ------------------------------ divide bar ------------------------------
 let sidebarWidth = 250;
 
 function updateSidebarWidth(width) {
@@ -514,7 +567,7 @@ function updateSidebarWidth(width) {
 }
 
 
-// onMount -> load when page starts
+// ------------------------------ onMount -> load when page starts ------------------------------
 onMount(() => {
 
     load_util_buttons().then(data => {
@@ -616,7 +669,7 @@ function updateFileSize(event: Event){
     fileSize = parseInt(target.value);
 }
 
-// ---------- advanced modal sch options ----------
+// ------------------------------ advanced modal sch options ------------------------------
 
 // custom thread pools
 let isThreadPoolsChk : boolean = false;
@@ -998,15 +1051,42 @@ let slots = [
             {#each utilButtons as btns}
                 <div class="util-button-wrapper">
                     {#if btns === "Home"}
-                        <img id={btns} class="util-button" src="/utilbuttons/util_home.png" alt="">
+                    <div class="util-each-button-wrapper">
+                        <button class="util-button">
+                            <img class="util-button-img" src="/utilbuttons/util_home.png" alt="">
+                        </button>
+                        
+                    </div>
                     {:else if btns === "Cut"}
-                        <img id={btns} class="util-button" src="/utilbuttons/util_cut.png" alt="">
+                    <div class="util-buttons-wrapper">
+                        <button class="util-button" on:click={cutFiles}>
+                            <img class="util-button-img" src="/utilbuttons/util_cut.png" alt="">
+                        </button>
+                        <button class="util-button"
+                            on:click={() => pasteFiles(cutClipboard, curFolderName, true)} 
+                            disabled={cutClipboard.length === 0}
+                        >
+                            <img class="util-button-img" src="/utilbuttons/util_cut_paste.png" alt="">
+                        </button>
+                    </div>
                     {:else if btns === "Copy"}
-                        <img id={btns} class="util-button" src="/utilbuttons/util_copy.png" alt="">
-                    {:else if btns === "Paste"}
-                        <img id={btns} class="util-button" src="/utilbuttons/util_paste.png" alt="">
+                    <div class="util-buttons-wrapper">
+                        <button class="util-button"  on:click={copyFiles}>
+                            <img class="util-button-img" src="/utilbuttons/util_copy.png" alt="">
+                        </button>
+                        <button class="util-button" 
+                            on:click={() => pasteFiles(copyClipboard, curFolderName, false)} 
+                            disabled={copyClipboard.length === 0}
+                        >
+                            <img class="util-button-img" src="/utilbuttons/util_copy_paste.png" alt="">
+                        </button>
+                    </div>
                     {:else if btns === "Delete"}
-                        <img id={btns} class="util-button" src="/utilbuttons/util_delete.png" alt="">
+                    <div class="util-buttons-wrapper">
+                        <button class="util-button">
+                            <img class="util-button-img" src="/utilbuttons/util_delete.png" alt="">
+                        </button>
+                    </div>
                     {/if}
                 </div>
             {/each}
@@ -1129,8 +1209,7 @@ let slots = [
                         <h3>{currentTranslations.utils}</h3>
                         <label for="">{currentTranslations.util_home}</label><input type="checkbox" checked={isChecked("Home")} on:change="{(e) => toggleItem('Home', e.target.checked)}"> 
                         &nbsp;<label for="">{currentTranslations.util_cut}</label><input type="checkbox" checked={isChecked("Cut")} on:change="{(e) => toggleItem('Cut', e.target.checked)}">
-                        &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}"> 
-                        &nbsp;<label for="">{currentTranslations.util_paste}</label><input type="checkbox" checked={isChecked("Paste")} on:change="{(e) => toggleItem('Paste', e.target.checked)}">
+                        &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}">
                         <br/>
                         <label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
                         <br/>
