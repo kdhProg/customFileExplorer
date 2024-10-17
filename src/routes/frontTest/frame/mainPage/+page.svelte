@@ -355,16 +355,18 @@
     // Folder - update current folder list
     // File - execute with default enrolled programs
     async function eachFolderClick(file:string){
-        curFolderName = file;
-        let isDir = await isDirectory(curFolderName);
+        // curFolderName = file;
+        let isDir = await isDirectory(file);
         if(isDir){
             // case : this is directory
+            curFolderName = file;
+
             filesInCurrentFolder = await listFilesInDirectory(curFolderName);
 
             addPathHistory(curFolderName); // add to history
         }else{
-            // case : this is folder
-            openFileWithDefaultProgram(curFolderName);
+            // case : this is file -> not update currentDirectory
+            openFileWithDefaultProgram(file);
             
         }
     }
@@ -505,10 +507,14 @@
 
 
   // ------------------------------ util buttons detail ------------------------------
+  
+  //   -------------------- Home --------------------
+  
 
+  //   -------------------- Cut / Copy / Paste --------------------
   let copyClipboard: string[] = [];
   let cutClipboard: string[] = [];
-  let message = writable<string>(''); // 에러 메시지 상태
+  let ccp_message = writable<string>(''); // 에러 메시지 상태
 
     function copyFiles() {
         const files = $selectedFiles;
@@ -538,19 +544,43 @@
     }
     async function pasteFiles(clipboard: string[], targetPath: string, isCut: boolean) {
         try {
-        const result = await invoke('paste_files', { files: clipboard, targetPath, cut: isCut });
-
+            const result = await invoke('paste_files', { files: clipboard, targetPath, cut: isCut });
+            // console.log("targetPath : "+targetPath);
         if (!result.success) {
-            message.set(result.message);
+            ccp_message.set(result.message);
         } else {
-            message.set('Files pasted successfully.');
+            ccp_message.set('Files pasted successfully.');
             if (isCut) cutClipboard = [];
                 else copyClipboard = [];
             }
         } catch (err) {
-        message.set(`Error: ${err}`);
+            ccp_message.set(`Error: ${err}`);
         }
+        filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
     }
+
+  //   -------------------- Delete --------------------
+
+    const del_message = writable<string>(''); // 에러 메시지 상태
+
+    // 휴지통으로 파일 이동 함수
+    async function moveToTrash() {
+    const files = $selectedFiles; // 최신 선택된 파일 목록 가져오기
+
+    try {
+        const result = await invoke('move_files_to_trash', { paths: files });
+        filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
+        if (!result.success) {
+            del_message.set(result.message); // 에러 메시지 설정
+        } else {
+            del_message.set('All files moved to trash successfully.');
+        selectedFiles.set([]); // 선택된 파일 목록 초기화
+        }
+    } catch (err) {
+            del_message.set(`Unexpected error: ${err}`);
+    }
+    }
+
 
 
   
@@ -908,7 +938,7 @@ let searchValObj = {
 
 
 
-// Sch Advanced value Slot Modal
+// ------------------------------ Sch Advanced value Slot Modal -------------------------------
 
 let showAdvSlotModal:boolean = false;
 
@@ -1055,7 +1085,6 @@ let slots = [
                         <button class="util-button">
                             <img class="util-button-img" src="/utilbuttons/util_home.png" alt="">
                         </button>
-                        
                     </div>
                     {:else if btns === "Cut"}
                     <div class="util-buttons-wrapper">
@@ -1083,7 +1112,7 @@ let slots = [
                     </div>
                     {:else if btns === "Delete"}
                     <div class="util-buttons-wrapper">
-                        <button class="util-button">
+                        <button class="util-button" on:click={moveToTrash} disabled={$selectedFiles.length === 0}>
                             <img class="util-button-img" src="/utilbuttons/util_delete.png" alt="">
                         </button>
                     </div>
@@ -1207,10 +1236,9 @@ let slots = [
                         <button class="lang_btn" on:click={() => switchLanguage('ko')}>한국어</button>
                     {:else if activeTab === "utils"}
                         <h3>{currentTranslations.utils}</h3>
-                        <label for="">{currentTranslations.util_home}</label><input type="checkbox" checked={isChecked("Home")} on:change="{(e) => toggleItem('Home', e.target.checked)}"> 
+                        <!-- <label for="">{currentTranslations.util_home}</label><input type="checkbox" checked={isChecked("Home")} on:change="{(e) => toggleItem('Home', e.target.checked)}">  -->
                         &nbsp;<label for="">{currentTranslations.util_cut}</label><input type="checkbox" checked={isChecked("Cut")} on:change="{(e) => toggleItem('Cut', e.target.checked)}">
                         &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}">
-                        <br/>
                         <label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
                         <br/>
                     <!-- Modal : Search Tab -->

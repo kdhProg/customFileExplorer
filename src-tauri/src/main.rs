@@ -10,11 +10,12 @@
 mod commands;
 mod search;
 mod sch_adv_properties_slot;
+mod front_utils;
 
 use search::AppState;
 
-use search::SearchProcess;
-use std::sync::Arc;
+// use search::SearchProcess;
+// use std::sync::Arc;
 
 fn main() {
  tauri::Builder::default()
@@ -37,7 +38,10 @@ fn main() {
      sch_adv_properties_slot::delete_settings,
 
      search::search_files,
-     search::cancel_search
+     search::cancel_search,
+
+     front_utils::paste_files,
+     front_utils::move_files_to_trash
    ])
    .run(tauri::generate_context!())
    .expect("error while running tauri application");

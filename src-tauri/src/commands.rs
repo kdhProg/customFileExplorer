@@ -405,3 +405,4 @@ pub fn save_util_buttons(buttons: Vec<String>) -> Result<(), String> {
 pub fn path_exists(dir_path: String) -> bool {
     Path::new(&dir_path).exists()
 }
+
