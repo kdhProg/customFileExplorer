@@ -1274,7 +1274,9 @@ let slots = [
         <div 
             class="file-viewer" 
             id="fileViewer"
-            on:mousedown={modal_set_startDrag}
+            on:mousedown={handleMouseDown} 
+            on:mousemove={handleMouseMove} 
+            on:mouseup={handleMouseUp}
         >
             {#if $isDragging}
                 <div class="selection-rect" style={$rectStyle}></div>
