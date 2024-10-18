@@ -96,6 +96,8 @@
     overflow-y: auto; /* 내용이 많을 경우 수직 스크롤을 사용 */
     overflow-x: hidden; /* 가로 스크롤은 숨김 */
 
+    position: relative; /* selection-rect의 기준을 file-viewer로 설정 */
+
 }
 
 /* selection Box */

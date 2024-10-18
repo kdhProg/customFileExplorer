@@ -372,92 +372,108 @@
     }
 
     // ------------------------------  File Drag  ------------------------------
-    // 상태 관리
-  let isDragging = writable(false);  // 드래그 상태
-  let startX = 0, startY = 0;        // 드래그 시작 좌표
-  let endX = 0, endY = 0;            // 드래그 끝 좌표
-  let selectedFiles = writable<string[]>([]);  // 선택된 파일 경로 저장
+    let isDragging = writable(false);  // 드래그 상태
+let startX = 0, startY = 0;        // 드래그 시작 좌표
+let endX = 0, endY = 0;            // 드래그 끝 좌표
+let selectedFiles = writable<string[]>([]);  // 선택된 파일 경로 저장
 
-  const dragThreshold = 5;  // 최소 이동 거리 (5px 이상만 드래그로 처리)
-  let rectStyle = writable('');  // 직사각형 CSS 스타일
+const dragThreshold = 5;  // 최소 이동 거리 (5px 이상만 드래그로 처리)
+let rectStyle = writable('');  // 직사각형 CSS 스타일
+let container;  // file-viewer 컨테이너 참조
 
-  // 마우스 다운: 클릭/드래그 시작 지점 초기화
-  function handleMouseDown(event: MouseEvent) {
-    event.preventDefault();  // 기본 브라우저 동작 방지
-    clearSelection();
+// 마우스 다운: 클릭/드래그 시작 지점 초기화
+function handleMouseDown(event: MouseEvent) {
+  event.preventDefault(); // 기본 브라우저 동작 방지
+  clearSelection();
 
-    // 클릭 및 드래그 초기화
-    startX = event.clientX;
-    startY = event.clientY;
-    endX = startX;
-    endY = startY;
-    
-    rectStyle.set('');
-    isDragging.set(true);  // 드래그 상태 시작
-  }
+  container = document.getElementById('fileViewer'); // file-viewer 컨테이너 참조
 
-  // 마우스 이동: 일정 거리 이상 이동하면 드래그로 간주
-  function handleMouseMove(event: MouseEvent) {
-    if (!$isDragging) return;  // 드래그 상태가 아니면 종료
+  const rect = container.getBoundingClientRect(); // 부모 컨테이너 기준 위치
+  // 클릭한 지점과 스크롤 위치를 포함한 절대 좌표 계산
+  startX = event.pageX - rect.left + container.scrollLeft;
+  startY = event.pageY - rect.top + container.scrollTop;
+  endX = startX;
+  endY = startY;
 
-    const dx = Math.abs(event.clientX - startX);
-    const dy = Math.abs(event.clientY - startY);
+  rectStyle.set('');
+  isDragging.set(true); // 드래그 상태 시작
+}
 
-    // 드래그로 간주되는 최소 거리 이상 이동했을 때만 처리
-    if (dx > dragThreshold || dy > dragThreshold) {
-      endX = event.clientX;
-      endY = event.clientY;
-      updateRectStyle();  // 직사각형 스타일 업데이트
-    }
-  }
+// 마우스 이동: 일정 거리 이상 이동하면 드래그로 간주
+function handleMouseMove(event: MouseEvent) {
+  if (!$isDragging) return; // 드래그 상태가 아니면 종료
 
-  // 마우스 업: 클릭 또는 드래그 종료 처리
-  function handleMouseUp(event: MouseEvent) {
-    isDragging.set(false);  // 드래그 상태 해제
-    detectFilesInside();  // 직사각형 내 파일 탐지
-  }
+  const rect = container.getBoundingClientRect();
+  // 스크롤된 상태에서 절대 좌표 계산
+  endX = event.pageX - rect.left + container.scrollLeft;
+  endY = event.pageY - rect.top + container.scrollTop;
 
-  // 직사각형 스타일 업데이트
-  function updateRectStyle() {
-    const x1 = Math.min(startX, endX);
-    const y1 = Math.min(startY, endY);
-    const width = Math.abs(endX - startX);
-    const height = Math.abs(endY - startY);
+  updateRectStyle(); // 직사각형 스타일 업데이트
+}
 
-    rectStyle.set(`left: ${x1}px; top: ${y1}px; width: ${width}px; height: ${height}px;`);
-  }
+// 마우스 업: 클릭 또는 드래그 종료 처리
+function handleMouseUp(event: MouseEvent) {
+  isDragging.set(false); // 드래그 상태 해제
+  detectFilesInside(); // 직사각형 내 파일 탐지
+}
 
-  // 기존 선택된 파일 해제
-  function clearSelection() {
-    const selectedElements = document.querySelectorAll('.file-item.selected');
-    selectedElements.forEach((el) => el.classList.remove('selected'));
-  }
+// 직사각형 스타일 업데이트
+function updateRectStyle() {
+  const x1 = Math.min(startX, endX);
+  const y1 = Math.min(startY, endY);
+  const width = Math.abs(endX - startX);
+  const height = Math.abs(endY - startY);
 
-  // 직사각형 내 포함된 파일 탐지
-  function detectFilesInside() {
-    const fileElements = document.querySelectorAll('.file-item');
-    const rect = new DOMRect(
-      Math.min(startX, endX) + window.scrollX,
-      Math.min(startY, endY) + window.scrollY,
-      Math.abs(endX - startX),
-      Math.abs(endY - startY)
+  // 직사각형 스타일 설정
+  rectStyle.set(`left: ${x1}px; top: ${y1}px; width: ${width}px; height: ${height}px;`);
+}
+
+// 기존 선택된 파일 해제
+function clearSelection() {
+  const selectedElements = document.querySelectorAll('.file-item.selected');
+  selectedElements.forEach((el) => el.classList.remove('selected'));
+}
+
+function detectFilesInside() {
+  const container = document.getElementById('fileViewer'); // file-viewer 컨테이너 참조
+  const containerRect = container.getBoundingClientRect(); // 컨테이너 기준 좌표 가져오기
+
+  const selectionRect = {
+    left: Math.min(startX, endX),
+    top: Math.min(startY, endY),
+    right: Math.max(startX, endX),
+    bottom: Math.max(startY, endY),
+  };
+
+  const fileElements = document.querySelectorAll('.file-item');
+
+  const selected = Array.from(fileElements).filter((el) => {
+    const elRect = el.getBoundingClientRect();
+
+    // 파일 요소의 좌표를 컨테이너 기준으로 변환
+    const elementLeft = elRect.left - containerRect.left + container.scrollLeft;
+    const elementTop = elRect.top - containerRect.top + container.scrollTop;
+    const elementRight = elementLeft + elRect.width;
+    const elementBottom = elementTop + elRect.height;
+
+    // 선택 사각형과 파일 요소 간의 교차 여부 확인
+    return !(
+      selectionRect.right < elementLeft ||
+      selectionRect.left > elementRight ||
+      selectionRect.bottom < elementTop ||
+      selectionRect.top > elementBottom
     );
+  });
 
-    const selected = Array.from(fileElements).filter((el) => {
-      const elRect = el.getBoundingClientRect();
-      return (
-        rect.left <= elRect.right &&
-        rect.right >= elRect.left &&
-        rect.top <= elRect.bottom &&
-        rect.bottom >= elRect.top
-      );
-    });
+  // 선택된 요소에 'selected' 클래스 추가
+  selected.forEach((el) => el.classList.add('selected'));
 
-    selected.forEach((el) => el.classList.add('selected'));
-    const selectedPaths = selected.map((el) => el.getAttribute('data-file-path') || '');
-    console.log(`Selected items count: ${selected.length}`);
-    selectedFiles.set(selectedPaths);
-  }
+  const selectedPaths = selected.map((el) => el.getAttribute('data-file-path') || '');
+  console.log(`Selected items count: ${selected.length}`);
+  selectedFiles.set(selectedPaths);
+}
+
+
 
 
     // ------------------------------ util bars ------------------------------
