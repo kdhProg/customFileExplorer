@@ -1,7 +1,7 @@
 {
   "buttons": [
+    "Copy",
     "Delete",
-    "Cut",
-    "Copy"
+    "Cut"
   ]
 }

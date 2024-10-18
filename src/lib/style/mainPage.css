@@ -164,7 +164,11 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
+    /* transform: translate(-50%, -50%); */
+
+    top: calc(50vh - 175px); /* 화면 중앙 정렬 (175px = 높이의 절반) */
+    left: calc(50vw - 175px); /* 가로 중앙 정렬 (175px = 너비의 절반) */
+
     /* background-color: white; */
     padding: 15px;
     /* box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); */
@@ -479,4 +483,181 @@
 }
 .adv-slot input {
     width: 70px;
+}
+
+/* ----------- Copy List ------------- */
+.copy-items-container{
+    display:flex;
+    flex-direction: row;
+
+    max-height: 30px;
+
+    /* overflow: hidden; */
+}
+
+.copy-banner{
+    height: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 90px;
+
+    border-radius: 10px;
+}
+
+.copy-item-list{
+    display:flex;
+    flex-direction: row;
+
+    width: 100%;
+
+    flex-wrap: wrap; /* 요소가 넘칠 경우 자동으로 줄바꿈 */
+    gap: 10px 5px; /* 열 간격 10px, 행 간격 5px */
+    transition: max-height 0.3s ease-in-out;
+}
+
+.copy-banner-text{
+    font-weight: bold;
+}
+
+.copy-item{
+    display:flex;
+    flex-direction: row;
+    background-color: rgba(255, 94, 40, 0.1);
+    border-radius: 10px;
+    padding: 2px;
+    margin-right: 5px;
+
+    justify-content: center;
+    align-items: center;
+
+    height: 25px;
+}
+
+.copy-item-file-name{
+    font-size: 12px;
+    height: 100%;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+
+    /* justify-content: center;
+    align-items: center; */
+
+    padding-top: 10px;
+
+    /* border: 1px black solid; */
+}
+
+.copy-item-cancle-btn{
+    font-size: 10px;
+    background-color: transparent;
+    border: none;
+    height: 100%;
+
+    /* border: 1px black solid; */
+
+    cursor: pointer;
+}
+
+.copy-list-expand-wrapper{
+    width: 70px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.copy-list-expand-btn{
+    cursor: pointer;
+    background: transparent;
+    border:none;
+}
+
+
+/* ----------- Cut List ------------- */
+.cut-items-container{
+    display:flex;
+    flex-direction: row;
+
+    max-height: 30px;
+
+    /* overflow: hidden; */
+}
+
+.cut-banner{
+    height: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+    width: 90px;
+
+    border-radius: 10px;
+}
+
+.cut-item-list{
+    display:flex;
+    flex-direction: row;
+
+    width: 100%;
+
+    flex-wrap: wrap; /* 요소가 넘칠 경우 자동으로 줄바꿈 */
+    gap: 10px 5px; /* 열 간격 10px, 행 간격 5px */
+    transition: max-height 0.3s ease-in-out;
+}
+
+.cut-banner-text{
+    font-weight: bold;
+}
+
+.cut-item{
+    display:flex;
+    flex-direction: row;
+    background-color: rgba(82, 128, 255, 0.1);
+    border-radius: 10px;
+    padding: 2px;
+    margin-right: 5px;
+
+    justify-content: center;
+    align-items: center;
+
+    height: 25px;
+}
+
+.cut-item-file-name{
+    font-size: 12px;
+    height: 100%;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100px;
+
+    /* justify-content: center;
+    align-items: center; */
+
+    padding-top: 10px;
+
+    /* border: 1px black solid; */
+}
+
+.cut-item-cancle-btn{
+    font-size: 10px;
+    background-color: transparent;
+    border: none;
+    height: 100%;
+
+    /* border: 1px black solid; */
+
+    cursor: pointer;
+}
+
+.cut-list-expand-wrapper{
+    width: 70px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+.cut-list-expand-btn{
+    cursor: pointer;
+    background: transparent;
+    border:none;
 }

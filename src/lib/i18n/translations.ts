@@ -21,6 +21,9 @@ export const translations = {
         util_paste : 'Paste',
         util_delete: 'Delete',
 
+        copyClipboardText : 'Copy List',
+        cutClipboardText:'Cut List',
+
         modal_close : 'Close',
 
         interface_set : 'Interface Setting',
@@ -110,6 +113,9 @@ export const translations = {
         util_copy : '복사하기',
         util_paste : '붙여넣기',
         util_delete: '삭제하기',
+
+        copyClipboardText : '복사',
+        cutClipboardText:'잘라내기',
 
         modal_close : '닫기',
 

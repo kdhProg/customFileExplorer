@@ -17,7 +17,7 @@
     import "/src/lib/style/mainpage.css"
 
 
-    let showSettings = false;
+    let showSettings = false; // modal-settings
     let activeTab = "resize";
     let viewMode = "single"; // 기본 모드는 single (하나의 파일 탐색기)
     let fileSize = 80; // 기본 파일 아이템 크기
@@ -507,9 +507,6 @@
 
 
   // ------------------------------ util buttons detail ------------------------------
-  
-  //   -------------------- Home --------------------
-  
 
   //   -------------------- Cut / Copy / Paste --------------------
   let copyClipboard: string[] = [];
@@ -529,6 +526,11 @@
         console.log('Cut clipboard after removal:', cutClipboard);
     }
 
+    function rmCopyClipFile(event) {
+        const filePath = event.target.value; // 버튼의 value 값
+        copyClipboard = copyClipboard.filter(file => file !== filePath); // 배열에서 해당 파일 제거
+    }
+
     function cutFiles() {
         const files = $selectedFiles;
 
@@ -542,6 +544,12 @@
         console.log('copy clipboard after removal:', copyClipboard);
 
     }
+
+    function rmCutClipFile(event) {
+        const filePath = event.target.value; // 버튼의 value 값
+        cutClipboard = cutClipboard.filter(file => file !== filePath); // 배열에서 해당 파일 제거
+    }
+
     async function pasteFiles(clipboard: string[], targetPath: string, isCut: boolean) {
         try {
             const result = await invoke('paste_files', { files: clipboard, targetPath, cut: isCut });
@@ -582,7 +590,19 @@
     }
 
 
+// ----------------------- Copy / Paste List -----------------------------
+    let isCopyExpanded = false;
+    let isCutExpanded = false;
 
+    function toggleCopyList() {
+        isCopyExpanded = !isCopyExpanded;
+    }
+
+    
+
+    function toggleCutList() {
+        isCutExpanded = !isCutExpanded;
+    }
   
     
 
@@ -679,9 +699,6 @@ function openGitgubRepo(){
 }
 
 
-// ---- util bar ----
-
-
 // ------------ modal ------------------------
 // Settings Modal On / Off
 function toggleSettings() {
@@ -698,6 +715,64 @@ function updateFileSize(event: Event){
     const target = event.target as HTMLInputElement;
     fileSize = parseInt(target.value);
 }
+
+// ------------------------------ modal draggable ------------------------------------
+
+    let modal_set_modal; // 모달 참조
+    let modal_set_isDragging = false; // 드래그 상태
+    let modal_set_startX = 0, modal_set_startY = 0; // 마우스 시작 좌표
+
+    function modal_set_startDrag(e) {
+        if (e.target !== modal_set_modal && !modal_set_modal.contains(e.target)) return;
+
+        // 드래그 시작 플래그 설정
+        modal_set_isDragging = true;
+
+        // 모달의 현재 위치와 마우스의 클릭 지점 간 차이 계산
+        const rect = modal_set_modal.getBoundingClientRect();
+        modal_set_startX = e.clientX - rect.left;
+        modal_set_startY = e.clientY - rect.top;
+
+        // 커서 모양 변경
+        document.body.style.cursor = 'grabbing';
+
+        // 전역 이벤트 리스너 등록
+        document.addEventListener('mousemove', modal_set_onDrag);
+        document.addEventListener('mouseup', modal_set_stopDrag);
+    }
+
+    function modal_set_onDrag(e) {
+        if (!modal_set_isDragging) return;
+
+        // 마우스의 현재 위치에서 초기 오프셋을 적용한 새 좌표 계산
+        const newLeft = e.clientX - modal_set_startX;
+        const newTop = e.clientY - modal_set_startY;
+
+        // 뷰포트 경계 내로 제한
+        const maxX = window.innerWidth - modal_set_modal.offsetWidth;
+        const maxY = window.innerHeight - modal_set_modal.offsetHeight;
+
+        const finalLeft = Math.max(0, Math.min(newLeft, maxX));
+        const finalTop = Math.max(0, Math.min(newTop, maxY));
+
+        // 모달 위치 업데이트
+        modal_set_modal.style.left = `${finalLeft}px`;
+        modal_set_modal.style.top = `${finalTop}px`;
+    }
+
+    function modal_set_stopDrag() {
+        modal_set_isDragging = false;
+
+        // 커서 복구
+        document.body.style.cursor = 'default';
+
+        // 이벤트 리스너 해제
+        document.removeEventListener('mousemove', modal_set_onDrag);
+        document.removeEventListener('mouseup', modal_set_stopDrag);
+    }
+
+
+
 
 // ------------------------------ advanced modal sch options ------------------------------
 
@@ -1129,8 +1204,58 @@ let slots = [
     </div>
     
     <!-- Just for height set -->
-    <div style="margin-bottom: 140px;"></div>
+    <div style="margin-bottom: 150px;"></div>
 
+    <!-- Copy / Paste List -->
+    {#if copyClipboard.length > 0}
+        <div class="copy-items-container" style="max-height: {isCopyExpanded ? 'none' : '30px'};">
+            <div class="copy-banner">
+                <span class="copy-banner-text">{currentTranslations.copyClipboardText}</span>
+            </div>
+            <div class="copy-item-list" 
+                style="max-height: {isCopyExpanded ? 'none' : '30px'}; 
+                overflow: {isCopyExpanded ? 'visible' : 'hidden'};"
+            >
+                {#each copyClipboard as file}
+                <div class="copy-item">
+                    <div class="copy-item-file-name">{getFileName(file)}</div>
+                    <button class="copy-item-cancle-btn" value={file} on:click={rmCopyClipFile}>❌</button>
+                </div>
+            {/each}
+            </div>
+            <div class="copy-list-expand-wrapper">
+                <button class="copy-list-expand-btn" on:click={toggleCopyList}>
+                    {isCopyExpanded ? '▲' : '▼'}
+                </button>
+            </div>
+        </div>
+    {/if}
+    {#if cutClipboard.length > 0}
+        <hr>
+        <div class="cut-items-container" style="max-height: {isCutExpanded ? 'none' : '30px'};">
+            <div class="cut-banner">
+                <span class="cut-banner-text">{currentTranslations.cutClipboardText}</span>
+            </div>
+            <div class="cut-item-list" 
+                style="max-height: {isCutExpanded ? 'none' : '30px'}; 
+                overflow: {isCutExpanded ? 'visible' : 'hidden'};"
+            >
+                {#each cutClipboard as file}
+                <div class="cut-item">
+                    <div class="cut-item-file-name">{getFileName(file)}</div>
+                    <button class="cut-item-cancle-btn" value={file} on:click={rmCutClipFile}>❌</button>
+                </div>
+            {/each}
+            </div>
+            <div class="cut-list-expand-wrapper">
+                <button class="cut-list-expand-btn" on:click={toggleCutList}>
+                    {isCutExpanded ? '▲' : '▼'}
+                </button>
+            </div>
+        </div>
+    {/if}
+    
+    
     <div class="content-wrapper {viewMode === 'dual' ? 'dual-view' : ''}">
         <!-- Directory List -->
         <aside class="sidebar" id="sidebar">
@@ -1149,9 +1274,7 @@ let slots = [
         <div 
             class="file-viewer" 
             id="fileViewer"
-            on:mousedown={handleMouseDown} 
-            on:mousemove={handleMouseMove} 
-            on:mouseup={handleMouseUp}
+            on:mousedown={modal_set_startDrag}
         >
             {#if $isDragging}
                 <div class="selection-rect" style={$rectStyle}></div>
@@ -1178,7 +1301,12 @@ let slots = [
 
     <!------------------------ Setting Modal ------------------------>
     {#if showSettings}
-        <div class="settings-modal">
+        <div 
+        id="modal-settings" 
+        class="settings-modal"
+        bind:this={modal_set_modal} 
+        on:mousedown={modal_set_startDrag}
+        >
             <div class="modal-content">
                 <h2>{currentTranslations.settings}</h2>
                 <ul class="tabs">
@@ -1438,8 +1566,8 @@ let slots = [
                                 </div>
                             </div>
                         </div>
-                        <br>
-                        <button on:click={()=>{console.log(searchValObj)}}>DEBUG</button>
+                        <!-- <br>
+                        <button on:click={()=>{console.log(searchValObj)}}>DEBUG</button> -->
                         <br>
                         <button on:click={advModalToggle}>
                             {currentTranslations.modal_sch_advanced_open_val_slots}
