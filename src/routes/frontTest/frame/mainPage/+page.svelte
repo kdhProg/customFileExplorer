@@ -228,12 +228,16 @@
             // change logo image by themes
         if (themePath.includes('default')) {
             currentLogo = themeLogos.default;
+            // change_icon_default();
         } else if (themePath.includes('retro')) {
             currentLogo = themeLogos.retro;
+            // change_icon_default();
         } else if (themePath.includes('sf')) {
             currentLogo = themeLogos.sf;
+            // change_icon_cyan();
         } else if(themePath.includes('linux')) {
             currentLogo = themeLogos.linux;
+            // change_icon_default();
         }
         // update current page theme
         currentTheme = themePath;
@@ -241,8 +245,86 @@
         filesInCurrentFolder = [...filesInCurrentFolder];
     }
 
+    function change_icon_cyan(){
+        const mv_btn_left = document.querySelector('#movement-btn-img-left'); // arrow : left
+        const mv_btn_right = document.querySelector('#movement-btn-img-right'); // arrow : left
+        const mv_btn_up = document.querySelector('#movement-btn-img-up'); // arrow : left
+
+        const searchBox_button_img = document.querySelector('#searchBox-button-img');
+        const util_btn_img_home = document.querySelector('#util-btn-img-home');
+        const util_btn_img_cut = document.querySelector('#util-btn-img-cut');
+        const util_btn_img_cut_paste = document.querySelector('#util-btn-img-cut-paste');
+        const util_btn_img_copy = document.querySelector('#util-btn-img-copy');
+        const util_btn_img_copy_paste = document.querySelector('#util-btn-img-copy-paste');
+        const util_btn_img_delete = document.querySelector('#util-btn-img-delete');
+        const settings_icon_img = document.querySelector('#settings-icon-img');
+
+        // movement arrows
+        mv_btn_left.src = "/arrows/cyan_theme/thick_arrows_left.png";
+        mv_btn_right.src = "/arrows/cyan_theme/thick_arrows_right.png";
+        mv_btn_up.src = "/arrows/cyan_theme/thick_arrows_up.png";
+
+        // search glass
+        searchBox_button_img.src = "/icons/cyan_theme/magnifying_glass.png";
+
+        // Utils : home / cut, cut_paste / copy, copy_paste / delete
+        if(util_btn_img_home){util_btn_img_home.src = "/utilbuttons/cyan_theme/util_home.png";}
+        if(util_btn_img_cut){util_btn_img_cut.src = "/utilbuttons/cyan_theme/util_cut.png";}
+        if(util_btn_img_cut_paste){util_btn_img_cut_paste.src = "/utilbuttons/cyan_theme/util_cut_paste.png";}
+        if(util_btn_img_copy){util_btn_img_copy.src = "/utilbuttons/cyan_theme/util_copy.png";}
+        if(util_btn_img_copy_paste){util_btn_img_copy_paste.src = "/utilbuttons/cyan_theme/util_copy_paste.png";}
+        if(util_btn_img_delete){util_btn_img_delete.src = "/utilbuttons/cyan_theme/util_delete.png";}
+        
+        // settings : gear img
+        settings_icon_img.src = "/icons/cyan_theme/gear.png";
+    }
+
+    function change_icon_default(){
+        const mv_btn_left = document.querySelector('#movement-btn-img-left'); // arrow : left
+        const mv_btn_right = document.querySelector('#movement-btn-img-right'); // arrow : left
+        const mv_btn_up = document.querySelector('#movement-btn-img-up'); // arrow : left
+
+        const searchBox_button_img = document.querySelector('#searchBox-button-img');
+        const util_btn_img_home = document.querySelector('#util-btn-img-home');
+        const util_btn_img_cut = document.querySelector('#util-btn-img-cut');
+        const util_btn_img_cut_paste = document.querySelector('#util-btn-img-cut-paste');
+        const util_btn_img_copy = document.querySelector('#util-btn-img-copy');
+        const util_btn_img_copy_paste = document.querySelector('#util-btn-img-copy-paste');
+        const util_btn_img_delete = document.querySelector('#util-btn-img-delete');
+        const settings_icon_img = document.querySelector('#settings-icon-img');
+
+        // movement arrows
+        // mv_btn_left.src = "/arrows/thick_arrows_left.png";
+        // mv_btn_right.src = "/arrows/thick_arrows_right.png";
+        // mv_btn_up.src = "/arrows/thick_arrows_up.png";
+        if(mv_btn_left){mv_btn_left.src = "/arrows/thick_arrows_left.png";}
+        if(mv_btn_right){mv_btn_right.src = "/arrows/thick_arrows_right.png";}
+        if(mv_btn_up){mv_btn_up.src = "/arrows/thick_arrows_up.png";}
+
+        // search glass
+        // searchBox_button_img.src = "/arrows/thick_arrows_left.png";
+        if(searchBox_button_img){searchBox_button_img.src = "/icons/magnifying_glass.png";}
+
+        // Utils : home / cut, cut_paste / copy, copy_paste / delete
+        if(util_btn_img_home){util_btn_img_home.src = "/utilbuttons/util_home.png";}
+        if(util_btn_img_cut){util_btn_img_cut.src = "/utilbuttons/util_cut.png";}
+        if(util_btn_img_cut_paste){util_btn_img_cut_paste.src = "/utilbuttons/util_cut_paste.png";}
+        if(util_btn_img_copy){util_btn_img_copy.src = "/utilbuttons/util_copy.png";}
+        if(util_btn_img_copy_paste){util_btn_img_copy_paste.src = "/utilbuttons/util_copy_paste.png";}
+        if(util_btn_img_delete){util_btn_img_delete.src = "/utilbuttons/util_delete.png";}
+        
+        // settings : gear img
+        // settings_icon_img.src = "/icons/gear.png";
+        if(settings_icon_img){settings_icon_img.src = "/icons/gear.png";}
+
+        
+    }
+
     // Load default theme when page load
-    applyTheme(currentTheme);
+    // applyTheme(currentTheme);
+    onMount(() => {
+        applyTheme(currentTheme);
+    });
 
 // ------------------------------  Search ------------------------------
 
@@ -495,12 +577,18 @@ function detectFilesInside() {
 
     // util_buttons toggle checkbox
     function toggleItem(value, checked) {
+        // apply cyan theme icons when current theme is SF
+        // if(currentLogo === "/icons/dir_logo_sf.png"){
+        //     change_icon_cyan();
+        // }else{
+        //     change_icon_default();
+        // }
         if (checked) {
-        // check - add to array
-        utilButtons = [...utilButtons, value];
+            // check - add to array
+            utilButtons = [...utilButtons, value];
         } else {
         // unchekced - remove from array
-        utilButtons = utilButtons.filter(item => item !== value);
+            utilButtons = utilButtons.filter(item => item !== value);
         }
 
         // apply when item changed
@@ -509,17 +597,17 @@ function detectFilesInside() {
 
     // check if utilButtons have values
     function isChecked(value) {
-     return utilButtons.includes(value);
+        return utilButtons.includes(value);
     }
 
-    // utilButtons apply button - backend
+        // utilButtons apply button - backend
     async function util_apply() {
         try {
-        await invoke('save_util_buttons', { buttons: utilButtons });
+            await invoke('save_util_buttons', { buttons: utilButtons });
         } catch (error) {
-        console.error('Failed to send buttons:', error);
+            console.error('Failed to send buttons:', error);
         }
-  }
+    }
 
 
   // ------------------------------ util buttons detail ------------------------------
@@ -1122,19 +1210,28 @@ let slots = [
             <div>
                 <!-- ← -->
                 <button class="movement-button-wrapper-btn" on:click={() => goBack()} disabled={currentIndex <= 0}>
-                    <img id="movement-btn-left" class="movement-button" src="/arrows/thick_arrows_left.png" alt="">
+                    <!-- <img id="movement-btn-img-left" class="movement-button" src="/arrows/thick_arrows_left.png" alt=""> -->
+                    <img id="movement-btn-img-left" class="movement-button" 
+                        src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/arrows/cyan_theme/thick_arrows_left.png' : '/arrows/thick_arrows_left.png'} alt=""
+                    >
                 </button>
             </div>
             <div>
                 <!-- → -->
                 <button class="movement-button-wrapper-btn" on:click={() => goForward()} disabled={currentIndex >= pathHistory.length - 1}>
-                    <img id="movement-btn-right" class="movement-button" src="/arrows/thick_arrows_right.png" alt="">
+                    <!-- <img id="movement-btn-img-right" class="movement-button" src="/arrows/thick_arrows_right.png" alt=""> -->
+                    <img id="movement-btn-img-right" class="movement-button" 
+                        src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/arrows/cyan_theme/thick_arrows_right.png' : '/arrows/thick_arrows_right.png'} alt=""
+                    >
                 </button>
             </div>
             <div>
                 <!-- ↑ -->
                 <button class="movement-button-wrapper-btn" on:click={() => goUp()}>
-                    <img id="movement-btn-up" class="movement-button" src="/arrows/thick_arrows_up.png" alt="">
+                    <!-- <img id="movement-btn-img-up" class="movement-button" src="/arrows/thick_arrows_up.png" alt=""> -->
+                    <img id="movement-btn-img-up" class="movement-button" 
+                        src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/arrows/cyan_theme/thick_arrows_up.png' : '/arrows/thick_arrows_up.png'} alt=""
+                    >
                 </button>
             </div>
         </div>
@@ -1158,7 +1255,10 @@ let slots = [
             <button class="searchbox-button-wrapper" on:click={cancelSearch}>❌</button>
             {:else}
             <button id="searchButton" class="searchbox-button-wrapper" on:click={searchFilesInDirectory}>
-                <img class="searchBox-button-img" src="/icons/magnifying_glass.png" alt="">
+                <!-- <img id="searchBox-button-img" class="searchBox-button-img" src="/icons/magnifying_glass.png" alt=""> -->
+                <img id="searchBox-button-img" class="util-button-img" 
+                    src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/icons/cyan_theme/magnifying_glass.png' : '/icons/magnifying_glass.png'} alt=""
+                >
             </button>
             {/if}
         </div>
@@ -1174,37 +1274,55 @@ let slots = [
                     {#if btns === "Home"}
                     <div class="util-each-button-wrapper">
                         <button class="util-button">
-                            <img class="util-button-img" src="/utilbuttons/util_home.png" alt="">
+                            <img id="util-btn-img-home" class="util-button-img" 
+                            src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/util_home.png' : '/utilbuttons/util_home.png'} alt="">
+                            
                         </button>
                     </div>
                     {:else if btns === "Cut"}
                     <div class="util-buttons-wrapper">
                         <button class="util-button" on:click={cutFiles}>
-                            <img class="util-button-img" src="/utilbuttons/util_cut.png" alt="">
+                            <img id="util-btn-img-cut" class="util-button-img" 
+                                src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/util_cut.png' : '/utilbuttons/util_cut.png'} alt=""
+                            >
                         </button>
-                        <button class="util-button"
+                        <button 
+                            class="util-button"
                             on:click={() => pasteFiles(cutClipboard, curFolderName, true)} 
                             disabled={cutClipboard.length === 0}
                         >
-                            <img class="util-button-img" src="/utilbuttons/util_cut_paste.png" alt="">
+                            <!-- <img id="util-btn-img-cut-paste" class="util-button-img" src="/utilbuttons/util_cut_paste.png" alt=""> -->
+                            <img id="util-btn-img-cut-paste" class="util-button-img" 
+                                src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/util_cut_paste.png' : '/utilbuttons/util_cut_paste.png'} alt=""
+                            >
                         </button>
                     </div>
                     {:else if btns === "Copy"}
                     <div class="util-buttons-wrapper">
                         <button class="util-button"  on:click={copyFiles}>
-                            <img class="util-button-img" src="/utilbuttons/util_copy.png" alt="">
+                            <!-- <img id="util-btn-img-copy" class="util-button-img" src="/utilbuttons/util_copy.png" alt=""> -->
+                            <img id="util-btn-img-copy" class="util-button-img" 
+                                src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/util_copy.png' : '/utilbuttons/util_copy.png'} alt=""
+                            >
                         </button>
-                        <button class="util-button" 
+                        <button 
+                            class="util-button" 
                             on:click={() => pasteFiles(copyClipboard, curFolderName, false)} 
                             disabled={copyClipboard.length === 0}
                         >
-                            <img class="util-button-img" src="/utilbuttons/util_copy_paste.png" alt="">
+                            <!-- <img id="util-btn-img-copy-paste" class="util-button-img" src="/utilbuttons/util_copy_paste.png" alt=""> -->
+                            <img id="util-btn-img-copy-paste" class="util-button-img" 
+                            src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/util_copy_paste.png' : '/utilbuttons/util_copy_paste.png'} alt=""
+                        >
                         </button>
                     </div>
                     {:else if btns === "Delete"}
                     <div class="util-buttons-wrapper">
                         <button class="util-button" on:click={moveToTrash} disabled={$selectedFiles.length === 0}>
-                            <img class="util-button-img" src="/utilbuttons/util_delete.png" alt="">
+                            <!-- <img id="util-btn-img-delete" class="util-button-img" src="/utilbuttons/util_delete.png" alt=""> -->
+                        <img id="util-btn-img-delete" class="util-button-img" 
+                            src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/util_delete.png' : '/utilbuttons/util_delete.png'} alt=""
+                        >
                         </button>
                     </div>
                     {/if}
@@ -1215,7 +1333,10 @@ let slots = [
         <!-- settings -->
         <div class="settings-icon-wrapper" on:click={toggleSettings}>
             <!-- ⚙️ -->
-             <img class="gear-image" src="/icons/gear.png" alt="">
+             <!-- <img id="settings-icon-img" class="gear-image" src="/icons/gear.png" alt=""> -->
+             <img id="settings-icon-img" class="gear-image" 
+                src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/icons/cyan_theme/gear.png' : '/icons/gear.png'} alt=""
+            >
         </div>
     </div>
     
@@ -1276,7 +1397,7 @@ let slots = [
         <!-- Directory List -->
         <aside class="sidebar" id="sidebar">
             {#each Object.keys($drives) as drive}
-                <Folder path={drive} name={drive} items={$drives[drive]} on:folderSelected={handleFolderSelected}/>
+                <Folder path={drive} name={drive} items={$drives[drive]} currentTheme={currentTheme} on:folderSelected={handleFolderSelected}/>
             {/each}
             <hr>
             <DiscInfo/>

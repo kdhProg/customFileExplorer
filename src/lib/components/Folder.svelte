@@ -3,6 +3,7 @@
   export let path: string;
   export let name: string = "";
   export let items: { [key: string]: string[] | null } | null = null;
+  export let currentTheme: string;
 
   import { isDirectory, listFilesInDirectory} from "$lib/api";
   import Folder from "./Folder.svelte";
@@ -57,9 +58,15 @@
     <span class="icon">
       <!-- {expanded ? "▼" : "▶️"} -->
       {#if expanded}
-        <img class="folder-small-icon" src="/icons/small_folder_close.png" alt="">
+        <!-- <img class="folder-small-icon" src="/icons/small_folder_close.png" alt=""> -->
+        <img class="folder-small-icon" 
+          src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/icons/cyan_theme/small_folder_close.png' : '/icons/small_folder_close.png'} alt=""
+        >
       {:else}
-        <img class="folder-small-icon" src="/icons/small_folder_open.png" alt="">
+        <!-- <img class="folder-small-icon" src="/icons/small_folder_open.png" alt=""> -->
+        <img class="folder-small-icon" 
+        src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/icons/cyan_theme/small_folder_open.png' : '/icons/small_folder_open.png'} alt=""
+      >
       {/if}
     </span>
     <!-- {name === "C:\\" || name === "D:\\" ? name : getFolderName(name)} -->
@@ -73,6 +80,7 @@
             path={subPath}
             name={getFolderName(subPath)}
             items={subItems}
+            currentTheme={currentTheme}
             on:folderSelected={event => dispatch('folderSelected', event.detail)}
           />
         </li>
