@@ -54,95 +54,108 @@
 
     // Add New Member -> used at EachFolderClick / handleFolderSelected
     function addPathHistory(path: string) {
-    // 배열이 비어 있거나 이전 경로와 다른 경우에만 추가
-        if (pathHistory.length === 0 || pathHistory[pathHistory.length - 1] !== path) {
-            if (pathHistory.length >= 10) {
-                pathHistory.shift();
-            }
-
-            // Add Path & MoveIndex
-            // Set Index to last of Array
-            
-            pathHistory.push(path);
-            currentIndex = pathHistory.length - 1;
-            
-            console.log("pathHistory : "+pathHistory);
-            console.log("currentIndex: "+currentIndex);
-            
-        }
-    }
-
-
-    // 폴더 이동 함수
-    async function moveToFolder(newFolder: string) {
-
-        const isValid = await isPathValid(newFolder); // 경로 유효성 검사
-        if (!isValid) {
-        console.error(`Invalid path: ${newFolder}`);
-        return; // 경로가 유효하지 않으면 이동 중단
-        }
-
-        pathHistory = pathHistory.slice(0, currentIndex + 1); // 현재 인덱스 이후 경로 제거
-        pathHistory.push(newFolder); // 새 경로 추가
-
-        // 최대 크기가 10을 초과하면 첫 번째 경로 삭제
-        if (pathHistory.length > 10) {
+    if (pathHistory.length === 0 || pathHistory[pathHistory.length - 1] !== path) {
+        if (pathHistory.length >= 10) {
             pathHistory.shift();
         }
 
-        currentIndex = pathHistory.length - 1; // 현재 인덱스 업데이트
-        curFolderName = newFolder; // 현재 폴더 경로 업데이트
-        filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+        pathHistory.push(path);
+        currentIndex = pathHistory.length - 1;
+
+        console.log("pathHistory : " + pathHistory);
+        console.log("currentIndex: " + currentIndex);
+    }
+}
+
+// 폴더 이동 함수
+async function moveToFolder(newFolder: string) {
+    const isValid = await isPathValid(newFolder); // 경로 유효성 검사
+    if (!isValid) {
+        console.error(`Invalid path: ${newFolder}`);
+        return;
     }
 
-    // 뒤로 가기 함수
-    async function goBack() {
-        if (currentIndex > 0) {
-            currentIndex--;
-            curFolderName = pathHistory[currentIndex];
-            filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+    pathHistory = pathHistory.slice(0, currentIndex + 1); // 현재 인덱스 이후 경로 제거
+    pathHistory.push(newFolder); // 새 경로 추가
+
+    if (pathHistory.length > 10) {
+        pathHistory.shift(); // 최대 크기 초과 시 첫 번째 경로 삭제
+    }
+
+    currentIndex = pathHistory.length - 1; // 현재 인덱스 업데이트
+    curFolderName = newFolder; // 현재 폴더 경로 업데이트
+    filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+}
+
+// 유효한 경로로 이동하는 함수
+async function goToValidPath(index: number) {
+    const targetPath = pathHistory[index];
+    const isValid = await isPathValid(targetPath);
+
+    if (!isValid) {
+        console.warn(`Invalid path: ${targetPath}. Removing from history.`);
+        pathHistory.splice(index, 1); // 유효하지 않은 경로 제거
+        if (index <= currentIndex) {
+            currentIndex--; // 인덱스 조정
         }
-        console.log(pathHistory);
+        return false; // 유효하지 않음
     }
 
-    // 앞으로 가기 함수
-    async function goForward() {
-        if (currentIndex < pathHistory.length - 1) {
-            currentIndex++;
-            curFolderName = pathHistory[currentIndex];
-            filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+    curFolderName = targetPath;
+    filesInCurrentFolder = await listFilesInDirectory(curFolderName);
+    currentIndex = index;
+    return true; // 유효함
+}
+
+// 뒤로 가기 함수
+async function goBack() {
+    if (currentIndex > 0) {
+        const success = await goToValidPath(currentIndex - 1);
+        if (!success && currentIndex > 0) {
+            await goBack(); // 유효한 경로를 찾을 때까지 재귀 호출
         }
-        console.log(pathHistory);
     }
+    console.log(pathHistory);
+}
 
-    // 상위 폴더 계산 함수
-    function getParentFolder(path: string): string | null {
-        const parts = path.split('\\'); // '\'로 경로 분리
-
-        if (parts.length === 2 && /^[A-Z]:$/.test(parts[0])) {
-            // 현재 또는 부모 폴더가 드라이브 루트 ('D:')
-            return `${parts[0]}\\`; // 'D:' → 'D:\' 형태로 반환
+// 앞으로 가기 함수
+async function goForward() {
+    if (currentIndex < pathHistory.length - 1) {
+        const success = await goToValidPath(currentIndex + 1);
+        if (!success && currentIndex < pathHistory.length - 1) {
+            await goForward(); // 유효한 경로를 찾을 때까지 재귀 호출
         }
+    }
+    console.log(pathHistory);
+}
 
-        const parent = parts.slice(0, -1).join('\\'); // 상위 경로 계산
-        return parent || null; // 유효하지 않으면 null 반환
+// 상위 폴더 계산 함수
+function getParentFolder(path: string): string | null {
+    const parts = path.split('\\');
+
+    if (parts.length === 2 && /^[A-Z]:$/.test(parts[0])) {
+        return `${parts[0]}\\`; // 'D:' -> 'D:\'
     }
 
-    // 상위 폴더 이동 함수
+    const parent = parts.slice(0, -1).join('\\');
+    return parent || null;
+}
+
+// 상위 폴더 이동 함수
     async function goUp() {
         const isRoot = /^[A-Z]:\\?$/.test(curFolderName); // 현재 위치가 루트인지 확인
         if (isRoot) {
             console.log('Already at the root folder. Cannot move up.');
-            return; // 루트에서 더 상위로 이동할 수 없음
+            return;
         }
 
-        const parentFolder = getParentFolder(curFolderName); // 상위 폴더 계산
+        const parentFolder = getParentFolder(curFolderName);
         console.log('Parent folder:', parentFolder);
 
         if (parentFolder) {
-            await moveToFolder(parentFolder); // 상위 폴더로 이동
+            await moveToFolder(parentFolder);
         } else {
-            console.log('Already at the root folder.'); // 더 이상 상위로 이동 불가
+            console.log('Already at the root folder.');
         }
     }
 
@@ -244,81 +257,6 @@
         currentTheme = themePath;
 
         filesInCurrentFolder = [...filesInCurrentFolder];
-    }
-
-    function change_icon_cyan(){
-        const mv_btn_left = document.querySelector('#movement-btn-img-left'); // arrow : left
-        const mv_btn_right = document.querySelector('#movement-btn-img-right'); // arrow : left
-        const mv_btn_up = document.querySelector('#movement-btn-img-up'); // arrow : left
-
-        const searchBox_button_img = document.querySelector('#searchBox-button-img');
-        const util_btn_img_home = document.querySelector('#util-btn-img-home');
-        const util_btn_img_cut = document.querySelector('#util-btn-img-cut');
-        const util_btn_img_cut_paste = document.querySelector('#util-btn-img-cut-paste');
-        const util_btn_img_copy = document.querySelector('#util-btn-img-copy');
-        const util_btn_img_copy_paste = document.querySelector('#util-btn-img-copy-paste');
-        const util_btn_img_delete = document.querySelector('#util-btn-img-delete');
-        const settings_icon_img = document.querySelector('#settings-icon-img');
-
-        // movement arrows
-        mv_btn_left.src = "/arrows/cyan_theme/thick_arrows_left.png";
-        mv_btn_right.src = "/arrows/cyan_theme/thick_arrows_right.png";
-        mv_btn_up.src = "/arrows/cyan_theme/thick_arrows_up.png";
-
-        // search glass
-        searchBox_button_img.src = "/icons/cyan_theme/magnifying_glass.png";
-
-        // Utils : home / cut, cut_paste / copy, copy_paste / delete
-        if(util_btn_img_home){util_btn_img_home.src = "/utilbuttons/cyan_theme/util_home.png";}
-        if(util_btn_img_cut){util_btn_img_cut.src = "/utilbuttons/cyan_theme/util_cut.png";}
-        if(util_btn_img_cut_paste){util_btn_img_cut_paste.src = "/utilbuttons/cyan_theme/util_cut_paste.png";}
-        if(util_btn_img_copy){util_btn_img_copy.src = "/utilbuttons/cyan_theme/util_copy.png";}
-        if(util_btn_img_copy_paste){util_btn_img_copy_paste.src = "/utilbuttons/cyan_theme/util_copy_paste.png";}
-        if(util_btn_img_delete){util_btn_img_delete.src = "/utilbuttons/cyan_theme/util_delete.png";}
-        
-        // settings : gear img
-        settings_icon_img.src = "/icons/cyan_theme/gear.png";
-    }
-
-    function change_icon_default(){
-        const mv_btn_left = document.querySelector('#movement-btn-img-left'); // arrow : left
-        const mv_btn_right = document.querySelector('#movement-btn-img-right'); // arrow : left
-        const mv_btn_up = document.querySelector('#movement-btn-img-up'); // arrow : left
-
-        const searchBox_button_img = document.querySelector('#searchBox-button-img');
-        const util_btn_img_home = document.querySelector('#util-btn-img-home');
-        const util_btn_img_cut = document.querySelector('#util-btn-img-cut');
-        const util_btn_img_cut_paste = document.querySelector('#util-btn-img-cut-paste');
-        const util_btn_img_copy = document.querySelector('#util-btn-img-copy');
-        const util_btn_img_copy_paste = document.querySelector('#util-btn-img-copy-paste');
-        const util_btn_img_delete = document.querySelector('#util-btn-img-delete');
-        const settings_icon_img = document.querySelector('#settings-icon-img');
-
-        // movement arrows
-        // mv_btn_left.src = "/arrows/thick_arrows_left.png";
-        // mv_btn_right.src = "/arrows/thick_arrows_right.png";
-        // mv_btn_up.src = "/arrows/thick_arrows_up.png";
-        if(mv_btn_left){mv_btn_left.src = "/arrows/thick_arrows_left.png";}
-        if(mv_btn_right){mv_btn_right.src = "/arrows/thick_arrows_right.png";}
-        if(mv_btn_up){mv_btn_up.src = "/arrows/thick_arrows_up.png";}
-
-        // search glass
-        // searchBox_button_img.src = "/arrows/thick_arrows_left.png";
-        if(searchBox_button_img){searchBox_button_img.src = "/icons/magnifying_glass.png";}
-
-        // Utils : home / cut, cut_paste / copy, copy_paste / delete
-        if(util_btn_img_home){util_btn_img_home.src = "/utilbuttons/util_home.png";}
-        if(util_btn_img_cut){util_btn_img_cut.src = "/utilbuttons/util_cut.png";}
-        if(util_btn_img_cut_paste){util_btn_img_cut_paste.src = "/utilbuttons/util_cut_paste.png";}
-        if(util_btn_img_copy){util_btn_img_copy.src = "/utilbuttons/util_copy.png";}
-        if(util_btn_img_copy_paste){util_btn_img_copy_paste.src = "/utilbuttons/util_copy_paste.png";}
-        if(util_btn_img_delete){util_btn_img_delete.src = "/utilbuttons/util_delete.png";}
-        
-        // settings : gear img
-        // settings_icon_img.src = "/icons/gear.png";
-        if(settings_icon_img){settings_icon_img.src = "/icons/gear.png";}
-
-        
     }
 
     // Load default theme when page load
