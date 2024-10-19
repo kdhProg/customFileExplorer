@@ -18,6 +18,8 @@ use tokio::task;
 
 use sysinfo::Disks;
 
+use regex::Regex;
+
 
 // struct for Drive Infos
 #[derive(serde::Serialize)]
@@ -405,4 +407,88 @@ pub fn save_util_buttons(buttons: Vec<String>) -> Result<(), String> {
 pub fn path_exists(dir_path: String) -> bool {
     Path::new(&dir_path).exists()
 }
+
+
+
+#[tauri::command]
+pub fn create_new_item(is_folder: bool, base_path: String) -> Result<String, String> {
+    let base_path = Path::new(&base_path);
+
+    // 베이스 경로가 존재하지 않으면 에러 반환
+    if !base_path.exists() {
+        return Err("The specified base path does not exist.".to_string());
+    }
+
+    // 고유한 이름 생성
+    let item_name = generate_unique_name(base_path, "new", is_folder)?;
+    let full_path = if is_folder {
+        base_path.join(&item_name)
+    } else {
+        // 파일인 경우 .txt 확장자 추가
+        base_path.join(format!("{}.txt", item_name))
+    };
+
+    // 폴더 생성
+    if is_folder {
+        fs::create_dir_all(&full_path).map_err(|err| format!("Failed to create folder: {}", err))?;
+    } else {
+        // 파일 생성 및 내용 작성
+        File::create(&full_path)
+            .map_err(|err| format!("Failed to create file: {}", err))?
+            .write_all(b"New file created")
+            .map_err(|err| format!("Failed to write to file: {}", err))?;
+    }
+
+    Ok(full_path.to_string_lossy().to_string())
+}
+
+/// 고유한 이름을 생성하는 함수 (중복 이름 검사 및 넘버링 처리)
+fn generate_unique_name(base_path: &Path, base_name: &str, is_folder: bool) -> Result<String, String> {
+    let existing_items = list_files_in_directory(base_path.to_string_lossy().to_string())?;
+
+    // 정규 표현식을 통해 "new", "new(1)", "new(2)" 등의 이름을 탐지
+    let regex = Regex::new(r"^new(?:\((\d+)\))?(?:\.txt)?$").unwrap();  // 파일 확장자 고려
+
+    let mut max_number = 0;
+
+    // 모든 항목에서 중복된 이름을 찾음
+    for item in existing_items {
+        let item_path = Path::new(&item);
+        let is_item_folder = item_path.is_dir();
+
+        // 파일과 폴더를 구분해서 필터링
+        if is_folder != is_item_folder {
+            continue;
+        }
+
+        // 파일명 추출 및 확장자 제거 후 정규 표현식 매칭
+        if let Some(file_name) = item_path.file_name().and_then(|n| n.to_str()) {
+            let name_without_extension = if is_folder {
+                file_name.to_string()
+            } else {
+                // 확장자 제거 (예: "new(1).txt" -> "new(1)")
+                file_name.trim_end_matches(".txt").to_string()
+            };
+
+            if let Some(captures) = regex.captures(&name_without_extension) {
+                if let Some(number) = captures.get(1) {
+                    let number = number.as_str().parse::<u32>().unwrap_or(0);
+                    max_number = max_number.max(number);
+                } else {
+                    max_number = max_number.max(1);  // 기본 이름인 "new"가 있는 경우
+                }
+            }
+        }
+    }
+
+    // 중복된 이름이 없으면 기본 이름 사용, 아니면 "new(n)" 형식 생성
+    let new_name = if max_number == 0 {
+        base_name.to_string()
+    } else {
+        format!("{}({})", base_name, max_number + 1)
+    };
+
+    Ok(new_name)
+}
+
 

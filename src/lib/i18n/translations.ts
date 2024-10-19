@@ -20,6 +20,8 @@ export const translations = {
         util_copy : 'Copy',
         util_paste : 'Paste',
         util_delete: 'Delete',
+        util_new_dir: 'New Directory',
+        util_new_file: 'New File',
 
         copyClipboardText : 'Copy List',
         cutClipboardText:'Cut List',
@@ -113,6 +115,8 @@ export const translations = {
         util_copy : '복사하기',
         util_paste : '붙여넣기',
         util_delete: '삭제하기',
+        util_new_dir: '새 폴더',
+        util_new_file: '새 파일',
 
         copyClipboardText : '복사',
         cutClipboardText:'잘라내기',

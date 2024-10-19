@@ -15,6 +15,7 @@
     // import - css
     import "$lib/style/global_features.css"
     import "/src/lib/style/mainpage.css"
+    import CurrentPath from '$lib/components/currentPath.svelte';
 
 
     let showSettings = false; // modal-settings
@@ -577,12 +578,6 @@ function detectFilesInside() {
 
     // util_buttons toggle checkbox
     function toggleItem(value, checked) {
-        // apply cyan theme icons when current theme is SF
-        // if(currentLogo === "/icons/dir_logo_sf.png"){
-        //     change_icon_cyan();
-        // }else{
-        //     change_icon_default();
-        // }
         if (checked) {
             // check - add to array
             utilButtons = [...utilButtons, value];
@@ -693,6 +688,21 @@ function detectFilesInside() {
     }
     }
 
+    // ------------ make new Folder / File ----------
+    async function createItem(isFolder:boolean,basePath:String) {
+        try {
+            const result = await invoke('create_new_item', {
+                isFolder,
+                basePath,
+            });
+            alert(`Item crt at: ${result}`);
+            console.log(`Item crt at: ${result}`)
+
+            filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
+        } catch (error) {
+            alert(`Failed to create item: ${error}`);
+        }
+    }
 
 // ----------------------- Copy / Paste List -----------------------------
     let isCopyExpanded = false;
@@ -827,6 +837,10 @@ function updateFileSize(event: Event){
     let modal_set_startX = 0, modal_set_startY = 0; // 마우스 시작 좌표
 
     function modal_set_startDrag(e) {
+        // Disable Drag at input range - resize tab
+        if (e.target.tagName === 'INPUT' || e.target.closest('input[type="range"]')) return;
+
+        // Disable Drag at Outside of modal
         if (e.target !== modal_set_modal && !modal_set_modal.contains(e.target)) return;
 
         // 드래그 시작 플래그 설정
@@ -1325,6 +1339,22 @@ let slots = [
                         >
                         </button>
                     </div>
+                    {:else if btns === "New_Dir"}
+                    <div class="util-buttons-wrapper">
+                        <button class="util-button" on:click={()=>{createItem(true,curFolderName)}}>
+                        <img class="util-button-img" 
+                            src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/new_dir.png' : '/utilbuttons/new_dir.png'} alt=""
+                        >
+                        </button>
+                    </div>
+                    {:else if btns === "New_File"}
+                    <div class="util-buttons-wrapper">
+                        <button class="util-button" on:click={()=>{createItem(false,curFolderName)}}>
+                        <img class="util-button-img" 
+                            src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/utilbuttons/cyan_theme/new_file.png' : '/utilbuttons/new_file.png'} alt=""
+                        >
+                        </button>
+                    </div>
                     {/if}
                 </div>
             {/each}
@@ -1485,8 +1515,8 @@ let slots = [
                         <h3>{currentTranslations.resize}</h3>
                         <input
                             type="range"
-                            min="50"
-                            max="150"
+                            min="80"
+                            max="120"
                             value={fileSize}
                             on:input={updateFileSize}
                         />
@@ -1506,7 +1536,9 @@ let slots = [
                         <!-- <label for="">{currentTranslations.util_home}</label><input type="checkbox" checked={isChecked("Home")} on:change="{(e) => toggleItem('Home', e.target.checked)}">  -->
                         &nbsp;<label for="">{currentTranslations.util_cut}</label><input type="checkbox" checked={isChecked("Cut")} on:change="{(e) => toggleItem('Cut', e.target.checked)}">
                         &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}">
-                        <label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
+                        &nbsp;<label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
+                        &nbsp;<label for="">{currentTranslations.util_new_dir}</label><input type="checkbox" checked={isChecked("New_Dir")} on:change="{(e) => toggleItem('New_Dir', e.target.checked)}">
+                        &nbsp;<label for="">{currentTranslations.util_new_file}</label><input type="checkbox" checked={isChecked("New_File")} on:change="{(e) => toggleItem('New_File', e.target.checked)}">
                         <br/>
                     <!-- Modal : Search Tab -->
                     {:else if activeTab === "search"}
