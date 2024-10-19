@@ -112,6 +112,15 @@
     color: #000000;
 }
 
+.modal-file-owner-input, .date-input, .modal-file-type-input, .modal-set-file-sch-size-unit, .modal-file-size-input{
+    color:#00c8ff ;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid #00c8ff;
+    background: transparent;
+}
+
 .modal-sch-val-slots{
     background-color: #00c8ff;
     color: #000000;

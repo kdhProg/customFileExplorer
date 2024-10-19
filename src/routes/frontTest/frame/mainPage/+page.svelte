@@ -1572,27 +1572,42 @@ let slots = [
                                             {#if isFileSizeChk}
                                             <div>
                                                 <!-- fileSize max / min -->
-                                                <label>
-                                                    {currentTranslations.modal_sch_advanced_max}
-                                                    <input type="number" bind:value={fileMaxRawVal} on:change={fileSizeCalc}>
-                                                </label>
-                                                <select class="modal-set-file-sch-size-unit" bind:value={fileMaxUnit} on:change={fileSizeCalc}>
-                                                    <option value="B">B</option>
-                                                    <option value="KB">KB</option>
-                                                    <option value="MB">MB</option>
-                                                    <option value="GB">GB</option>
-                                                </select>
-                                                <br>
-                                                <label>
-                                                    {currentTranslations.modal_sch_advanced_min}
-                                                    <input type="number" bind:value={fileMinRawVal} on:change={fileSizeCalc}>
-                                                </label>
-                                                <select class="modal-set-file-sch-size-unit" bind:value={fileMinUnit} on:change={fileSizeCalc}>
-                                                    <option value="B">B</option>
-                                                    <option value="KB">KB</option>
-                                                    <option value="MB">MB</option>
-                                                    <option value="GB">GB</option>
-                                                </select>
+                                                 <div class="modal-file-size-row">
+                                                    <div class="modal-file-size-txt">
+                                                        {currentTranslations.modal_sch_advanced_max}
+                                                     </div>
+                                                     <div class="modal-file-size-numbox">
+                                                        <label>
+                                                            <input class="modal-file-size-input" type="number" bind:value={fileMaxRawVal} on:change={fileSizeCalc}>
+                                                        </label>
+                                                     </div>
+                                                    <div>
+                                                        <select class="modal-set-file-sch-size-unit" bind:value={fileMaxUnit} on:change={fileSizeCalc}>
+                                                            <option value="B">B</option>
+                                                            <option value="KB">KB</option>
+                                                            <option value="MB">MB</option>
+                                                            <option value="GB">GB</option>
+                                                        </select>
+                                                    </div>
+                                                 </div>
+                                                 <div class="modal-file-size-row">
+                                                    <div class="modal-file-size-txt">
+                                                        {currentTranslations.modal_sch_advanced_min}
+                                                    </div>
+                                                    <div class="modal-file-size-numbox">
+                                                        <label>
+                                                            <input class="modal-file-size-input" type="number" bind:value={fileMinRawVal} on:change={fileSizeCalc}>
+                                                        </label>
+                                                    </div>
+                                                    <div>
+                                                        <select class="modal-set-file-sch-size-unit" bind:value={fileMinUnit} on:change={fileSizeCalc}>
+                                                            <option value="B">B</option>
+                                                            <option value="KB">KB</option>
+                                                            <option value="MB">MB</option>
+                                                            <option value="GB">GB</option>
+                                                        </select>
+                                                    </div>
+                                                 </div>
                                             </div>
                                             {/if}
                                             <br>
@@ -1601,7 +1616,7 @@ let slots = [
                                                 <input type="checkbox" on:change={isFileTypeChkToggle} bind:checked={isFileTypeChk}>
                                             </label>
                                             {#if isFileTypeChk}
-                                                <input type="text" bind:value={searchValObj.fileTypeList}>
+                                                <input class="modal-file-type-input" type="text" bind:value={searchValObj.fileTypeList}>
                                             {/if}
                                             <br>
                                             <label>
@@ -1609,17 +1624,28 @@ let slots = [
                                                 <input type="checkbox" on:change={isFileCrtDateChkToggle} bind:checked={isFileCrtDateChk}>
                                             </label>
                                             {#if isFileCrtDateChk}
-                                            <div>
+                                            <div class="modal-crt-date-row">
                                                 <!-- Creation Date -->
-                                                <label>
-                                                    {currentTranslations.modal_sch_advanced_date_start}
-                                                    <input type="date" bind:value={searchValObj.crtStart}>
-                                                </label>
-                                                <br>
-                                                <label>
-                                                    {currentTranslations.modal_sch_advanced_date_end}
-                                                    <input type="date" bind:value={searchValObj.crtEnd}>
-                                                </label>
+                                                 <div class="modal-crt-date-start-row">
+                                                    <div class="modal-crt-date-txt">
+                                                        {currentTranslations.modal_sch_advanced_date_start}
+                                                    </div>
+                                                    <div>
+                                                        <label>
+                                                            <input class="date-input" type="date" bind:value={searchValObj.crtStart}>
+                                                        </label>
+                                                    </div>
+                                                 </div>
+                                                 <div class="modal-crt-date-end-row">
+                                                    <div class="modal-crt-date-txt">
+                                                        {currentTranslations.modal_sch_advanced_date_end}
+                                                    </div>
+                                                    <div>
+                                                        <label>
+                                                            <input class="date-input" type="date" bind:value={searchValObj.crtEnd}>
+                                                        </label>
+                                                    </div>
+                                                 </div>                                           
                                             </div>
                                             {/if}
                                             <br>
@@ -1630,15 +1656,26 @@ let slots = [
                                             {#if isFileModifiedDateChk}
                                             <div>
                                                 <!-- Modified Date -->
-                                                <label>
-                                                    {currentTranslations.modal_sch_advanced_date_start}
-                                                    <input type="date" bind:value={searchValObj.modiStart}>
-                                                </label>
-                                                <br>
-                                                <label>
-                                                    {currentTranslations.modal_sch_advanced_date_end}
-                                                    <input type="date" bind:value={searchValObj.modiEnd}>
-                                                </label>
+                                                 <div class="modal-modi-date-start-row">
+                                                    <div class="modal-modi-date-txt">
+                                                        {currentTranslations.modal_sch_advanced_date_start}
+                                                    </div>
+                                                    <div>
+                                                        <label>
+                                                            <input class="date-input" type="date" bind:value={searchValObj.modiStart}>
+                                                        </label>
+                                                    </div>
+                                                 </div>
+                                                 <div class="modal-modi-date-end-row">
+                                                    <div class="modal-modi-date-txt">
+                                                        {currentTranslations.modal_sch_advanced_date_end}
+                                                    </div>
+                                                    <div>
+                                                        <label>
+                                                            <input class="date-input" type="date" bind:value={searchValObj.modiEnd}>
+                                                        </label>
+                                                    </div>
+                                                 </div>
                                             </div>
                                             {/if}
                                             <br>
@@ -1647,7 +1684,7 @@ let slots = [
                                                 <input type="checkbox" on:change={isFileOwnerChkToggle} bind:checked={isFileOwnerChk}>
                                             </label>
                                             {#if isFileOwnerChk}
-                                                <input type="text" bind:value={searchValObj.ownerName}>
+                                                <input class="modal-file-owner-input" type="text" bind:value={searchValObj.ownerName}>
                                             {/if}
                                         </div>
                                     {/if}

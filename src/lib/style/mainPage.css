@@ -465,6 +465,55 @@
     border-radius: 10px;
 }
 
+.modal-file-size-row{
+    display: flex;
+    flex-direction: row;
+}
+
+.modal-file-size-txt{
+    width: 40px;
+}
+
+.modal-file-size-numbox{
+    margin-right: 10px;
+}
+
+.modal-file-size-input{
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    /* transition: box-shadow 0.3s ease; */
+}
+
+.modal-set-file-sch-size-unit{
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.modal-file-type-input{
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.modal-crt-date-start-row, .modal-crt-date-end-row, .modal-modi-date-start-row, .modal-modi-date-end-row{
+    display: flex;
+    flex-direction: row;
+}
+
+.modal-crt-date-txt, .modal-modi-date-txt{
+    width: 40px;
+}
+
+.date-input{
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.modal-file-owner-input{
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* ----------------- modal adv slot */
 .modal-sch-val-slots{
     width: 100px;
     border-radius: 5px;
