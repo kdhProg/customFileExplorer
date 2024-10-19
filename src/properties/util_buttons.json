@@ -1,9 +1,9 @@
 {
   "buttons": [
     "Cut",
-    "Delete",
     "Copy",
     "New_File",
-    "New_Dir"
+    "New_Dir",
+    "Delete"
   ]
 }

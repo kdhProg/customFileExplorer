@@ -96,7 +96,27 @@
 .close-modal {
     background-color: #d6d6d6;
     color: #000000;
-    /* border: 1px solid #96b9eb; */
+}
+
+.modal-sch-val-slots{
+    background-color: #d6d6d6;
+    color: #000000;
+}
+
+.adv-slot-save-btn{
+    background-color: #d6d6d6;
+    color: #000000;
+    cursor: pointer;
+}
+
+.adv-slot-load-btn, .adv-slot-reset-btn{
+    background-color: #027016;
+    color: white;
+    cursor: pointer;
+}
+
+.adv-slot-load-btn:disabled, .adv-slot-reset-btn:disabled{
+    background-color: rgba(193, 24, 24, 0.764);
 }
 
 a {

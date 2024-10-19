@@ -10,44 +10,57 @@ pub struct PasteResult {
     message: String,
 }
 
+#[derive(Debug)]
+pub struct ItemInfo {
+    pub name: String,
+    pub is_folder: bool,
+}
+
 #[command]
 pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteResult {
-    for file in files {
-        let source = Path::new(&file);
+    let existing_items = get_existing_items(&target_path); // 타겟 경로의 기존 항목들
+    let mut generated_names = std::collections::HashSet::new(); // 복사 대상의 고유한 이름을 추적
+
+    // 대상 경로에 대해 각 파일/폴더의 고유한 이름을 미리 생성
+    let mut copy_plan = Vec::new();
+    for file in &files {
+        let source = Path::new(file);
         let mut destination = Path::new(&target_path).join(source.file_name().unwrap());
 
-        // 동일한 경로일 경우 "_copy" 이름 생성
-        if source == destination || is_subdirectory(&source, &destination) {
-            destination = generate_copy_name(&destination);
+        // 이미 타겟 경로에 존재하거나 이전에 생성된 이름과 중복되는 경우 이름 생성
+        while existing_items.iter().any(|item| item.name == destination.file_name().unwrap().to_string_lossy())
+            || generated_names.contains(destination.file_name().unwrap().to_string_lossy().as_ref()) {
+            destination = generate_unique_copy_name(&destination, &existing_items, source.is_dir());
         }
 
+        generated_names.insert(destination.file_name().unwrap().to_string_lossy().to_string());
+        copy_plan.push((source.to_path_buf(), destination));
+    }
+
+    // 미리 생성된 계획대로 복사 또는 이동 수행
+    for (source, destination) in copy_plan {
         let result = if cut {
-            // 잘라내기: 동일한 경로 이동 방지
             if source == destination {
                 return PasteResult {
                     success: false,
-                    message: format!("Cannot move to the same location: {}", file),
+                    message: format!("Cannot move to the same location: {}", source.display()),
                 };
             }
-            move_item(&file, &target_path)
+            move_item(source.to_str().unwrap(), &target_path)
         } else {
-            // 복사: 파일과 폴더 구분 처리
             if source.is_file() {
                 fs::copy(&source, &destination).map(|_| ())
             } else if source.is_dir() {
-                copy_recursive(&source, &destination) // 폴더 복사
+                copy_recursive(&source, &destination)
             } else {
-                Err(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    "Unsupported file type",
-                ))
+                Err(io::Error::new(io::ErrorKind::InvalidInput, "Unsupported file type"))
             }
         };
 
         if let Err(e) = result {
             return PasteResult {
                 success: false,
-                message: format!("Failed to paste {}: {}", file, e),
+                message: format!("Failed to paste {}: {}", source.display(), e),
             };
         }
     }
@@ -57,6 +70,53 @@ pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteR
         message: "Files pasted successfully.".to_string(),
     }
 }
+
+
+fn get_existing_items(target_path: &str) -> Vec<ItemInfo> {
+    let mut items = Vec::new();
+    if let Ok(entries) = fs::read_dir(target_path) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let is_folder = path.is_dir();
+            if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
+                items.push(ItemInfo {
+                    name: name.to_string(),
+                    is_folder,
+                });
+            }
+        }
+    }
+    items
+}
+
+fn generate_unique_copy_name(
+    path: &Path,
+    existing_items: &[ItemInfo],
+    is_folder: bool,
+) -> PathBuf {
+    let file_name = path.file_stem().unwrap().to_string_lossy().to_string();
+    let extension = path.extension().map(|ext| ext.to_string_lossy()).unwrap_or_default();
+
+    let mut new_name = if extension.is_empty() {
+        format!("{}_copy", file_name)
+    } else {
+        format!("{}_copy.{}", file_name, extension)
+    };
+
+    let mut counter = 2;
+    // 파일과 폴더를 구분하여 중복 검사
+    while existing_items.iter().any(|item| item.name == new_name && item.is_folder == is_folder) {
+        if extension.is_empty() {
+            new_name = format!("{}_copy({})", file_name, counter);
+        } else {
+            new_name = format!("{}_copy({}).{}", file_name, counter, extension);
+        }
+        counter += 1;
+    }
+
+    path.with_file_name(new_name)
+}
+
 
 // 재귀적으로 폴더 복사
 fn copy_recursive(src: &Path, dst: &Path) -> io::Result<()> {
@@ -84,25 +144,20 @@ fn is_subdirectory(src: &Path, dst: &Path) -> bool {
     dst_abs.starts_with(&src_abs)
 }
 
-// 파일명에 "_copy" 추가
-fn generate_copy_name(path: &Path) -> PathBuf {
-    let file_name = path.file_stem().unwrap().to_string_lossy();
-    let extension = path.extension().map(|ext| ext.to_string_lossy()).unwrap_or_default();
-
-    let new_file_name = if extension.is_empty() {
-        format!("{}_copy", file_name)
-    } else {
-        format!("{}_copy.{}", file_name, extension)
-    };
-
-    path.with_file_name(new_file_name)
-}
-
 // 파일 또는 폴더 이동 함수
 fn move_item(src: &str, dst: &str) -> io::Result<()> {
     let source = Path::new(src);
     let destination = Path::new(dst).join(source.file_name().unwrap());
 
+    // 동일한 이름의 파일/폴더가 이미 있는지 검사
+    if destination.exists() {
+        return Err(io::Error::new(
+            io::ErrorKind::AlreadyExists,
+            format!("A file or folder with the same name already exists: {}", destination.display())
+        ));
+    }
+
+    // 파일/폴더 이동 시도
     if let Err(_) = fs::rename(&source, &destination) {
         fs::copy(&source, &destination).map(|_| ())?;
         fs::remove_file(&source)?;

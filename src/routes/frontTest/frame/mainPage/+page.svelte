@@ -588,11 +588,18 @@ function detectFilesInside() {
     }
 
     async function pasteFiles(clipboard: string[], targetPath: string, isCut: boolean) {
+        console.log("targetPath : "+targetPath);
         try {
             const result = await invoke('paste_files', { files: clipboard, targetPath, cut: isCut });
             // console.log("targetPath : "+targetPath);
         if (!result.success) {
-            ccp_message.set(result.message);
+            alert(currentTranslations.paste_fail_msg+result.message); 
+            // if error occurred -> clear clipboard
+            if (isCut){
+                cutClipboard = [];
+            }else{
+                copyClipboard = [];
+            }
         } else {
             ccp_message.set('Files pasted successfully.');
             if (isCut) cutClipboard = [];
@@ -600,6 +607,7 @@ function detectFilesInside() {
             }
         } catch (err) {
             ccp_message.set(`Error: ${err}`);
+            alert(`Error: ${err}`);
         }
         filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
     }
@@ -619,7 +627,7 @@ function detectFilesInside() {
             del_message.set(result.message); // 에러 메시지 설정
         } else {
             del_message.set('All files moved to trash successfully.');
-        selectedFiles.set([]); // 선택된 파일 목록 초기화
+            selectedFiles.set([]); // 선택된 파일 목록 초기화
         }
     } catch (err) {
             del_message.set(`Unexpected error: ${err}`);
@@ -633,12 +641,12 @@ function detectFilesInside() {
                 isFolder,
                 basePath,
             });
-            alert(`Item crt at: ${result}`);
+            alert(currentTranslations.mk_new_item_success + ` :  ${result}`);
             console.log(`Item crt at: ${result}`)
 
             filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
         } catch (error) {
-            alert(`Failed to create item: ${error}`);
+            alert(currentTranslations.mk_new_item_fail + ` : ${error}`);
         }
     }
 
@@ -1099,6 +1107,13 @@ let slots = [
   // Save Custom Values
   async function saveSlot(slotIndex:number) {
     const slot = slots[slotIndex];
+
+    // slot.name이 빈 문자열인지 검사
+    if (!slot.name || slot.name.trim() === "") {
+        alert(currentTranslations.adv_slot_empty_name_alert);
+        return; // 저장 중단
+    }
+
     await invoke("save_settings", {
         slotNumber: slot.number,
         name: slot.name,
@@ -1475,6 +1490,7 @@ let slots = [
                         &nbsp;<label for="">{currentTranslations.util_cut}</label><input type="checkbox" checked={isChecked("Cut")} on:change="{(e) => toggleItem('Cut', e.target.checked)}">
                         &nbsp;<label for="">{currentTranslations.util_copy}</label><input type="checkbox" checked={isChecked("Copy")} on:change="{(e) => toggleItem('Copy', e.target.checked)}">
                         &nbsp;<label for="">{currentTranslations.util_delete}</label><input type="checkbox" checked={isChecked("Delete")} on:change="{(e) => toggleItem('Delete', e.target.checked)}">
+                        <br>
                         &nbsp;<label for="">{currentTranslations.util_new_dir}</label><input type="checkbox" checked={isChecked("New_Dir")} on:change="{(e) => toggleItem('New_Dir', e.target.checked)}">
                         &nbsp;<label for="">{currentTranslations.util_new_file}</label><input type="checkbox" checked={isChecked("New_File")} on:change="{(e) => toggleItem('New_File', e.target.checked)}">
                         <br/>
@@ -1678,9 +1694,10 @@ let slots = [
                         <!-- <br>
                         <button on:click={()=>{console.log(searchValObj)}}>DEBUG</button> -->
                         <br>
-                        <button on:click={advModalToggle}>
+                        <button class="modal-sch-val-slots" on:click={advModalToggle}>
                             {currentTranslations.modal_sch_advanced_open_val_slots}
                         </button>
+                        <br>
                         <!-- Search Advanced custom Value Slot Modal -->
                         {#if showAdvSlotModal}
                         <div class="adv-slot-wrapper">
@@ -1694,17 +1711,16 @@ let slots = [
                                     <input type="text" bind:value={slot.name} placeholder="{currentTranslations.modal_sch_advanced_slots_name_ph}">
                                   </label>
                                 </div>
-                                <button on:click={() => saveSlot(index)}>{currentTranslations.modal_sch_advanced_slots_save}</button>
-                                <button on:click={() => loadSlot(index)} disabled={!slot.hasValue}>{currentTranslations.modal_sch_advanced_slots_load}</button>
-                                <button on:click={() => deleteSlot(index)} disabled={!slot.hasValue}>{currentTranslations.modal_sch_advanced_slots_reset}</button>
+                                <button class="adv-slot-save-btn" on:click={() => saveSlot(index)}>{currentTranslations.modal_sch_advanced_slots_save}</button>
+                                <button class="adv-slot-load-btn" on:click={() => loadSlot(index)} disabled={!slot.hasValue}>{currentTranslations.modal_sch_advanced_slots_load}</button>
+                                <button class="adv-slot-reset-btn" on:click={() => deleteSlot(index)} disabled={!slot.hasValue}>{currentTranslations.modal_sch_advanced_slots_reset}</button>
                               </div>
                             {/each}
                         </div>
                         {/if}
                     {/if}
                 </div>
-                <button class="close-modal" on:click={toggleSettings}>{currentTranslations.modal_close}</button
-                >
+                <button class="close-modal" on:click={toggleSettings}>{currentTranslations.modal_close}</button>
             </div>
         </div>
     {/if}

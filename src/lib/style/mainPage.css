@@ -204,8 +204,6 @@
 }
 
 .close-modal {
-    /* background-color: #005082; */
-    /* color: white; */
     padding: 8px 15px;
     border-radius: 5px;
     cursor: pointer;
@@ -451,7 +449,7 @@
 
 
 .modal-sch-wrapper{
-    height: 300px;
+    height: 200px;
     overflow-y: scroll;
 
     box-shadow: 0 4px 4px rgba(0,0,0,0.3);
@@ -467,6 +465,15 @@
     border-radius: 10px;
 }
 
+.modal-sch-val-slots{
+    width: 100px;
+    border-radius: 5px;
+}
+
+.adv-slot-save-btn, .adv-slot-load-btn, .adv-slot-reset-btn{
+    border-radius: 7px;
+    border:none;
+}
 
 .adv-slot-wrapper {
     display: flex;

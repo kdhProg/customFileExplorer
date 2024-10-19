@@ -37,6 +37,11 @@ export const translations = {
         sf_style_theme:'SF style Theme',
         linux_theme:'Linux style Theme',
 
+        paste_fail_msg : 'Problem has been occurred during copy/cut : ',
+
+        mk_new_item_success : 'New Folder or File has been created. => ',
+        mk_new_item_fail : 'New Folder or File has failed creation. => ',
+
         modal_sch_basic_title : 'Basic Features',
         modal_sch_basic_async : 'Async (Thread pools automatically set by CPU Core)',
         modal_sch_basic_filename : 'Search depends on file`s name',
@@ -92,7 +97,9 @@ export const translations = {
         modal_sch_advanced_slots_name_ph:'Slot Name',
         modal_sch_advanced_slots_save:'Save',
         modal_sch_advanced_slots_load:'Load',
-        modal_sch_advanced_slots_reset:'Reset'
+        modal_sch_advanced_slots_reset:'Reset',
+
+        adv_slot_empty_name_alert:'Slot name cannot be empty. Please provide a valid name.'
     },
     ko: {
         settings: '설정',
@@ -131,6 +138,11 @@ export const translations = {
         retro_theme:'XP 스타일 테마',
         sf_style_theme:'SF 스타일 테마',
         linux_theme:'리눅스 스타일 테마',
+
+        paste_fail_msg : '복사/잘라내기 작업 중 문제 발생 : ',
+
+        mk_new_item_success : '새 파일 또는 폴더를 생성하였습니다. => ',
+        mk_new_item_fail : '새 파일 또는 폴더 생성에 실패했습니다. => ',
 
         modal_sch_basic_title : '기본 적용',
         modal_sch_basic_async : '비동기 처리(코어 수 기반 스레드 풀 자동 설정)',
@@ -188,5 +200,7 @@ export const translations = {
         modal_sch_advanced_slots_save:'저장',
         modal_sch_advanced_slots_load:'불러오기',
         modal_sch_advanced_slots_reset:'초기화',
+
+        adv_slot_empty_name_alert:'슬롯에 저장할 이름을 입력하세요. 빈 문자열은 허용되지 않습니다.'
     },
 };
