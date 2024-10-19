@@ -373,6 +373,24 @@ pub async fn cancel_search(
     Ok(())
 }
 
+// for cache check if cache value is located at or under input directory
+fn is_path_in_directory(file_path: &Path, dir_path: &Path) -> bool {
+    let canonical_file_path = file_path.canonicalize().unwrap_or_else(|_| file_path.to_path_buf());
+    let canonical_dir_path = dir_path.canonicalize().unwrap_or_else(|_| dir_path.to_path_buf());
+
+    println!("Comparing file path: {:?}", canonical_file_path);
+    println!("With directory path: {:?}", canonical_dir_path);
+
+    // 파일 경로가 디렉터리 경로로 시작하는지 확인
+    if canonical_file_path.starts_with(&canonical_dir_path) {
+        println!("File is within directory.");
+        true
+    } else {
+        println!("File is NOT within directory.");
+        false
+    }
+}
+
 
 
 
@@ -391,7 +409,6 @@ pub async fn search_files<'a>(
     if !dir_path.exists() {
         return Err(format!("Directory does not exist: {:?}", dir_path));
     }
-
     // 검색 시작 시간을 기록
     let start_time = Instant::now();
 
@@ -407,8 +424,10 @@ pub async fn search_files<'a>(
         for file_path in cached_results {
             let path = Path::new(&file_path);
 
+            let is_in_directory = is_path_in_directory(path, &dir_path);
+
             // 파일/폴더의 존재 여부 확인
-            if !path.exists() {
+            if !path.exists() || !is_in_directory{
                 continue; // 존재하지 않는 파일 또는 폴더는 무시
             }
 
