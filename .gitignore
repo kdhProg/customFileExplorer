@@ -20,10 +20,5 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
-
-# cache
-backend_properties/cache/search_cache.json
-!backend_properties/cache/.gitkeep
-
 # logs
 logs
