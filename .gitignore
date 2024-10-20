@@ -20,5 +20,11 @@ Thumbs.db
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
+# cache
+# search_cache has been skipped from worktree >> git will stop checking modified contents of it + search_cache will remain at initial status
+# git update-index --skip-worktree backend_properties/cache/search_cache.json
+# Restore : git update-index --no-skip-worktree backend_properties/cache/search_cache.json
+
+
 # logs
 logs
