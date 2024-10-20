@@ -708,6 +708,29 @@ function detectFilesInside() {
         filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
     }
 
+    // ----------------------- Copy / Paste expand toggle -----------------------------
+    let isCopyExpanded = false;
+    let isCutExpanded = false;
+
+    function toggleCopyList() {
+        isCopyExpanded = !isCopyExpanded;
+    }
+
+    
+
+    function toggleCutList() {
+        isCutExpanded = !isCutExpanded;
+    }
+
+    // ------ clear clips ----------
+    function clearCopyClip(){
+        copyClipboard = [];
+    }
+
+    function clearCutClip(){
+        cutClipboard = []
+    }
+
 
   //   -------------------- Delete --------------------
 
@@ -802,22 +825,7 @@ function detectFilesInside() {
         }
     }
 
-// ----------------------- Copy / Paste List -----------------------------
-    let isCopyExpanded = false;
-    let isCutExpanded = false;
-
-    function toggleCopyList() {
-        isCopyExpanded = !isCopyExpanded;
-    }
-
     
-
-    function toggleCutList() {
-        isCutExpanded = !isCutExpanded;
-    }
-  
-    
-
   // ------------------------------ divide bar ------------------------------
 let sidebarWidth = 250;
 
@@ -1364,17 +1372,12 @@ let slots = [
         </div>
 
         <!-- search box -->
-        <!-- 🔍 -->
         <div class="search-container">
             <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}">
             {#if isSearching}
-            <!-- <button id="searchButton" class="searchbox-button-wrapper" disabled>
-                <img class="searchBox-button-img" src="/icons/magnifying_glass.png" alt="">
-            </button> -->
             <button class="searchbox-button-wrapper" on:click={cancelSearch}>❌</button>
             {:else}
             <button id="searchButton" class="searchbox-button-wrapper" on:click={searchFilesInDirectory}>
-                <!-- <img id="searchBox-button-img" class="searchBox-button-img" src="/icons/magnifying_glass.png" alt=""> -->
                 <img id="searchBox-button-img" class="util-button-img" 
                     src={currentTheme === '/src/lib/style/themes/sf_style_theme.css' ? '/icons/cyan_theme/magnifying_glass.png' : '/icons/magnifying_glass.png'} alt=""
                 >
@@ -1488,12 +1491,17 @@ let slots = [
                 style="max-height: {isCopyExpanded ? 'none' : '30px'}; 
                 overflow: {isCopyExpanded ? 'visible' : 'hidden'};"
             >
-                {#each copyClipboard as file}
+            {#each copyClipboard as file}
                 <div class="copy-item">
                     <div class="copy-item-file-name">{getFileName(file)}</div>
                     <button class="copy-item-cancle-btn" value={file} on:click={rmCopyClipFile}>❌</button>
                 </div>
             {/each}
+            </div>
+            <div class="copy-list-empty-wrapper">
+                <button class="copy-list-empty-btn" on:click={clearCopyClip}>
+                    {currentTranslations.clearCutClip}
+                </button>
             </div>
             <div class="copy-list-expand-wrapper">
                 <button class="copy-list-expand-btn" on:click={toggleCopyList}>
@@ -1502,8 +1510,10 @@ let slots = [
             </div>
         </div>
     {/if}
+    {#if copyClipboard.length > 0 && cutClipboard.length > 0}
+    <hr>
+    {/if}
     {#if cutClipboard.length > 0}
-        <hr>
         <div class="cut-items-container" style="max-height: {isCutExpanded ? 'none' : '30px'};">
             <div class="cut-banner">
                 <span class="cut-banner-text">{currentTranslations.cutClipboardText}</span>
@@ -1512,12 +1522,17 @@ let slots = [
                 style="max-height: {isCutExpanded ? 'none' : '30px'}; 
                 overflow: {isCutExpanded ? 'visible' : 'hidden'};"
             >
-                {#each cutClipboard as file}
+            {#each cutClipboard as file}
                 <div class="cut-item">
                     <div class="cut-item-file-name">{getFileName(file)}</div>
                     <button class="cut-item-cancle-btn" value={file} on:click={rmCutClipFile}>❌</button>
                 </div>
             {/each}
+            </div>
+            <div class="cut-list-empty-wrapper">
+                <button class="cut-list-empty-btn" on:click={clearCutClip}>
+                    {currentTranslations.clearCopyClip}
+                </button>
             </div>
             <div class="cut-list-expand-wrapper">
                 <button class="cut-list-expand-btn" on:click={toggleCutList}>

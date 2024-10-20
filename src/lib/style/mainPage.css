@@ -403,15 +403,21 @@
     background-color: transparent;
 }
 
+.util-button:hover{
+    transform: scale(1.1);
+}
+
 .util-button-img{
 
     width: 100%;
     height: 30px;
 }
 
-.util-button:hover{
+.util-button-img:hover{
     transform: scale(1.1);
 }
+
+
 
 
 .settings-icon-wrapper {
@@ -569,7 +575,7 @@
     height: 20px;
     margin-left: 20px;
     margin-right: 20px;
-    width: 90px;
+    width: 100px;
 
     border-radius: 10px;
 }
@@ -633,8 +639,8 @@
 
 .copy-list-expand-wrapper{
     width: 70px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .copy-list-expand-btn{
@@ -658,7 +664,7 @@
     height: 20px;
     margin-left: 20px;
     margin-right: 20px;
-    width: 90px;
+    width: 100px;
 
     border-radius: 10px;
 }
@@ -709,6 +715,7 @@
     /* border: 1px black solid; */
 }
 
+
 .cut-item-cancle-btn{
     font-size: 10px;
     background-color: transparent;
@@ -722,8 +729,8 @@
 
 .cut-list-expand-wrapper{
     width: 70px;
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 .cut-list-expand-btn{
@@ -731,3 +738,27 @@
     background: transparent;
     border:none;
 }
+
+/* ------ empty btn ------------- */
+
+.cut-list-empty-wrapper, .copy-list-empty-wrapper{
+    width: 70px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.cut-list-empty-btn, .copy-list-empty-btn{
+    cursor: pointer;
+    background: transparent;
+    border:none;
+}
+
+
+.cut-list-empty-btn:hover, .copy-list-empty-btn:hover{
+    transform: scale(1.1);
+}
+
+.cut-list-expand-btn:hover, .copy-list-expand-btn:hover{
+    transform: scale(1.3);
+}
+

@@ -26,6 +26,9 @@ export const translations = {
         copyClipboardText : 'Copy List',
         cutClipboardText:'Cut List',
 
+        clearCopyClip : 'Clear',
+        clearCutClip : 'Clear',
+
         modal_close : 'Close',
 
         interface_set : 'Interface Setting',
@@ -140,6 +143,9 @@ export const translations = {
 
         copyClipboardText : '복사',
         cutClipboardText:'잘라내기',
+
+        clearCopyClip : '비우기',
+        clearCutClip : '비우기',
 
         modal_close : '닫기',
 

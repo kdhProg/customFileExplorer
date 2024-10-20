@@ -218,3 +218,11 @@ a:hover {
     color: #00c8ff;
 }
 
+.cut-list-empty-btn, .copy-list-empty-btn{
+    color:#00c8ff;
+}
+
+.cut-list-expand-btn, .copy-list-expand-btn{
+    color:#00c8ff;
+}
+
