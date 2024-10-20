@@ -18,14 +18,85 @@ we developed a file explorer project with key strengths such as fast search spee
 
 ## Main Features
 
-- Fast Search
-- Various themes
-- Selectable Languanges
+- Search with Various options
+- Selectable Util buttons & UI sets
 
-## Tech Stack
+## Feature Details
 
-- Tauri / Rust / Tokio
-- SvelteKit / TypeScript
+### Utils
+- All utility buttons can be placed on the screen according to user settings.
+- Cut / Copy / Paste
+  - Separate operations exist for Copy with Paste and Cut with Paste. As a result, the copy and cut clipboards are independent, allowing both tasks to proceed simultaneously without conflicts. Additionally, clipboard contents can be visually inspected.
+
+  - Copy principle: A copy receives the suffix _copy. If a name conflict occurs, numbering is applied.
+
+- Delete
+
+- Create New Folder / Create New File
+  - For new files, they are generated in the format new.txt to prevent name conflicts. If a conflict occurs, numbering is applied.
+- shortcut
+  - copy : ctrl + c
+  - copy-paste : ctrl + v
+  - cut : ctrl + x
+  - cut-paste : ctrl + shift + x
+  - delete(move to recycle bin) : del
+  - select all : ctrl + a
+- Todos : customize shortcut / configurable newly created file or folder's name(if file, type too)
+
+### UI configurable settings
+  - File viewer each icon's area size
+  - entire themes
+    - Default / Linux-theme / Retro-theme / Dark-theme
+  - Languague
+    - now available : EN, KR
+  - Util buttons deployment
+
+
+### Search basic features
+- Asynchronous processing
+- Multi-threaded parallel processing
+- Cache based on search history
+- Real-time search result display
+- Search cancellation supported
+
+
+### Advanced Search features
+- Thread pool configuration
+  - Default / 4 / 8 / 16 / 32
+- Search targets can be specified
+  - Folders & files
+  - Files only
+  - Folders only
+- Search within file contents:
+  - Be aware that this may cause performance degradation.
+  - Applied only to text files.
+  - Special similarity-based search methods do not search within file contents.
+- File attribute filtering:
+  - File size: Up to 100GB
+    - Folder size filtering is not yet supported: Recursive traversal of folders may cause significant performance degradation.
+  - Creation date
+  - Modification date
+  - File type: Input as a list of extensions. Example: .txt .pdf
+  - File owner:
+    - Retrieving file owner via shell commands may cause performance issues.
+    - Requires administrator privileges.
+- Search symbolic links:
+  - Be cautious, as symbolic links can create circular references.
+  - No logic to handle circular references has been implemented yet.
+
+- Search methods:
+  - If access permission issues occur, the search will skip the path and continue.
+  - Basic search: Checks if the search string is contained within the target (contains operation).
+  - Regular expressions: Must be written according to Rust regex syntax.
+  - Fuzzy Matching 1: Damerau-Levenshtein distance
+  - Fuzzy Matching 2: Jaccard Similarity
+      - The threshold used for fuzzy matching is specified in a separate JSON file.
+Option to generate search logs.
+
+## Tech
+
+- Tauri / Rust
+- SvelteKit
 
 ## System Architecture
 <p>
@@ -81,7 +152,9 @@ we developed a file explorer project with key strengths such as fast search spee
 
 
 ## Projects Settings
-- Prerequisite : npm, Tauri CLI
+### development env
+- npm 10.5.0
+- rust & cargo 1.79.0
 
 - Download
 
@@ -137,7 +210,3 @@ cargo doc --no-deps --open
 
 >[ref](https://tauri.app/ko/v1/guides/getting-started/setup/sveltekit/)
 
-### Install Tauri cli
-```bash
-npm install --save-dev @tauri-apps/cli
-```
