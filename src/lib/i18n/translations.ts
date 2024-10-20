@@ -99,7 +99,20 @@ export const translations = {
         modal_sch_advanced_slots_load:'Load',
         modal_sch_advanced_slots_reset:'Reset',
 
-        adv_slot_empty_name_alert:'Slot name cannot be empty. Please provide a valid name.'
+        adv_slot_empty_name_alert:'Slot name cannot be empty. Please provide a valid name.',
+
+        alt_modal_valid_empty_type_list: 'Enter the extension list.',
+        alt_modal_valid_empty_owner_name: 'Enter the owner name.',
+        alt_modal_valid_file_size_no_value: 'Enter both min & max size.',
+        alt_modal_valid_file_size_must_int: 'Size must be an integer.',
+        alt_modal_valid_file_size_bigger_than_0: 'Size must be ≥ 0 (max ≥ 1).',
+        alt_modal_valid_file_size_min_bigger_than_max: 'Min size exceeds max size.',
+        alt_modal_valid_file_size_lower_than_100GB: 'Size must be ≤ 100 GB.',
+        alt_modal_valid_date_empty_val: 'Enter all dates.',
+        alt_modal_valid_date_invalid_type: 'Invalid date format.',
+        alt_modal_valid_date_start_faster_than_end: 'Start date is after end date.',
+        alt_modal_valid_date_before_today: 'Dates must be today or earlier.'
+
     },
     ko: {
         settings: '설정',
@@ -201,6 +214,26 @@ export const translations = {
         modal_sch_advanced_slots_load:'불러오기',
         modal_sch_advanced_slots_reset:'초기화',
 
-        adv_slot_empty_name_alert:'슬롯에 저장할 이름을 입력하세요. 빈 문자열은 허용되지 않습니다.'
+        adv_slot_empty_name_alert:'슬롯에 저장할 이름을 입력하세요. 빈 문자열은 허용되지 않습니다.',
+
+        alt_modal_valid_empty_type_list : '확장자 리스트를 입력하세요.',
+        alt_modal_valid_empty_owner_name : '소유자명을 입력하세요.',
+        alt_modal_valid_file_size_no_value : '최대 & 최소값을 모두 입력하세요.',
+        alt_modal_valid_file_size_must_int : '파일 크기는 정수여야 합니다.',
+        alt_modal_valid_file_size_bigger_than_0 : '입력값 크기는 0 이상이어야 합니다. (최대값은 1 이상이어야 합니다)',
+        alt_modal_valid_file_size_min_bigger_than_max : '최소 파일 크기가 최대 파일 크기보다 큽니다.',
+        alt_modal_valid_file_size_lower_than_100GB : '파일 크기는 100 GB를 초과할 수 없습니다.',
+        alt_modal_valid_date_empty_val : '모든 날짜를 입력해야 합니다.',
+        alt_modal_valid_date_invalid_type : '날짜 형식이 잘못되었습니다.',
+        alt_modal_valid_date_start_faster_than_end : '시작 날짜가 끝 날짜보다 이후입니다.',
+        alt_modal_valid_date_before_today : '시작과 끝 날짜는 오늘 이전이어야 합니다.'
+
+
+
+
+
+
+
+
     },
 };

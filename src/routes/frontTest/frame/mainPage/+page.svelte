@@ -1,6 +1,6 @@
 <script lang="ts">
     import { listen } from '@tauri-apps/api/event';
-    import { onMount, afterUpdate } from 'svelte';
+    import { onMount, afterUpdate, onDestroy } from 'svelte';
     import { writable } from 'svelte/store';
     import { invoke } from "@tauri-apps/api/tauri";
 
@@ -274,7 +274,33 @@ function getParentFolder(path: string): string | null {
     let receivedFiles = new Set();
 
     async function searchFilesInDirectory() {
-        // console.log('clicked!')
+
+        // before searhcing, adv props validation test should be passed
+        if(searchValObj.customPropertyUse){
+            if(searchValObj.customFileSizeUse){ // Check File size
+                if( !validateFileSize(searchValObj.sizeMin,searchValObj.sizeMax) )return;
+            }
+            if(searchValObj.customFileTypeUse){
+                if(!searchValObj.fileTypeList || !searchValObj.fileTypeList.trim()){
+                    alert(currentTranslations.alt_modal_valid_empty_type_list);
+                    return;
+                }
+            }
+            if(searchValObj.customFileCrtDateUse){ // Check Creation Date
+                if( !validateDateRange(searchValObj.crtStart,searchValObj.crtEnd) )return;
+            }
+            if(searchValObj.customFileModiDateUse){ // Check Modified Date
+                if( !validateDateRange(searchValObj.modiStart,searchValObj.modiEnd) )return;
+            }
+            if(searchValObj.customFileOwnerUse){
+                if( !searchValObj.ownerName || !searchValObj.ownerName.trim()){
+                    alert(currentTranslations.alt_modal_valid_empty_owner_name)
+                    return;
+                }
+            }
+        }
+        
+
         try {
             isSearching = true;
             const keyword = document.getElementById('searchInput');
@@ -370,6 +396,76 @@ function getParentFolder(path: string): string | null {
             console.log("No active search process to cancel.");
         }
     }
+
+    // --------------------- Validate Search Options ----------------------------
+
+    function validateFileSize(minSize, maxSize) {
+        const MAX_BYTES = 100 * 1024 ** 3; // 100 GB in bytes
+
+        if (
+            (minSize === '' || minSize === null || minSize === undefined) ||
+            (maxSize === '' || maxSize === null || maxSize === undefined) ||
+            !maxSize.toString().trim()
+        ) {
+            alert(currentTranslations.alt_modal_valid_file_size_no_value);
+            return false;
+        }
+
+        if (!Number.isInteger(minSize) || !Number.isInteger(maxSize)) {
+            alert(currentTranslations.alt_modal_valid_file_size_must_int);
+            return false;
+        }
+
+        if (minSize < 0 || maxSize <= 0) {
+            alert(currentTranslations.alt_modal_valid_file_size_bigger_than_0);
+            return false;
+        }
+
+        if (minSize > maxSize) {
+            alert(currentTranslations.alt_modal_valid_file_size_min_bigger_than_max);
+            return false;
+        }
+        if (maxSize > MAX_BYTES) {
+            alert(currentTranslations.alt_modal_valid_file_size_lower_than_100GB);
+            return false;
+        }
+
+            return true; // 유효한 경우
+        }
+
+
+    function validateDateRange(startDate, endDate) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // 시간을 00:00으로 설정해 날짜만 비교
+
+        if (!startDate || !endDate) {
+            alert(currentTranslations.alt_modal_valid_date_empty_val);
+            return false;
+        }
+
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        start.setHours(0, 0, 0, 0); // 시작 날짜 시간 초기화
+        end.setHours(0, 0, 0, 0);   // 끝 날짜 시간 초기화
+
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            alert(currentTranslations.alt_modal_valid_date_invalid_type);
+            return false;
+        }
+        if (start > end) {
+            alert(currentTranslations.alt_modal_valid_date_start_faster_than_end);
+            return false;
+        }
+        if (start > today || end > today) {
+            alert(currentTranslations.alt_modal_valid_date_before_today);
+            return false;
+        }
+
+        return true; // 유효한 경우
+    }
+
+
 
     
     // ------------------------------ Click Each Folder / Files ------------------------------
@@ -612,6 +708,7 @@ function detectFilesInside() {
         filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
     }
 
+
   //   -------------------- Delete --------------------
 
     const del_message = writable<string>(''); // 에러 메시지 상태
@@ -633,6 +730,61 @@ function detectFilesInside() {
             del_message.set(`Unexpected error: ${err}`);
     }
     }
+
+    // ---------- Util Shortcut  ----------------
+
+    function handleSelectAllShortCut(event) {
+        if (event.ctrlKey && event.key.toLowerCase() === 'a') {
+            event.preventDefault(); // 기본 전체 선택 방지
+            selectAllFiles();
+        }
+    }
+    function handleCopyCutPasteShortCut(event) {
+        try {
+            if (event.ctrlKey && event.key === 'c') {
+            copyFiles();
+            } else if (event.ctrlKey && event.key === 'x') {
+            cutFiles();
+            } else if (event.key === 'Delete') {
+                moveToTrash();
+            }else if (event.ctrlKey && event.key === 'v') {
+                pasteFiles(copyClipboard, curFolderName, false)
+            } else if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'v') {
+                // 잘라내기 전용 붙여넣기
+                console.log("cut-paste detected")
+                pasteFiles(cutClipboard, curFolderName, true)
+            }
+        } catch (error) {
+            alert(`An error occurred: ${error.message}`);
+        }
+    }
+
+    function selectAllFiles() {
+        const fileItems = document.querySelectorAll('.file-item');
+        fileItems.forEach(item => item.classList.add('selected'));
+
+        const fileElements = document.querySelectorAll('.selected');
+
+        const selected = Array.from(fileElements)
+        selected.forEach((el) => el.classList.add('selected'));
+
+        const selectedPaths = selected.map((el) => el.getAttribute('data-file-path') || '');
+        selectedFiles.set(selectedPaths);
+    }
+
+
+    // 컴포넌트가 마운트될 때 이벤트 리스너 등록
+    onMount(() => {
+        window.addEventListener('keydown', handleSelectAllShortCut);
+        window.addEventListener('keydown', handleCopyCutPasteShortCut);
+    });
+
+    // 컴포넌트가 언마운트될 때 이벤트 리스너 해제
+    onDestroy(() => {
+        window.removeEventListener('keydown', handleSelectAllShortCut);
+        window.addEventListener('keydown', handleCopyCutPasteShortCut);
+    });
+
 
     // ------------ make new Folder / File ----------
     async function createItem(isFolder:boolean,basePath:String) {
@@ -1519,7 +1671,7 @@ let slots = [
                                     <label for="thread_pool">
                                         {currentTranslations.modal_sch_advanced_thread_pool_size}
                                     </label>
-                                    <select id="thread_pool" bind:value={searchValObj.threadPoolNum}>
+                                    <select id="thread_pool" class="modal-thread-pool-selectbox" bind:value={searchValObj.threadPoolNum}>
                                         <option value="0">{currentTranslations.modal_sch_advanced_thread_pool_size_default}</option>
                                         <option value="4">4</option>
                                         <option value="8">8</option>
@@ -1616,7 +1768,7 @@ let slots = [
                                                 <input type="checkbox" on:change={isFileTypeChkToggle} bind:checked={isFileTypeChk}>
                                             </label>
                                             {#if isFileTypeChk}
-                                                <input class="modal-file-type-input" type="text" bind:value={searchValObj.fileTypeList}>
+                                                <input class="modal-file-type-input" type="text" bind:value={searchValObj.fileTypeList} placeholder=".txt .pdf .docx ....">
                                             {/if}
                                             <br>
                                             <label>
@@ -1684,7 +1836,7 @@ let slots = [
                                                 <input type="checkbox" on:change={isFileOwnerChkToggle} bind:checked={isFileOwnerChk}>
                                             </label>
                                             {#if isFileOwnerChk}
-                                                <input class="modal-file-owner-input" type="text" bind:value={searchValObj.ownerName}>
+                                                <input class="modal-file-owner-input" type="text" bind:value={searchValObj.ownerName} placeholder="steve...">
                                             {/if}
                                         </div>
                                     {/if}

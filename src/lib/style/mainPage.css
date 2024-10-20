@@ -460,6 +460,12 @@
     /* border-radius: 10px; */
 }
 
+.modal-thread-pool-selectbox{
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
 .modal-set-file-sch-property-wrapper{
     border: 1px solid black; 
     border-radius: 10px;
@@ -481,17 +487,20 @@
 .modal-file-size-input{
     border: none;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    outline: none;
     /* transition: box-shadow 0.3s ease; */
 }
 
 .modal-set-file-sch-size-unit{
     border: none;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    outline: none;
 }
 
 .modal-file-type-input{
     border: none;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    outline: none;
 }
 
 .modal-crt-date-start-row, .modal-crt-date-end-row, .modal-modi-date-start-row, .modal-modi-date-end-row{
@@ -506,17 +515,20 @@
 .date-input{
     border: none;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    outline: none;
 }
 
 .modal-file-owner-input{
     border: none;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    outline: none;
 }
 
-/* ----------------- modal adv slot */
+/* ----------------- modal adv slot -------------*/
 .modal-sch-val-slots{
     width: 100px;
     border-radius: 5px;
+    cursor:pointer;
 }
 
 .adv-slot-save-btn, .adv-slot-load-btn, .adv-slot-reset-btn{
