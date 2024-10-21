@@ -1912,7 +1912,7 @@ let slots = [
                                 </div>
                                 <div>
                                   <label>
-                                    <input type="text" bind:value={slot.name} placeholder="{currentTranslations.modal_sch_advanced_slots_name_ph}">
+                                    <input class="adv-slot-name-btn" type="text" bind:value={slot.name} placeholder="{currentTranslations.modal_sch_advanced_slots_name_ph}">
                                   </label>
                                 </div>
                                 <button class="adv-slot-save-btn" on:click={() => saveSlot(index)}>{currentTranslations.modal_sch_advanced_slots_save}</button>
