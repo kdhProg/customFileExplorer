@@ -9,7 +9,7 @@ use serde::Deserialize;
 use std::future::Future;
 use std::pin::Pin;
 use std::time::{SystemTime, UNIX_EPOCH};
-use chrono::{DateTime, Utc, NaiveDateTime};
+use chrono::{DateTime, Utc, NaiveDate, NaiveDateTime, TimeZone};
 use mime_guess::from_path;
 use serde::{Serialize};
 use tauri::State;
@@ -704,7 +704,10 @@ fn get_file_owner(path: &std::path::Path) -> Option<String> {
     None
 }
 
-
+fn truncate_to_date(date: DateTime<Utc>) -> DateTime<Utc> {
+    let naive_date = date.naive_utc().date(); // 날짜 부분만 추출
+    Utc.from_utc_datetime(&naive_date.and_hms(0, 0, 0)) // 시간은 00:00:00으로 설정
+}
 
 
 fn parse_date_to_rfc3339(date_str: &str) -> Result<DateTime<Utc>, String> {
@@ -729,17 +732,19 @@ fn should_filter_file_by_metadata(path: &Path, options: &SearchOptions) -> bool 
         // 생성일 필터링 - 폴더와 파일 모두에 적용 가능
         if options.custom_file_crt_date_use {
             if let Ok(created) = metadata.created() {
-                let crt_date = DateTime::<Utc>::from(created);
-                
+                let crt_date = truncate_to_date(DateTime::<Utc>::from(created)); // 생성일 시간 제거
+        
                 if let Ok(start_time) = parse_date_to_rfc3339(&options.crt_start) {
-                    if crt_date < start_time {
+                    let start_date = truncate_to_date(start_time); // 시작일 시간 제거
+                    if crt_date < start_date {
                         println!("File or folder filtered by creation date: {:?}", crt_date);
                         return true;
                     }
                 }
-                
+        
                 if let Ok(end_time) = parse_date_to_rfc3339(&options.crt_end) {
-                    if crt_date > end_time {
+                    let end_date = truncate_to_date(end_time); // 종료일 시간 제거
+                    if crt_date > end_date {
                         println!("File or folder filtered by end date: {:?}", crt_date);
                         return true;
                     }
@@ -750,17 +755,19 @@ fn should_filter_file_by_metadata(path: &Path, options: &SearchOptions) -> bool 
         // 수정일 필터링 - 폴더와 파일 모두에 적용 가능
         if options.custom_file_modi_date_use {
             if let Ok(modified) = metadata.modified() {
-                let modi_date = DateTime::<Utc>::from(modified);
-                
+                let modi_date = truncate_to_date(DateTime::<Utc>::from(modified)); // 수정일 시간 제거
+        
                 if let Ok(start_time) = parse_date_to_rfc3339(&options.modi_start) {
-                    if modi_date < start_time {
+                    let start_date = truncate_to_date(start_time); // 시작일 시간 제거
+                    if modi_date < start_date {
                         println!("File or folder filtered by modified date: {:?}", modi_date);
                         return true;
                     }
                 }
-                
+        
                 if let Ok(end_time) = parse_date_to_rfc3339(&options.modi_end) {
-                    if modi_date > end_time {
+                    let end_date = truncate_to_date(end_time); // 종료일 시간 제거
+                    if modi_date > end_date {
                         println!("File or folder filtered by end modified date: {:?}", modi_date);
                         return true;
                     }
