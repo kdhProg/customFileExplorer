@@ -29,6 +29,9 @@ export const translations = {
         clearCopyClip : 'Clear',
         clearCutClip : 'Clear',
 
+        pasteErr : 'Error has occurred during Paste : ',
+        utilshotcutErr : 'Error has occurred during using shortcut : ',
+
         modal_close : 'Close',
 
         interface_set : 'Interface Setting',
@@ -146,6 +149,9 @@ export const translations = {
 
         clearCopyClip : '비우기',
         clearCutClip : '비우기',
+
+        pasteErr : '붙여넣기 작업 중 오류발생 : ',
+        utilshotcutErr : '단축키 오류 : ',
 
         modal_close : '닫기',
 

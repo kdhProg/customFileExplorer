@@ -69,7 +69,7 @@ we developed a file explorer project with key strengths such as fast search spee
   - Folders only
 - Search within file contents:
   - Be aware that this may cause performance degradation.
-  - Applied only to text files.
+  - Applied only to text files which decided by MIME text type.
   - Special similarity-based search methods do not search within file contents.
 - File attribute filtering:
   - File size: Up to 100GB
@@ -170,8 +170,10 @@ gh repo clone kdhProg/customFileExplorer
 
 - Optimize Searching API
 - More UI Themes
-- User-Customizable UI
+- Configurable UI
 - Unzip functions
+- Configurable Shortcut key
+- Configurable fuzzy-matching thresholds (It currently located at outer json)
 
 ## Cautions
 - Not Sufficiently tested at Linux or Unix OS

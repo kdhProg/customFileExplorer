@@ -226,3 +226,21 @@ a:hover {
     color:#00c8ff;
 }
 
+/* scrollbar - not yet works */
+/* 스크롤바 트랙 (배경) */
+body::-webkit-scrollbar{
+    background: transparent;
+    border-radius: 10px;
+}
+
+/* 스크롤바 핸들 (움직이는 부분) */
+.file-viewer::-webkit-scrollbar-thumb {
+    background: #00c8ff;
+    border-radius: 10px;
+}
+
+/* 스크롤바 핸들에 마우스를 올릴 때 */
+.file-viewer::-webkit-scrollbar-thumb:hover {
+    background: #00c8ff;
+}
+

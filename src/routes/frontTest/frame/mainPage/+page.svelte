@@ -703,7 +703,7 @@ function detectFilesInside() {
             }
         } catch (err) {
             ccp_message.set(`Error: ${err}`);
-            alert(`Error: ${err}`);
+            alert(currentTranslations.pasteErr + `${err}`);
         }
         filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
     }
@@ -778,7 +778,7 @@ function detectFilesInside() {
                 pasteFiles(cutClipboard, curFolderName, true)
             }
         } catch (error) {
-            alert(`An error occurred: ${error.message}`);
+            alert(currentTranslations.utilshotcutErr + `${error.message}`);
         }
     }
 
