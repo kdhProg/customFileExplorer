@@ -18,16 +18,27 @@ pub struct ItemInfo {
 
 #[command]
 pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteResult {
-    let existing_items = get_existing_items(&target_path); // 타겟 경로의 기존 항목들
-    let mut generated_names = std::collections::HashSet::new(); // 복사 대상의 고유한 이름을 추적
+    let existing_items = get_existing_items(&target_path);
+    let mut generated_names = std::collections::HashSet::new();
 
-    // 대상 경로에 대해 각 파일/폴더의 고유한 이름을 미리 생성
     let mut copy_plan = Vec::new();
     for file in &files {
         let source = Path::new(file);
         let mut destination = Path::new(&target_path).join(source.file_name().unwrap());
 
-        // 이미 타겟 경로에 존재하거나 이전에 생성된 이름과 중복되는 경우 이름 생성
+        // 중첩 복사 방지: 자기 자신의 하위 폴더에 복사할 때만 차단
+        if is_nested_path(source, &destination) {
+            return PasteResult {
+                success: false,
+                message: format!(
+                    "Cannot copy '{}' into its own subdirectory '{}'.",
+                    source.display(),
+                    destination.display()
+                ),
+            };
+        }
+
+        // 고유한 이름 생성
         while existing_items.iter().any(|item| item.name == destination.file_name().unwrap().to_string_lossy())
             || generated_names.contains(destination.file_name().unwrap().to_string_lossy().as_ref()) {
             destination = generate_unique_copy_name(&destination, &existing_items, source.is_dir());
@@ -37,7 +48,7 @@ pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteR
         copy_plan.push((source.to_path_buf(), destination));
     }
 
-    // 미리 생성된 계획대로 복사 또는 이동 수행
+    // 복사 또는 이동 수행
     for (source, destination) in copy_plan {
         let result = if cut {
             if source == destination {
@@ -69,6 +80,12 @@ pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteR
         success: true,
         message: "Files pasted successfully.".to_string(),
     }
+}
+
+// 자기 자신의 하위 경로로 복사하려는지 확인하는 함수
+fn is_nested_path(source: &Path, destination: &Path) -> bool {
+    // 동일한 부모 경로에 복사하는 것은 허용하고, 하위 경로 복사만 차단
+    destination.starts_with(source) && destination != source.parent().unwrap().join(source.file_name().unwrap())
 }
 
 
