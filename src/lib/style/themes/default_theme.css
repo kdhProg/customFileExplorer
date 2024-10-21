@@ -1,3 +1,9 @@
+html{
+    background-color: #f1f1f1;
+    box-shadow: 5px 5px 15px 5px rgba(0, 0, 0, 0.2);
+}
+
+
 .main-container {
     /* background: linear-gradient(135deg, #cde5fc 0%, #8dbdff 100%); */
     background-color: #f1f1f1;
