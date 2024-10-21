@@ -1,6 +1,12 @@
-/* Starcraft Themed CSS */
+
+/* All background default color sets */
+*{
+    background: #1b1b1b;
+}
+
+
 .main-container {
-    background: linear-gradient(135deg, #1b1b1b 0%, #2a2a2a 100%);
+    background: #1b1b1b;
     color: #e2e2e2;
 }
 
@@ -228,19 +234,19 @@ a:hover {
 
 /* scrollbar - not yet works */
 /* 스크롤바 트랙 (배경) */
-body::-webkit-scrollbar{
-    background: transparent;
+*::-webkit-scrollbar{
+    background: #1b1b1b;
     border-radius: 10px;
 }
 
 /* 스크롤바 핸들 (움직이는 부분) */
-.file-viewer::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background: #00c8ff;
     border-radius: 10px;
 }
 
 /* 스크롤바 핸들에 마우스를 올릴 때 */
 .file-viewer::-webkit-scrollbar-thumb:hover {
-    background: #00c8ff;
+    background: #00b4e6;
 }
 
