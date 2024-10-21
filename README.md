@@ -173,6 +173,11 @@ gh repo clone kdhProg/customFileExplorer
 - User-Customizable UI
 - Unzip functions
 
+## Cautions
+- Not Sufficiently tested at Linux or Unix OS
+- In the case of Advanced Search options : file property-owner, Although It requires [ admin or root ] previlege, when dev mode, It skipped
+- Not yet detecting changes in file system in real time
+
 ## Commands
 
 Frontend dev server
@@ -186,7 +191,7 @@ Frontend build
 npm run build
 ```
 
-Development Build 
+Development Build ( It may automatically run either front and backend server)
 ```bash
 cargo tauri dev
 ```

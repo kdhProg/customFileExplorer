@@ -98,7 +98,7 @@
         "resizable": true,
         "title": "pathfinder",
         "width": 800,
-        "decorations": true
+        "decorations": false
       }
     ]
   }
