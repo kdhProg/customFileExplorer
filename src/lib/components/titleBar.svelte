@@ -33,7 +33,7 @@
 .title-bar {
 
     position: fixed;
-    width: 97.3%;
+    width: 98.2%;
 
     height: 30px;
     top: 0;

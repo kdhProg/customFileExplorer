@@ -1,10 +1,4 @@
 
-/* All background default color sets */
-*{
-    background: #1b1b1b;
-}
-
-
 .main-container {
     background: #1b1b1b;
     color: #e2e2e2;
@@ -238,21 +232,10 @@ a:hover {
     color: #00c8ff;
 }
 
-/* scrollbar - not yet works */
-/* 스크롤바 트랙 (배경) */
-*::-webkit-scrollbar{
-    background: #1b1b1b;
-    border-radius: 10px;
-}
 
-/* 스크롤바 핸들 (움직이는 부분) */
-*::-webkit-scrollbar-thumb {
-    background: #00c8ff;
-    border-radius: 10px;
-}
 
 /* 스크롤바 핸들에 마우스를 올릴 때 */
-.file-viewer::-webkit-scrollbar-thumb:hover {
+.file-viewer::-webkit-scrollbar-thumb {
     background: #00b4e6;
 }
 

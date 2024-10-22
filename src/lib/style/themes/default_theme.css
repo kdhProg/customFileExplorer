@@ -1,11 +1,12 @@
-html{
-    background-color: #f1f1f1;
-    box-shadow: 5px 5px 15px 5px rgba(0, 0, 0, 0.2);
-}
+/* html{
+   
+} */
 
 
 .main-container {
-    /* background: linear-gradient(135deg, #cde5fc 0%, #8dbdff 100%); */
+    box-shadow: 
+        0 0 10px 2px rgba(0, 0, 0, 0.3), /* 진한 중심 그림자 */
+        0 0 15px 8px rgba(0, 0, 0, 0.1); /* 바깥쪽으로 퍼지는 옅은 그림자 */
     background-color: #f1f1f1;
 }
 
