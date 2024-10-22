@@ -25,4 +25,7 @@ vite.config.ts.timestamp-*
 # git update-index --skip-worktree backend_properties/cache/search_cache.json
 # Restore : git update-index --no-skip-worktree backend_properties/cache/search_cache.json
 
-
+#log
+/log/*
+!/log/
+!/log/.gitkeep

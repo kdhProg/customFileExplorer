@@ -70,6 +70,7 @@ we developed a file explorer project with key strengths such as fast search spee
 - Search within file contents:
   - Be aware that this may cause performance degradation.
   - Applied only to text files which decided by MIME text type.
+    - Note: MIME Types Returned Are Not Stable/Guaranteed
   - Special similarity-based search methods do not search within file contents.
 - File attribute filtering:
   - File size: Up to 100GB
