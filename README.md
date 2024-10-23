@@ -175,6 +175,8 @@ gh repo clone kdhProg/customFileExplorer
 - Unzip functions
 - Configurable Shortcut key
 - Configurable fuzzy-matching thresholds (It currently located at outer json)
+- Enhance Cache System ( json > DB : ex/ redis, sqlite )
+- AI Model to autocomplete Search Keyword
 
 ## Cautions
 - Not Sufficiently tested at Linux or Unix OS

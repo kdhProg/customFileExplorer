@@ -9,6 +9,8 @@ export const translations = {
         search:'Search Settings',
         close: 'Close',
 
+        search_path_error : 'Invalid Search Path : ',
+
         sel_folder:'Select Folder',
         no_folder:'Empty Folder',
 
@@ -129,6 +131,8 @@ export const translations = {
         utils:'기능',
         search:'검색설정',
         close: '닫기',
+
+        search_path_error : '올바르지 않은 탐색 경로 : ',
         
         sel_folder:'폴더를 선택하세요',
         no_folder:'빈 폴더입니다',

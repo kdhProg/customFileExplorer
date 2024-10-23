@@ -378,6 +378,8 @@ function getParentFolder(path: string): string | null {
             
         } catch (error) {
             console.error("err:", error);
+            alert(currentTranslations.search_path_error  );
+            isSearching = false;
         }
     }
 
@@ -770,7 +772,7 @@ function detectFilesInside() {
             cutFiles();
             } else if (event.key === 'Delete') {
                 moveToTrash();
-            }else if (event.ctrlKey && event.key === 'v') {
+            }else if (event.ctrlKey && event.key === 'v' && (copyClipboard.length > 0 || cutClipboard.length>0)) {
                 pasteFiles(copyClipboard, curFolderName, false)
             } else if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'v') {
                 // 잘라내기 전용 붙여넣기
@@ -838,6 +840,7 @@ function updateSidebarWidth(width) {
 
 
 // ------------------------------ onMount -> load when page starts ------------------------------
+// ------------ file viewer / dir viewer divide bar resizer
 onMount(() => {
 
     load_util_buttons().then(data => {
@@ -901,7 +904,7 @@ afterUpdate(() => {
 });
 
 
-// Set Language
+// ----------------------------- Set Language ----------------------------
 function switchLanguage(lang: string) {
     language.set(lang);
 }
@@ -913,13 +916,13 @@ $: currentTranslations = translations[$language];
 // 디버깅용 -> <button on:click={()=>{console.log(driveList)}}>test</button>와 같이 활용
 // $: driveList = $drives;
 
-// main logo click event (open github-repo)
+// ---------------------main logo click event (open github-repo)
 function openGitgubRepo(){
     window.open('https://github.com/kdhProg/customFileExplorer', '_blank');
 }
 
 
-// ------------ modal ------------------------
+// ---------------------------- modal -----------------------------------
 // Settings Modal On / Off
 function toggleSettings() {
         showSettings = !showSettings;
@@ -1015,7 +1018,7 @@ function isThreadPoolsChkToggle(){
 }
 
 
-// custom property
+// ------------------------ custom property -----------------------------
 let isFilePropertyChk : boolean = false;
 
 function isPropertyChkToggle(){
@@ -1140,7 +1143,7 @@ function isFileOwnerChkToggle(){
 }
 
 
-// file property - max & min calculation
+// ---------------------- file property - max & min calculation ----------------------
 let fileMaxRawVal = 0;
 let fileMinRawVal = 0;
 let fileMaxUnit = 'B';
@@ -1253,7 +1256,7 @@ let slots = [
     { number: 5, name: "", hasValue: false }
   ];
 
-  // Slot Init
+  // ------------------------- Slot Init -----------------------------------
   onMount(async () => {
     for (let i = 0; i < slots.length; i++) {
       const result = await invoke("load_settings", { slotNumber: slots[i].number });
@@ -1264,7 +1267,7 @@ let slots = [
     }
   });
 
-  // Save Custom Values
+  // ------------------------- Save Custom Values -----------------------
   async function saveSlot(slotIndex:number) {
     const slot = slots[slotIndex];
 
@@ -1282,7 +1285,7 @@ let slots = [
     slots[slotIndex].hasValue = true; // activate load & reset btn after save
   }
 
-// Load Slot 
+// ----------------------------------- adv slot Load ------------------------------------ 
   async function loadSlot(slotIndex:number) {
     const slot = slots[slotIndex];
     const result = await invoke("load_settings", { slotNumber: slot.number });
@@ -1308,13 +1311,46 @@ let slots = [
     }
   }
 
-  // Slot reset(= delete custom values and reset)
+  // ----------------------- Slot reset(= delete custom values and reset) -------------------------
   async function deleteSlot(slotIndex:number) {
     const slot = slots[slotIndex];
     await invoke("delete_settings", { slotNumber: slot.number });
     slots[slotIndex].name = "";
     slots[slotIndex].hasValue = false;
   }
+
+  // --------------- mouse rightclick option -------------------
+  let right_click_visible = writable(false);
+  let right_click_position = writable({ x: 0, y: 0 });
+
+  let contextMenuRef;
+
+  function closeMenu() {
+    right_click_visible.set(false);
+  }
+
+  onMount(() => {
+    // 메뉴 외부 클릭 시 메뉴 닫기
+    document.addEventListener('click', closeMenu);
+  });
+
+  // 우클릭 시 메뉴 좌표 설정
+  function openMenu(e) {
+    e.preventDefault();
+    right_click_position.set({ x: e.clientX, y: e.clientY });
+    right_click_visible.set(true);
+  }
+
+//   // 우클릭 이벤트 등록
+//   onMount(() => {
+//     window.addEventListener('contextmenu', openMenu);
+//   });
+
+  // 컴포넌트가 파괴될 때 이벤트 해제
+//   onDestroy(() => {
+//     window.removeEventListener('contextmenu', openMenu);
+//     document.removeEventListener('click', closeMenu);
+//   });
 
 </script>
 
@@ -1928,5 +1964,19 @@ let slots = [
             </div>
         </div>
     {/if}
+
+    <!-- ------------- Mouse right click file viewer option -------------------- -->
+    <!-- {#if $right_click_visible}
+        <div
+        class="context-menu"
+        bind:this={contextMenuRef}
+        style="position:fixed; top: {$right_click_position.y}px; left: {$right_click_position.x}px;"
+        >
+        <p>Option 1</p>
+        <p>Option 2</p>
+        <p>Option 3</p>
+        </div>
+    {/if} -->
+
 </div>
 <!-- <a href="/frontTest/frame">Go to previous page</a> -->
