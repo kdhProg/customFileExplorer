@@ -21,6 +21,19 @@ we developed a file explorer project with key strengths such as fast search spee
 - Search with Various options
 - Selectable Util buttons & UI sets
 
+## Tech stack
+
+- **Tauri / Rust**
+  - rust & cargo 1.79.0
+- **SvelteKit**
+  - npm 10.5.0
+
+
+## System Architecture
+<p>
+<img width="500px" src="./static/architecture/system_architecture.PNG">
+</p>
+
 ## Feature Details
 
 ### Utils
@@ -94,21 +107,6 @@ we developed a file explorer project with key strengths such as fast search spee
       - The threshold used for fuzzy matching is specified in a separate JSON file.
 Option to generate search logs.
 
-## Tech
-
-- Tauri / Rust
-- SvelteKit
-
-## System Architecture
-<p>
-<img width="500px" src="./static/architecture/system_architecture.PNG">
-</p>
-
-## Backend API Documents
-- It will be located at src-tauri / target / doc / app
-- It seems docs sometimes makes initial dev build slower
-- so i recommand not to make all docs which contains deps
-
 ## Custom icons
 - directory icons
 <p>
@@ -146,17 +144,23 @@ Option to generate search logs.
 <img width="300px" src="./static/screenshots/main_theme3.png">
 </p>
 
-<p>Linux-style theme</p>
+<p>Copy & Cut Clipboards visualize</p>
 <p>
-<img width="300px" src="./static/screenshots/main_theme4.png">
+<img width="300px" src="./static/screenshots/util_clipboards1.PNG">
+</p>
+
+<p>Clipboard toggle : extend</p>
+<p>
+<img width="300px" src="./static/screenshots/util_clipboards_toggle1.PNG">
+</p>
+
+<p>Clipboard toggle : shrink</p>
+<p>
+<img width="300px" src="./static/screenshots/util_clipboards_toggle2.PNG">
 </p>
 
 
 ## Projects Settings
-### development env
-- npm 10.5.0
-- rust & cargo 1.79.0
-
 - Download
 
 ```bash
@@ -166,6 +170,11 @@ or
 ```bash
 gh repo clone kdhProg/customFileExplorer
 ```
+
+## Backend API Documents
+- It will be located at src-tauri / target / doc / app
+- It seems docs sometimes makes initial dev build slower
+- so i recommand not to make all docs which contains deps
 
 ## Todos
 
@@ -185,18 +194,18 @@ gh repo clone kdhProg/customFileExplorer
 
 ## Commands
 
-Frontend dev server
+**Frontend dev server**
 
 ```bash
 npm run dev
 ```
 
-Frontend build
+**Frontend build**
 ```bash
 npm run build
 ```
 
-Development Build ( It may automatically run either front and backend server)
+**Development Build** ( It may automatically run either front and backend server)
 ```bash
 cargo tauri dev
 ```
@@ -205,12 +214,12 @@ or
 npm run tauri dev
 ```
 
-Rust Docs Build ( Not root directory, should move to "src-tauri")
+**Rust Docs Build** ( Not root directory, should move to "src-tauri")
 (includes all dependencies - it will make all of docs which contains deps)
 ```bash
 cargo doc --open
 ```
-(without dependencies, only user-written API)
+(**without dependencies**, only user-written API)
 ```bash
 cargo doc --no-deps --open
 ```
