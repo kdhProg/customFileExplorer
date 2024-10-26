@@ -90,6 +90,12 @@
     background-color: transparent;
 }
 
+.file-name-input{
+    border-color: #00c8ff;
+    background: #1b1b1b;
+    color: #00c8ff;
+}
+
 /* .file-name {
 } */
 
@@ -239,3 +245,29 @@ a:hover {
     background: #00b4e6;
 }
 
+/* file-item right click setting modal */
+.file-item-menu{
+    border: 0.5px solid #00c8ff;
+    background-color: #1b1b1b;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.file-item-btn{
+    color:#00c8ff;
+}
+
+.file-item-btn:hover{
+    color:#1b1b1b;
+    background: #00c8ff;
+}
+
+.file-props-modal{
+    background-color: #1b1b1b;
+    border:1px solid #00c8ff;
+    /* border-radius: 5px; */
+}
+
+.file-prop-modal-btn{
+    color:#1b1b1b;
+    background: #00c8ff;
+}

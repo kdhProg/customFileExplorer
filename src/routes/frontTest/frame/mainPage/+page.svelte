@@ -1,7 +1,7 @@
 <script lang="ts">
     import { listen } from '@tauri-apps/api/event';
     import { onMount, afterUpdate, onDestroy } from 'svelte';
-    import { writable } from 'svelte/store';
+    import { writable, get } from 'svelte/store';
     import { invoke } from "@tauri-apps/api/tauri";
 
     import { isDirectory, listFilesInDirectory, openFileWithDefaultProgram } from "$lib/api";
@@ -710,6 +710,8 @@ function detectFilesInside() {
         filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
     }
 
+    
+
     // ----------------------- Copy / Paste expand toggle -----------------------------
     let isCopyExpanded = false;
     let isCutExpanded = false;
@@ -1323,34 +1325,160 @@ let slots = [
   let right_click_visible = writable(false);
   let right_click_position = writable({ x: 0, y: 0 });
 
-  let contextMenuRef;
+  // value will be saved this var
+  let right_click_clip = writable([]);
 
   function closeMenu() {
     right_click_visible.set(false);
+    right_click_clip.set([]);
   }
-
-  onMount(() => {
-    // 메뉴 외부 클릭 시 메뉴 닫기
-    document.addEventListener('click', closeMenu);
-  });
 
   // 우클릭 시 메뉴 좌표 설정
   function openMenu(e) {
+    const target = e.target.closest('.file-item'); // file-item 클래스를 가진 요소 확인
+    if (!target) return; // 해당 클래스가 없으면 무시
+
     e.preventDefault();
+    right_click_clip.update((files) => [
+      ...files,
+      target.dataset.filePath
+    ]);
     right_click_position.set({ x: e.clientX, y: e.clientY });
     right_click_visible.set(true);
   }
 
-//   // 우클릭 이벤트 등록
-//   onMount(() => {
-//     window.addEventListener('contextmenu', openMenu);
-//   });
+    // ----------- right_click_copy & paste ------------------
+    function rightCopyFiles() {
+        const files = $right_click_clip;
+
+        // cutClipboard에서 중복된 파일 제거
+        cutClipboard = cutClipboard.filter((file) => !files.includes(file));
+
+        // copyClipboard에 selectedFiles의 값 저장
+        copyClipboard = [...files];
+    }
+
+    function rightCutFiles() {
+        const files = $right_click_clip;
+
+        // copyClipboard에서 중복된 파일 제거
+        copyClipboard = copyClipboard.filter((file) => !files.includes(file));
+
+        // cutClipboard에 selectedFiles의 값 저장
+        cutClipboard = [...files];
+    }
+
+    //우클릭 이벤트 등록
+    onMount(() => {
+    window.addEventListener('contextmenu', openMenu);
+    document.addEventListener('click', closeMenu);
+  });
 
   // 컴포넌트가 파괴될 때 이벤트 해제
-//   onDestroy(() => {
-//     window.removeEventListener('contextmenu', openMenu);
-//     document.removeEventListener('click', closeMenu);
-//   });
+  onDestroy(() => {
+    window.removeEventListener('contextmenu', openMenu);
+    document.removeEventListener('click', closeMenu);
+  });
+
+//   ------------ file Rename ----------
+  let editingFile = writable(null); // 현재 이름을 수정 중인 파일
+  let newName = writable(''); // 새 이름 저장용
+
+    function getParentPath(filePath) {
+        // 플랫폼에 맞는 경로 구분자 사용 (Windows: \, Unix: /)
+        const separator = filePath.includes('\\') ? '\\' : '/';
+
+        const parts = filePath.split(separator); // 경로 분리
+        parts.pop(); // 마지막 파일 또는 디렉토리 이름 제거
+
+        return parts.join(separator); // 구분자로 다시 합치기
+    }
+
+    function handleRenameClick() {
+        const [file] = get(right_click_clip); // 배열에서 첫 번째 값 가져오기
+        startEditing(file);
+    }
+
+
+    // 이름 수정 모드 활성화
+    function startEditing(file) {
+        editingFile.set(file); // 수정 중인 파일 설정
+        newName.set(getFileName(file)); // 기존 파일명으로 초기화
+    }
+
+  // 이름 변경 완료 처리
+  async function renameFile(file, parentPath) {
+    const newFileName = $newName.trim();
+    if (!newFileName) return; // 빈 이름은 무시
+
+    const oldFileName = getFileName(file); // 원래 이름
+    if (oldFileName === newFileName) {
+      editingFile.set(null); // 변경이 없으면 수정 모드 종료
+      return;
+    }
+    // console.log("parentPath : "+parentPath);
+    // console.log("file: "+file);
+    // console.log("newFileName : "+newFileName);
+    try {
+      await invoke('rename_file_or_directory', {
+        oldPath: file,
+        newPath: `${parentPath}/${newFileName}`,
+      });
+
+    // 성공 시 파일 목록 갱신
+    filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
+
+
+    } catch (error) {
+        // current Issue : Rename well worked but his alert statement always be called
+        // err msg from backend : Invalid path
+    //   alert(currentTranslations.alt_file_rename_failed + `   ${error}`);
+    }
+
+    editingFile.set(null); // 수정 모드 종료
+  }
+
+
+  // --------- right click properties ----------
+
+  let fileMetadata = writable(null);
+  let filePropsModalPos = writable({ x: 0, y: 0 });
+
+  // 메타데이터 가져오기
+  async function fetchFileMetadata() {
+    try {
+      const files = get(right_click_clip); // 우클릭한 파일 경로 배열 가져오기
+      if (files.length === 0) {
+        alert('파일 경로가 없습니다.');
+        return;
+      }
+
+      const filePath = files[0]; // 첫 번째 파일의 경로 사용
+
+      // 백엔드에서 메타데이터 가져오기
+      const metadata = await invoke('get_file_metadata', { filePath: filePath });
+      fileMetadata.set(metadata); // 가져온 메타데이터 저장
+    } catch (error) {
+      console.error('메타데이터 가져오기 실패:', error);
+      alert(`메타데이터 가져오기 실패: ${error}`);
+    }
+  }
+
+  // 모달창을 닫기 위한 store
+  let filePropModalToggle = writable(false);
+
+  function filePropModalOpen(event) {
+    event.preventDefault();
+    const { clientX: x, clientY: y } = event;
+    filePropsModalPos.set({ x, y });
+    filePropModalToggle.set(true);
+    fetchFileMetadata();
+  }
+
+  function filePropModalClose() {
+    filePropModalToggle.set(false);
+    fileMetadata.set(null); // 메타데이터 초기화
+  }
 
 </script>
 
@@ -1613,7 +1741,18 @@ let slots = [
                         on:dblclick={() => eachFolderClick(file)}
                     >
                         <img src="{fileIcons[file] || ''}" alt="File Icon" class="file-icon" />
-                        <span class="file-name">{getFileName(file)}</span>
+                        {#if $editingFile === file}
+                            <input
+                                type="text"
+                                bind:value={$newName}
+                                on:focusout={() => renameFile(file, getParentPath(file))}
+                                on:keydown={(e) => e.key === 'Enter' && renameFile(file, getParentPath(file))}
+                                class="file-name-input"
+                                autofocus
+                            />
+                        {:else}
+                            <span class="file-name">{getFileName(file)}</span>
+                        {/if}
                     </div>
                 {/each}
             {:else if selectedDriveLeft && selectedFolderLeft}
@@ -1966,17 +2105,48 @@ let slots = [
     {/if}
 
     <!-- ------------- Mouse right click file viewer option -------------------- -->
-    <!-- {#if $right_click_visible}
+    {#if $right_click_visible}
         <div
-        class="context-menu"
-        bind:this={contextMenuRef}
-        style="position:fixed; top: {$right_click_position.y}px; left: {$right_click_position.x}px;"
+        class="file-item-menu"
+        style="top: {$right_click_position.y}px; left: {$right_click_position.x}px;"
         >
-        <p>Option 1</p>
-        <p>Option 2</p>
-        <p>Option 3</p>
+            <div class="file-item-btn-wrapper">
+                <button on:click={rightCopyFiles} class="file-item-btn">{currentTranslations.file_item_right_set_copy}</button>
+            </div>
+            <div class="file-item-btn-wrapper">
+                <button on:click={rightCutFiles} class="file-item-btn">{currentTranslations.file_item_right_set_cut}</button>
+            </div>
+            <div class="file-item-btn-wrapper">
+                <button on:click={handleRenameClick} class="file-item-btn">{currentTranslations.file_item_right_set_rename}</button>
+            </div>
+            <div class="file-item-btn-wrapper">
+                <button on:click={filePropModalOpen} class="file-item-btn">{currentTranslations.file_item_right_set_metadata}</button>
+            </div>
         </div>
-    {/if} -->
+    {/if}
+
+    <!--  -->
+    {#if $filePropModalToggle}
+    <div class="file-props-modal" on:click={filePropModalClose} style="left: {$filePropsModalPos.x}px; top: {$filePropsModalPos.y}px">
+        <div class="file-props-content">
+            <div>
+                <h2>{currentTranslations.file_prop_title}</h2>
+            </div>
+            {#if $fileMetadata}
+            <div>
+                <p>{currentTranslations.file_prop_name}: {$fileMetadata.file_name}</p>
+                <p>{currentTranslations.file_prop_size}: {$fileMetadata.file_size}</p>
+                <p>{currentTranslations.file_prop_date}: {new Date($fileMetadata.last_modified * 1000).toLocaleString()}</p>
+                <!-- <p>{currentTranslations.file_prop_type}: {$fileMetadata.file_type}</p> -->
+            </div>
+            {:else}
+                <p>{currentTranslations.file_prop_loading}</p>
+            {/if}
+            <div>
+                <button class="file-prop-modal-btn" on:click={filePropModalClose}>{currentTranslations.file_prop_close}</button>
+            </div>
+        </div>
+    </div>
+    {/if}
 
 </div>
-<!-- <a href="/frontTest/frame">Go to previous page</a> -->

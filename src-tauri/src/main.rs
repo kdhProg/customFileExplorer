@@ -33,6 +33,7 @@ fn main() {
      commands::save_util_buttons,
      commands::path_exists,
      commands::create_new_item,
+     commands::rename_file_or_directory,
 
      sch_adv_properties_slot::save_settings,
      sch_adv_properties_slot::load_settings,

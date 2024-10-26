@@ -119,7 +119,22 @@ export const translations = {
         alt_modal_valid_date_empty_val: 'Enter all dates.',
         alt_modal_valid_date_invalid_type: 'Invalid date format.',
         alt_modal_valid_date_start_faster_than_end: 'Start date is after end date.',
-        alt_modal_valid_date_before_today: 'Dates must be today or earlier.'
+        alt_modal_valid_date_before_today: 'Dates must be today or earlier.',
+
+        file_item_right_set_copy: 'Copy',
+        file_item_right_set_cut:'Cut',
+        file_item_right_set_rename:'Rename',
+        file_item_right_set_metadata:'Properties',
+
+        alt_file_rename_failed : 'Failed to rename file or directory',
+
+        file_prop_title : 'File Metadata',
+        file_prop_name : 'name',
+        file_prop_size : 'size',
+        file_prop_date : 'date',
+        file_prop_type : 'type',
+        file_prop_loading : 'Getting Metadata',
+        file_prop_close : 'Close',
 
     },
     ko: {
@@ -242,14 +257,23 @@ export const translations = {
         alt_modal_valid_date_empty_val : '모든 날짜를 입력해야 합니다.',
         alt_modal_valid_date_invalid_type : '날짜 형식이 잘못되었습니다.',
         alt_modal_valid_date_start_faster_than_end : '시작 날짜가 끝 날짜보다 이후입니다.',
-        alt_modal_valid_date_before_today : '시작과 끝 날짜는 오늘 이전이어야 합니다.'
+        alt_modal_valid_date_before_today : '시작과 끝 날짜는 오늘 이전이어야 합니다.',
 
 
+        file_item_right_set_copy: '복사',
+        file_item_right_set_cut:'잘라내기',
+        file_item_right_set_rename:'이름 바꾸기',
+        file_item_right_set_metadata:'속성',
 
+        alt_file_rename_failed : '파일 또는 디렉토리 이름바꾸기 실패',
 
-
-
-
+        file_prop_title : '파일 속성',
+        file_prop_name : '이름',
+        file_prop_size : '크기',
+        file_prop_date : '최근수정일',
+        file_prop_type : '타입',
+        file_prop_loading : '파일 속성을 가져오는 중...',
+        file_prop_close : '닫기',
 
     },
 };

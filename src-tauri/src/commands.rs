@@ -492,3 +492,24 @@ fn generate_unique_name(base_path: &Path, base_name: &str, is_folder: bool) -> R
 }
 
 
+#[tauri::command]
+pub fn rename_file_or_directory(old_path: String, new_path: String) -> Result<(), String> {
+    let old_path = Path::new(&old_path);
+    let new_path = Path::new(&new_path);
+
+    // 경로 유효성 검사
+    if !old_path.exists() {
+        return Err("Invalid path : ".to_string());
+    }
+
+    if new_path.exists() {
+        return Err("Same name already exists : ".to_string());
+    }
+
+    // 파일 또는 디렉토리 이름 변경
+    fs::rename(&old_path, &new_path).map_err(|e| e.to_string())?;
+
+    Ok(())
+}
+
+

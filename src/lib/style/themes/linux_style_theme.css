@@ -198,3 +198,23 @@ a:hover {
 .window-controls button {
     color: white;
 }
+
+/* file-item right click setting modal */
+.file-item-menu{
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.file-item-btn:hover{
+    background: #f1f1f1;
+}
+
+.file-props-modal{
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.file-prop-modal-btn{
+    background-color: #870b6e;
+    color: white;
+}
