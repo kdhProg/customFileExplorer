@@ -5,6 +5,7 @@ use std::path::{Path, PathBuf};
 use trash;
 use std::process::Command;
 use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
 
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -511,5 +512,81 @@ pub fn rename_file_or_directory(old_path: String, new_path: String) -> Result<()
 
     Ok(())
 }
+
+
+
+
+#[derive(Serialize, Deserialize, Debug)]
+struct LogEntry {
+    keyword: String,  // 로그에서 추출할 키워드 필드
+    // 나머지 로그 구조가 필요할 경우 여기에 추가 가능
+}
+
+// Tauri 명령으로 사용할 키워드 리스트 구조체
+#[derive(Serialize, Debug)]
+pub struct KeywordList {
+    keywords: Vec<String>,
+}
+
+// 로그 파일에서 키워드 추출 및 정렬
+fn generate_keyword_list() -> Vec<String> {
+    println!("Starting to generate keyword list...");
+
+    // log/ 폴더 내의 모든 로그 파일 읽기
+    let log_files = match fs::read_dir("../logs") {
+        Ok(files) => files,
+        Err(e) => {
+            eprintln!("Error reading log directory: {}", e);
+            return vec![];
+        }
+    };
+
+    let mut keyword_count: HashMap<String, usize> = HashMap::new();
+    let mut processed_files = 0;
+
+    // 각 로그 파일에서 키워드 추출 및 빈도 계산
+    for entry in log_files {
+        if let Ok(file) = entry {
+            let path = file.path();
+            // println!("Processing file: {:?}", path);
+
+            let content = match fs::read_to_string(&path) {
+                Ok(content) => content,
+                Err(e) => {
+                    // eprintln!("Failed to read file {:?}: {}", path, e);
+                    continue;
+                }
+            };
+
+            match serde_json::from_str::<LogEntry>(&content) {
+                Ok(log) => {
+                    // println!("Extracted keyword: {}", log.keyword);
+                    *keyword_count.entry(log.keyword.clone()).or_insert(0) += 1;
+                }
+                Err(e) => eprintln!("Failed to parse JSON in {:?}: {}", path, e),
+            }
+
+            processed_files += 1;
+        }
+    }
+
+    // println!("Processed {} files.", processed_files);
+
+    // 빈도순 정렬 후 알파벳순 정렬
+    let mut sorted_keywords: Vec<_> = keyword_count.into_iter().collect();
+    sorted_keywords.sort_by(|a, b| b.1.cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
+
+    // TOP 30 키워드만 반환
+    let result: Vec<String> = sorted_keywords.into_iter().take(30).map(|(k, _)| k).collect();
+    // println!("Generated keyword list: {:?}", result);
+    result
+}
+
+#[tauri::command]  // Tauri 명령 정의
+pub fn get_keywords() -> KeywordList {
+    let keywords = generate_keyword_list();
+    KeywordList { keywords }
+}
+
 
 

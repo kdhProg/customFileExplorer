@@ -65,6 +65,13 @@ we developed a file explorer project with key strengths such as fast search spee
   - Util buttons deployment
 
 
+### Search keyword autocomplete
+- It gets the top 30 most searched keywords based on log files from the logs folder and suggest them as autocomplete recommendations.
+- **Note:** Valid log files must exist.
+- **To-Do List:**
+  - Currently, the number of top keywords is hardcoded in the backend. Allow users to select how many top keywords to retrieve and apply criteria beyond just search frequency.
+  - Implement functionality to complete the currently suggested keyword when pressing the Tab key or similar, even if the entire keyword has not yet been typed.
+
 ### Search basic features
 - Asynchronous processing
 - Multi-threaded parallel processing
@@ -106,6 +113,18 @@ we developed a file explorer project with key strengths such as fast search spee
   - Fuzzy Matching 2: Jaccard Similarity
       - The threshold used for fuzzy matching is specified in a separate JSON file.
 Option to generate search logs.
+
+- logs: 
+  - Users can choose logs to be saved
+  - location : **project root / logs**
+  - log contents : 
+    - keyword
+    - search option values
+    - search directory
+    - start time & end time & duration
+    - results(list)
+    - result length
+---
 
 ## Custom icons
 - directory icons
@@ -180,12 +199,13 @@ gh repo clone kdhProg/customFileExplorer
 
 - Optimize Searching API
 - More UI Themes
-- Configurable UI
+- More Configurable UI
 - Unzip functions
 - Configurable Shortcut key
 - Configurable fuzzy-matching thresholds (It currently located at outer json)
 - Enhance Cache System ( json > DB : ex/ redis, sqlite )
-- AI Model to autocomplete Search Keyword
+- Add AI Model to recommand Search Keyword
+- Re-design file-viewer right-click modal
 
 ## Cautions
 - Not Sufficiently tested at Linux or Unix OS

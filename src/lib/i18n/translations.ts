@@ -50,6 +50,9 @@ export const translations = {
         mk_new_item_success : 'New Folder or File has been created. => ',
         mk_new_item_fail : 'New Folder or File has failed creation. => ',
 
+        modal_sch_autocomplete_check : 'Use autocomplete',
+        modal_sch_autocomplete_title: 'Search Autocomplete sets',
+
         modal_sch_basic_title : 'Basic Features',
         modal_sch_basic_async : 'Async (Thread pools automatically set by CPU Core)',
         modal_sch_basic_filename : 'Search depends on file`s name',
@@ -187,6 +190,9 @@ export const translations = {
 
         mk_new_item_success : '새 파일 또는 폴더를 생성하였습니다. => ',
         mk_new_item_fail : '새 파일 또는 폴더 생성에 실패했습니다. => ',
+
+        modal_sch_autocomplete_check : '자동완성 사용',
+        modal_sch_autocomplete_title: '로그 자동완성 설정',
 
         modal_sch_basic_title : '기본 적용',
         modal_sch_basic_async : '비동기 처리(코어 수 기반 스레드 풀 자동 설정)',

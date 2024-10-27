@@ -1,0 +1,35 @@
+{
+  "keyword": "orange",
+  "options": {
+    "customThreadPoolUse": false,
+    "threadPoolNum": "0",
+    "searchScope": "0",
+    "customFileContUse": false,
+    "customPropertyUse": false,
+    "customFileSizeUse": false,
+    "sizeMax": 0,
+    "sizeMin": 0,
+    "customFileCrtDateUse": false,
+    "crtStart": "",
+    "crtEnd": "",
+    "customFileModiDateUse": false,
+    "modiStart": "",
+    "modiEnd": "",
+    "customFileOwnerUse": false,
+    "ownerName": "",
+    "customFileTypeUse": false,
+    "fileTypeList": "",
+    "customSymbolicChk": false,
+    "customSchMethod": "0",
+    "customLogUse": true
+  },
+  "directory": "D:\\test",
+  "start_time": "0.0204355",
+  "end_time": "0.0000276",
+  "duration": 0.0204344,
+  "results": [
+    "D:orange.txt",
+    "D:orange2.txt"
+  ],
+  "results_count": 2
+}

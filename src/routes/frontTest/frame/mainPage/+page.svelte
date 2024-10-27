@@ -399,6 +399,43 @@ function getParentFolder(path: string): string | null {
         }
     }
 
+
+    let isAutocompleteCheck:boolean = false;
+
+    function isAutocompleteCheckToggle(){
+        isAutocompleteCheck = !isAutocompleteCheck;
+        if(!isAutocompleteCheck){
+            blurredText = '';
+        }
+    }
+
+    let inputValue = "";  // 사용자가 입력한 값
+    let suggestions: string[] = [];  // 백엔드에서 받아올 추천 키워드 리스트
+    let blurredText = "";  // 흐릿하게 보일 자동완성 텍스트
+
+    // 페이지 로드 시 추천 키워드 리스트를 가져오는 함수
+    async function fetchKeywords() {
+        const { keywords } = await invoke('get_keywords');  // Tauri 명령 호출
+        if(keywords)suggestions = keywords;
+    }
+
+    // 사용자가 입력할 때 호출되는 함수
+    function schAutoComPletehandleInput(event) {
+        if(!isAutocompleteCheck)return;
+        inputValue = event.target.value;
+
+    // 입력값으로 시작하는 추천 키워드 찾기
+    const suggestion = suggestions.find((s) => s.startsWith(inputValue));
+     blurredText = suggestion ? suggestion.slice(inputValue.length) : "";
+    }
+
+    // 페이지 로드 시 키워드 목록 가져오기
+    onMount(fetchKeywords);
+
+
+
+
+
     // --------------------- Validate Search Options ----------------------------
 
     function validateFileSize(minSize, maxSize) {
@@ -1537,7 +1574,21 @@ let slots = [
 
         <!-- search box -->
         <div class="search-container">
-            <input id="searchInput" class="searchbox-input" type="text" placeholder="{curFolderName}">
+            <div class="search-autocomplete-wrapper">
+                <input 
+                id="searchInput" 
+                class="searchbox-input" 
+                type="text" 
+                value={inputValue} 
+                on:input={schAutoComPletehandleInput} 
+                placeholder={curFolderName} 
+                />
+                <div class="searchbox-placeholder">
+                {#if inputValue}
+                <span class="search-invisible-text">{inputValue}</span><span>{blurredText}</span>
+                {/if}
+                </div>
+            </div>
             {#if isSearching}
             <button class="searchbox-button-wrapper" on:click={cancelSearch}>❌</button>
             {:else}
@@ -1840,6 +1891,15 @@ let slots = [
                     {:else if activeTab === "search"}
                         <h3>{currentTranslations.search}</h3>
                         <div class="modal-sch-wrapper">
+
+                            <div class="modal-sch-autocomplete-wrapper">
+                                <h3>{currentTranslations.modal_sch_autocomplete_title}</h3>
+                                <label>
+                                    <input type="checkbox" on:change={isAutocompleteCheckToggle} bind:checked={isAutocompleteCheck}>
+                                    {currentTranslations.modal_sch_autocomplete_check}
+                                </label>
+                            </div>
+
                             <div class="modal-sch-basic-wrapper">
                                 <h3>{currentTranslations.modal_sch_basic_title}</h3>
                                 <p>- {currentTranslations.modal_sch_basic_async}</p>

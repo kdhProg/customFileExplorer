@@ -183,6 +183,10 @@ a:hover {
     background: transparent;
 }
 
+.searchbox-placeholder {
+    color: #B0BEC5;
+}
+
 .searchbox-button-wrapper{ 
     border:1px solid #00c8ff;
     color:#00c8ff;

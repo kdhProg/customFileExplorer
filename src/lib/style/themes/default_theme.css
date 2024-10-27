@@ -119,6 +119,10 @@
     background: #FFFFFF;
 }
 
+.searchbox-placeholder {
+    color: rgba(0, 0, 0, 0.3);
+}
+
 .searchbox-button-wrapper{ 
     border-color: transparent;
     background: white;

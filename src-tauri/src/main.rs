@@ -34,6 +34,7 @@ fn main() {
      commands::path_exists,
      commands::create_new_item,
      commands::rename_file_or_directory,
+     commands::get_keywords,
 
      sch_adv_properties_slot::save_settings,
      sch_adv_properties_slot::load_settings,

@@ -173,6 +173,10 @@ a:hover {
     background: white;
 }
 
+.searchbox-placeholder {
+    color: rgba(0, 0, 0, 0.3);
+}
+
 .searchbox-button-wrapper{ 
     border-color: black;
     background: white;
