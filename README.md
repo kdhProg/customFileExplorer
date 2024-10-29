@@ -54,6 +54,7 @@ we developed a file explorer project with key strengths such as fast search spee
   - cut-paste : ctrl + shift + x
   - delete(move to recycle bin) : del
   - select all : ctrl + a
+  - (search box) toggle language(EN / KR) : ctrl + space
 - Todos : customize shortcut / configurable newly created file or folder's name(if file, type too)
 
 ### UI configurable settings
@@ -72,7 +73,12 @@ we developed a file explorer project with key strengths such as fast search spee
   - Currently, the number of top keywords is hardcoded in the backend. Allow users to select how many top keywords to retrieve and apply criteria beyond just search frequency.
   - Implement functionality to complete the currently suggested keyword when pressing the Tab key or similar, even if the entire keyword has not yet been typed.
 
-### Search basic features
+### Search Language toggle
+- Currently 2 languages supported : EN / KR
+- shortcut : ctrl + space
+- Algorithm thanks to : [https://theyt.net/wiki/%ED%95%9C%EC%98%81%ED%83%80%EB%B3%80%ED%99%98%EA%B8%B0]
+
+### Search API basic features
 - Asynchronous processing
 - Multi-threaded parallel processing
 - Cache based on search history
@@ -80,7 +86,7 @@ we developed a file explorer project with key strengths such as fast search spee
 - Search cancellation supported
 
 
-### Advanced Search features
+### Advanced API Search features
 - Thread pool configuration
   - Default / 4 / 8 / 16 / 32
 - Search targets can be specified
