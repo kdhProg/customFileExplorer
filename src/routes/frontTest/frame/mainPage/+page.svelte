@@ -15,22 +15,21 @@
     // import - css
     import "$lib/style/global_features.css"
     import "/src/lib/style/mainpage.css"
-    import CurrentPath from '$lib/components/currentPath.svelte';
 
 
-    let showSettings = false; // modal-settings
+    let showSettings = false; /* Setting modal show bool */
     let activeTab = "resize";
-    let viewMode = "single"; // 기본 모드는 single (하나의 파일 탐색기)
-    let fileSize = 80; // 기본 파일 아이템 크기
-    let selectedDriveLeft = null; // 왼쪽 패널에서 선택된 드라이브
-    let selectedDriveRight = null; // 오른쪽 패널에서 선택된 드라이브
-    let selectedFolderLeft = null; // 왼쪽 패널에서 선택된 폴더
+    let viewMode = "single"; /* Default view mode(single) - not yet implemented */
+    let fileSize = 80; /* Default file icon size */
+    let selectedDriveLeft = null;
+    let selectedDriveRight = null;
+    let selectedFolderLeft = null;
 
 
-    // Current Path
+    /* Current Folder Name */
     let curFolderName = '';
 
-    // File List on Current Path
+    /* File List on Current Path */
     let filesInCurrentFolder: string[] = [];
 
     // File Click Event - Directory List
@@ -39,8 +38,7 @@
 
         addPathHistory(curFolderName); // add to history
 
-        filesInCurrentFolder = await listFilesInDirectory(curFolderName);
-        // console.log(typeof filesInCurrentFolder[0])
+        filesInCurrentFolder = await listFilesInDirectory(curFolderName); // rerender
     }
 
     // ------------------------------ Back / Forward / Pre movement Button ------------------------------
@@ -67,69 +65,69 @@
     }
 }
 
-// 폴더 이동 함수
+// path move
 async function moveToFolder(newFolder: string) {
-    const isValid = await isPathValid(newFolder); // 경로 유효성 검사
+    const isValid = await isPathValid(newFolder); // check path validation
     if (!isValid) {
         console.error(`Invalid path: ${newFolder}`);
         return;
     }
 
-    pathHistory = pathHistory.slice(0, currentIndex + 1); // 현재 인덱스 이후 경로 제거
-    pathHistory.push(newFolder); // 새 경로 추가
+    pathHistory = pathHistory.slice(0, currentIndex + 1); // erase paths after current position
+    pathHistory.push(newFolder); // add new path
 
     if (pathHistory.length > 10) {
-        pathHistory.shift(); // 최대 크기 초과 시 첫 번째 경로 삭제
+        pathHistory.shift(); // erase first value when pathHistory's length exceeds 10
     }
 
-    currentIndex = pathHistory.length - 1; // 현재 인덱스 업데이트
-    curFolderName = newFolder; // 현재 폴더 경로 업데이트
+    currentIndex = pathHistory.length - 1; // update current index
+    curFolderName = newFolder; // update current folder name
     filesInCurrentFolder = await listFilesInDirectory(curFolderName);
 }
 
-// 유효한 경로로 이동하는 함수
+// move to valid path
 async function goToValidPath(index: number) {
     const targetPath = pathHistory[index];
     const isValid = await isPathValid(targetPath);
 
     if (!isValid) {
         console.warn(`Invalid path: ${targetPath}. Removing from history.`);
-        pathHistory.splice(index, 1); // 유효하지 않은 경로 제거
+        pathHistory.splice(index, 1); // erase invalid path
         if (index <= currentIndex) {
-            currentIndex--; // 인덱스 조정
+            currentIndex--; // set index 
         }
-        return false; // 유효하지 않음
+        return false; // Invalid path
     }
 
     curFolderName = targetPath;
     filesInCurrentFolder = await listFilesInDirectory(curFolderName);
     currentIndex = index;
-    return true; // 유효함
+    return true; // Valid path
 }
 
-// 뒤로 가기 함수
+// go back (left arrow)
 async function goBack() {
     if (currentIndex > 0) {
         const success = await goToValidPath(currentIndex - 1);
         if (!success && currentIndex > 0) {
-            await goBack(); // 유효한 경로를 찾을 때까지 재귀 호출
+            await goBack(); // recursive until find valid path
         }
     }
     console.log(pathHistory);
 }
 
-// 앞으로 가기 함수
+// go forward(right arrow)
 async function goForward() {
     if (currentIndex < pathHistory.length - 1) {
         const success = await goToValidPath(currentIndex + 1);
         if (!success && currentIndex < pathHistory.length - 1) {
-            await goForward(); // 유효한 경로를 찾을 때까지 재귀 호출
+            await goForward(); // recursive until find valid path
         }
     }
     console.log(pathHistory);
 }
 
-// 상위 폴더 계산 함수
+// find parent path(dir)
 function getParentFolder(path: string): string | null {
     const parts = path.split('\\');
 
@@ -141,9 +139,9 @@ function getParentFolder(path: string): string | null {
     return parent || null;
 }
 
-// 상위 폴더 이동 함수
+// move to parent path
     async function goUp() {
-        const isRoot = /^[A-Z]:\\?$/.test(curFolderName); // 현재 위치가 루트인지 확인
+        const isRoot = /^[A-Z]:\\?$/.test(curFolderName); // check root
         if (isRoot) {
             console.log('Already at the root folder. Cannot move up.');
             return;
@@ -165,15 +163,15 @@ function getParentFolder(path: string): string | null {
 
     // ------------------------------ File Icon ------------------------------
 
-    let fileIcons: { [key: string]: string } = {}; // 파일 경로별 아이콘 저장 객체
+    let fileIcons: { [key: string]: string } = {}; // file icon depends on path
 
-    // 파일 경로에 따른 아이콘 비동기 로드
+    // load file icon depends on path
     async function loadIcons(files) {
         const icons = {};
         for (const file of files) {
-            icons[file] = await getFileIcon(file); // 비동기 아이콘 로드
+            icons[file] = await getFileIcon(file);
         }
-        fileIcons = icons; // 아이콘 저장
+        fileIcons = icons;
     }
 
     // load icons when filesInCurrentFolder change
@@ -270,8 +268,8 @@ function getParentFolder(path: string): string | null {
     // Check If searching is on
     let isSearching:boolean = false;
     let searchProcessId = null;
-    let unlisten;
-    let receivedFiles = new Set();
+    let unlisten; // for real time listener
+    let receivedFiles = new Set(); // set -> to filter duplication
 
     async function searchFilesInDirectory() {
 
@@ -306,16 +304,16 @@ function getParentFolder(path: string): string | null {
             const keyword = document.getElementById('searchInput');
 
             if(curFolderName === '' || curFolderName.length === 0){
-                // 현재 파일 경로가 없다면(=초기화면) 검색불가
+                // No currentfolder (= when Initially project starts )
                 
 
             }else{
-                // 현재 디렉토리에서 검색
+                // searching from current directory
                 if (keyword instanceof HTMLInputElement) {
                     // Get User-input Search Keyword
                     const inputValue = keyword.value;
 
-                    // 기존 리스너 제거 및 초기화
+                    // initialize listener and delete old one
                     if (unlisten) {
                         await unlisten();
                         unlisten = null;
@@ -323,36 +321,35 @@ function getParentFolder(path: string): string | null {
 
                     receivedFiles.clear();
                     
-                    // 탐색 프로세스 ID를 미리 받아오기 위한 리스너
+                    // get search process ID
                     unlisten = await listen('process-info', (event) => {
                         const processInfo = event.payload;
                         if (processInfo && processInfo.id) {
-                            searchProcessId = processInfo.id;  // Process ID를 저장
+                            searchProcessId = processInfo.id;  // save process ID
                             console.log("Process ID from backend:", searchProcessId);
                         }
                     });
 
                     // Search Result Array
                     let searchRst = [];
-                    filesInCurrentFolder = []; // filesInCurrentFolder를 비움
+                    filesInCurrentFolder = []; // Clear filesInCurrentFolder
 
-                    // 실시간 탐색 결과 리스너 등록
+                    // Real time result listener
                     unlisten = await listen('search-result', (event) => {
                         const file = event.payload;
 
-                        // file_path가 중복되지 않도록 확인 후 추가
+                        // filter duplicate file_path
                         if (!searchRst.includes(file.file_path)) {
-                            searchRst.push(file.file_path);  // file_path만 추가
-                            filesInCurrentFolder = [...searchRst]; // filesInCurrentFolder를 업데이트
+                            searchRst.push(file.file_path);
+                            filesInCurrentFolder = [...searchRst]; // update filesInCurrentFolder
                             console.log("Real-time search result:", file.file_path);  // file_path 출력
                         }
                     });
 
-                    // 검색 수행 시간 리스너
+                    // search duration listener
                     await listen('search-time', (event) => {
-                        const searchTime = event.payload;  // 전달된 검색 수행 시간
+                        const searchTime = event.payload;
                         console.log(`Search completed in ${searchTime} seconds`);
-                        // // 수행 시간을 화면에 표시하거나 다른 로직에 활용할 수 있음
                         // document.getElementById('search-time-display').textContent = `Search time: ${searchTime.toFixed(2)} seconds`;
                     });
 
@@ -383,7 +380,7 @@ function getParentFolder(path: string): string | null {
         }
     }
 
-
+    // Request Cancel signal
     async function cancelSearch() {
         console.log("searchProcessId ID: ", searchProcessId);
         if (searchProcessId) {
@@ -399,7 +396,7 @@ function getParentFolder(path: string): string | null {
         }
     }
 
-
+// ------------------------------ keyword autocomplete ---------------------------------
     let isAutocompleteCheck:boolean = false;
 
     function isAutocompleteCheckToggle(){
@@ -409,30 +406,37 @@ function getParentFolder(path: string): string | null {
         }
     }
 
-    let inputValue = "";  // 사용자가 입력한 값
-    let suggestions: string[] = [];  // 백엔드에서 받아올 추천 키워드 리스트
-    let blurredText = "";  // 흐릿하게 보일 자동완성 텍스트
+    let inputValue = "";  // Input keyword
+    let suggestions: string[] = [];  // suggestion list from backend( It can be empty )
+    let blurredText = "";  // suggested blurred text 
 
-    // 페이지 로드 시 추천 키워드 리스트를 가져오는 함수
+    // get suggestions when page loads
     async function fetchKeywords() {
-        const { keywords } = await invoke('get_keywords');  // Tauri 명령 호출
+        const { keywords } = await invoke('get_keywords');
         if(keywords)suggestions = keywords;
     }
 
-    // 사용자가 입력할 때 호출되는 함수
-    function schAutoComPletehandleInput(event) {
+    // called when user input keywords
+    function searchHandleInput(event) {
         if(!isAutocompleteCheck)return;
-        inputValue = event.target.value;
-
-    // 입력값으로 시작하는 추천 키워드 찾기
+        // inputValue = event.target.value;
+    // find suggestion keywords starts with input keywords
     const suggestion = suggestions.find((s) => s.startsWith(inputValue));
      blurredText = suggestion ? suggestion.slice(inputValue.length) : "";
     }
 
-    // 페이지 로드 시 키워드 목록 가져오기
+    // get suggestions when page loads
     onMount(fetchKeywords);
 
+    // --------------------- change lang --------------------
 
+    // (Ctrl + Space)
+    function cngLanghandleKeydown(event: KeyboardEvent) {
+        if (event.ctrlKey && event.code === 'Space') {
+            schDoConvert(inputValue);
+            // console.log("inputValue: ",inputValue)
+        }
+    }
 
 
 
@@ -469,13 +473,13 @@ function getParentFolder(path: string): string | null {
             return false;
         }
 
-            return true; // 유효한 경우
+            return true; // valid
         }
 
 
     function validateDateRange(startDate, endDate) {
         const today = new Date();
-        today.setHours(0, 0, 0, 0); // 시간을 00:00으로 설정해 날짜만 비교
+        today.setHours(0, 0, 0, 0); // set time to 00:00:00 -> only calculate date
 
         if (!startDate || !endDate) {
             alert(currentTranslations.alt_modal_valid_date_empty_val);
@@ -485,8 +489,8 @@ function getParentFolder(path: string): string | null {
         const start = new Date(startDate);
         const end = new Date(endDate);
 
-        start.setHours(0, 0, 0, 0); // 시작 날짜 시간 초기화
-        end.setHours(0, 0, 0, 0);   // 끝 날짜 시간 초기화
+        start.setHours(0, 0, 0, 0); // set time to 00:00:00 -> only calculate date
+        end.setHours(0, 0, 0, 0);   // set time to 00:00:00 -> only calculate date
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             alert(currentTranslations.alt_modal_valid_date_invalid_type);
@@ -501,7 +505,7 @@ function getParentFolder(path: string): string | null {
             return false;
         }
 
-        return true; // 유효한 경우
+        return true; // valid
     }
 
 
@@ -528,68 +532,66 @@ function getParentFolder(path: string): string | null {
     }
 
     // ------------------------------  File Drag  ------------------------------
-    let isDragging = writable(false);  // 드래그 상태
-let startX = 0, startY = 0;        // 드래그 시작 좌표
-let endX = 0, endY = 0;            // 드래그 끝 좌표
-let selectedFiles = writable<string[]>([]);  // 선택된 파일 경로 저장
+let isDragging = writable(false);  // drag state
+let startX = 0, startY = 0;        // drag start pos
+let endX = 0, endY = 0;            // drag end pos
+let selectedFiles = writable<string[]>([]);  // selected file paths
 
-const dragThreshold = 5;  // 최소 이동 거리 (5px 이상만 드래그로 처리)
-let rectStyle = writable('');  // 직사각형 CSS 스타일
-let container;  // file-viewer 컨테이너 참조
+const dragThreshold = 5;  // minimum movement distance
+let rectStyle = writable('');  // rectangle css style
+let container;  // file-viewer container
 
-// 마우스 다운: 클릭/드래그 시작 지점 초기화
+// mouse down : save first pos of cursor
 function handleMouseDown(event: MouseEvent) {
-  event.preventDefault(); // 기본 브라우저 동작 방지
+  event.preventDefault(); // prevent default browser actions
   clearSelection();
 
-  container = document.getElementById('fileViewer'); // file-viewer 컨테이너 참조
+  container = document.getElementById('fileViewer');
 
-  const rect = container.getBoundingClientRect(); // 부모 컨테이너 기준 위치
-  // 클릭한 지점과 스크롤 위치를 포함한 절대 좌표 계산
+  const rect = container.getBoundingClientRect(); // parent container
   startX = event.pageX - rect.left + container.scrollLeft;
   startY = event.pageY - rect.top + container.scrollTop;
   endX = startX;
   endY = startY;
 
   rectStyle.set('');
-  isDragging.set(true); // 드래그 상태 시작
+  isDragging.set(true); // set drag on
 }
 
-// 마우스 이동: 일정 거리 이상 이동하면 드래그로 간주
+// mouse move
 function handleMouseMove(event: MouseEvent) {
-  if (!$isDragging) return; // 드래그 상태가 아니면 종료
+  if (!$isDragging) return; // if not drag, ends.
 
   const rect = container.getBoundingClientRect();
-  // 스크롤된 상태에서 절대 좌표 계산
   endX = event.pageX - rect.left + container.scrollLeft;
   endY = event.pageY - rect.top + container.scrollTop;
 
-  updateRectStyle(); // 직사각형 스타일 업데이트
+  updateRectStyle();
 }
 
-// 마우스 업: 클릭 또는 드래그 종료 처리
+// mouse up : end drag
 function handleMouseUp(event: MouseEvent) {
-  isDragging.set(false); // 드래그 상태 해제
-  detectFilesInside(); // 직사각형 내 파일 탐지
+  isDragging.set(false);
+  detectFilesInside();
 }
 
-// 직사각형 스타일 업데이트
+// update select-rectangle-area
 function updateRectStyle() {
   const x1 = Math.min(startX, endX);
   const y1 = Math.min(startY, endY);
   const width = Math.abs(endX - startX);
   const height = Math.abs(endY - startY);
 
-  // 직사각형 스타일 설정
   rectStyle.set(`left: ${x1}px; top: ${y1}px; width: ${width}px; height: ${height}px;`);
 }
 
-// 기존 선택된 파일 해제
+// clear old selected paths
 function clearSelection() {
   const selectedElements = document.querySelectorAll('.file-item.selected');
   selectedElements.forEach((el) => el.classList.remove('selected'));
 }
 
+// detect file paths inside selection box
 function detectFilesInside() {
   const container = document.getElementById('fileViewer'); // file-viewer 컨테이너 참조
   const containerRect = container.getBoundingClientRect(); // 컨테이너 기준 좌표 가져오기
@@ -606,13 +608,12 @@ function detectFilesInside() {
   const selected = Array.from(fileElements).filter((el) => {
     const elRect = el.getBoundingClientRect();
 
-    // 파일 요소의 좌표를 컨테이너 기준으로 변환
     const elementLeft = elRect.left - containerRect.left + container.scrollLeft;
     const elementTop = elRect.top - containerRect.top + container.scrollTop;
     const elementRight = elementLeft + elRect.width;
     const elementBottom = elementTop + elRect.height;
 
-    // 선택 사각형과 파일 요소 간의 교차 여부 확인
+    // check if elements inside selection box
     return !(
       selectionRect.right < elementLeft ||
       selectionRect.left > elementRight ||
@@ -621,7 +622,7 @@ function detectFilesInside() {
     );
   });
 
-  // 선택된 요소에 'selected' 클래스 추가
+  // add 'selected' class to selected elements
   selected.forEach((el) => el.classList.add('selected'));
 
   const selectedPaths = selected.map((el) => el.getAttribute('data-file-path') || '');
@@ -683,15 +684,15 @@ function detectFilesInside() {
   //   -------------------- Cut / Copy / Paste --------------------
   let copyClipboard: string[] = [];
   let cutClipboard: string[] = [];
-  let ccp_message = writable<string>(''); // 에러 메시지 상태
+  let ccp_message = writable<string>(''); // error msg
 
     function copyFiles() {
         const files = $selectedFiles;
 
-        // cutClipboard에서 중복된 파일 제거
+        // erase duplicate from cutClipboard
         cutClipboard = cutClipboard.filter((file) => !files.includes(file));
 
-        // copyClipboard에 selectedFiles의 값 저장
+        // save values to copyClipboard
         copyClipboard = [...files];
 
         console.log('Copy clipboard:', copyClipboard);
@@ -699,17 +700,17 @@ function detectFilesInside() {
     }
 
     function rmCopyClipFile(event) {
-        const filePath = event.target.value; // 버튼의 value 값
-        copyClipboard = copyClipboard.filter(file => file !== filePath); // 배열에서 해당 파일 제거
+        const filePath = event.target.value; // each button's value
+        copyClipboard = copyClipboard.filter(file => file !== filePath); //erase self from arr
     }
 
     function cutFiles() {
         const files = $selectedFiles;
 
-        // copyClipboard에서 중복된 파일 제거
+        // erase duplicate from copyClipboard
         copyClipboard = copyClipboard.filter((file) => !files.includes(file));
 
-        // cutClipboard에 selectedFiles의 값 저장
+        // save values to cutClipboard
         cutClipboard = [...files];
 
         console.log('Cut clipboard:', cutClipboard);
@@ -718,8 +719,8 @@ function detectFilesInside() {
     }
 
     function rmCutClipFile(event) {
-        const filePath = event.target.value; // 버튼의 value 값
-        cutClipboard = cutClipboard.filter(file => file !== filePath); // 배열에서 해당 파일 제거
+        const filePath = event.target.value;
+        cutClipboard = cutClipboard.filter(file => file !== filePath);
     }
 
     async function pasteFiles(clipboard: string[], targetPath: string, isCut: boolean) {
@@ -775,20 +776,20 @@ function detectFilesInside() {
 
   //   -------------------- Delete --------------------
 
-    const del_message = writable<string>(''); // 에러 메시지 상태
+    const del_message = writable<string>(''); // error msg
 
-    // 휴지통으로 파일 이동 함수
+    // move to recycle bin
     async function moveToTrash() {
-    const files = $selectedFiles; // 최신 선택된 파일 목록 가져오기
+    const files = $selectedFiles;
 
     try {
         const result = await invoke('move_files_to_trash', { paths: files });
         filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
         if (!result.success) {
-            del_message.set(result.message); // 에러 메시지 설정
+            del_message.set(result.message);
         } else {
             del_message.set('All files moved to trash successfully.');
-            selectedFiles.set([]); // 선택된 파일 목록 초기화
+            selectedFiles.set([]); // clear selection clipboard
         }
     } catch (err) {
             del_message.set(`Unexpected error: ${err}`);
@@ -799,7 +800,7 @@ function detectFilesInside() {
 
     function handleSelectAllShortCut(event) {
         if (event.ctrlKey && event.key.toLowerCase() === 'a') {
-            event.preventDefault(); // 기본 전체 선택 방지
+            event.preventDefault();
             selectAllFiles();
         }
     }
@@ -814,7 +815,7 @@ function detectFilesInside() {
             }else if (event.ctrlKey && event.key === 'v' && (copyClipboard.length > 0 || cutClipboard.length>0)) {
                 pasteFiles(copyClipboard, curFolderName, false)
             } else if (event.ctrlKey && event.shiftKey && event.key.toLowerCase() === 'v') {
-                // 잘라내기 전용 붙여넣기
+                // cut-paste
                 console.log("cut-paste detected")
                 pasteFiles(cutClipboard, curFolderName, true)
             }
@@ -837,13 +838,11 @@ function detectFilesInside() {
     }
 
 
-    // 컴포넌트가 마운트될 때 이벤트 리스너 등록
     onMount(() => {
         window.addEventListener('keydown', handleSelectAllShortCut);
         window.addEventListener('keydown', handleCopyCutPasteShortCut);
     });
 
-    // 컴포넌트가 언마운트될 때 이벤트 리스너 해제
     onDestroy(() => {
         window.removeEventListener('keydown', handleSelectAllShortCut);
         window.addEventListener('keydown', handleCopyCutPasteShortCut);
@@ -951,11 +950,8 @@ function switchLanguage(lang: string) {
 // Reactive derived store to get the current translations
 $: currentTranslations = translations[$language];
 
-// drives 스토어 구독
-// 디버깅용 -> <button on:click={()=>{console.log(driveList)}}>test</button>와 같이 활용
-// $: driveList = $drives;
 
-// ---------------------main logo click event (open github-repo)
+// ---------------------main logo click event (open github-repo)--------------
 function openGitgubRepo(){
     window.open('https://github.com/kdhProg/customFileExplorer', '_blank');
 }
@@ -980,9 +976,9 @@ function updateFileSize(event: Event){
 
 // ------------------------------ modal draggable ------------------------------------
 
-    let modal_set_modal; // 모달 참조
-    let modal_set_isDragging = false; // 드래그 상태
-    let modal_set_startX = 0, modal_set_startY = 0; // 마우스 시작 좌표
+    let modal_set_modal;
+    let modal_set_isDragging = false;
+    let modal_set_startX = 0, modal_set_startY = 0;
 
     function modal_set_startDrag(e) {
         // Disable Drag at input range - resize tab
@@ -991,18 +987,15 @@ function updateFileSize(event: Event){
         // Disable Drag at Outside of modal
         if (e.target !== modal_set_modal && !modal_set_modal.contains(e.target)) return;
 
-        // 드래그 시작 플래그 설정
         modal_set_isDragging = true;
 
-        // 모달의 현재 위치와 마우스의 클릭 지점 간 차이 계산
         const rect = modal_set_modal.getBoundingClientRect();
         modal_set_startX = e.clientX - rect.left;
         modal_set_startY = e.clientY - rect.top;
 
-        // 커서 모양 변경
+        // change cursor - grab
         document.body.style.cursor = 'grabbing';
 
-        // 전역 이벤트 리스너 등록
         document.addEventListener('mousemove', modal_set_onDrag);
         document.addEventListener('mouseup', modal_set_stopDrag);
     }
@@ -1010,18 +1003,15 @@ function updateFileSize(event: Event){
     function modal_set_onDrag(e) {
         if (!modal_set_isDragging) return;
 
-        // 마우스의 현재 위치에서 초기 오프셋을 적용한 새 좌표 계산
         const newLeft = e.clientX - modal_set_startX;
         const newTop = e.clientY - modal_set_startY;
 
-        // 뷰포트 경계 내로 제한
         const maxX = window.innerWidth - modal_set_modal.offsetWidth;
         const maxY = window.innerHeight - modal_set_modal.offsetHeight;
 
         const finalLeft = Math.max(0, Math.min(newLeft, maxX));
         const finalTop = Math.max(0, Math.min(newTop, maxY));
 
-        // 모달 위치 업데이트
         modal_set_modal.style.left = `${finalLeft}px`;
         modal_set_modal.style.top = `${finalTop}px`;
     }
@@ -1029,10 +1019,9 @@ function updateFileSize(event: Event){
     function modal_set_stopDrag() {
         modal_set_isDragging = false;
 
-        // 커서 복구
+        // return cursor style
         document.body.style.cursor = 'default';
 
-        // 이벤트 리스너 해제
         document.removeEventListener('mousemove', modal_set_onDrag);
         document.removeEventListener('mouseup', modal_set_stopDrag);
     }
@@ -1310,10 +1299,10 @@ let slots = [
   async function saveSlot(slotIndex:number) {
     const slot = slots[slotIndex];
 
-    // slot.name이 빈 문자열인지 검사
+    // not allow empty values
     if (!slot.name || slot.name.trim() === "") {
         alert(currentTranslations.adv_slot_empty_name_alert);
-        return; // 저장 중단
+        return;
     }
 
     await invoke("save_settings", {
@@ -1370,10 +1359,9 @@ let slots = [
     right_click_clip.set([]);
   }
 
-  // 우클릭 시 메뉴 좌표 설정
   function openMenu(e) {
-    const target = e.target.closest('.file-item'); // file-item 클래스를 가진 요소 확인
-    if (!target) return; // 해당 클래스가 없으면 무시
+    const target = e.target.closest('.file-item');
+    if (!target) return;
 
     e.preventDefault();
     right_click_clip.update((files) => [
@@ -1388,69 +1376,61 @@ let slots = [
     function rightCopyFiles() {
         const files = $right_click_clip;
 
-        // cutClipboard에서 중복된 파일 제거
         cutClipboard = cutClipboard.filter((file) => !files.includes(file));
 
-        // copyClipboard에 selectedFiles의 값 저장
         copyClipboard = [...files];
     }
 
     function rightCutFiles() {
         const files = $right_click_clip;
 
-        // copyClipboard에서 중복된 파일 제거
         copyClipboard = copyClipboard.filter((file) => !files.includes(file));
 
-        // cutClipboard에 selectedFiles의 값 저장
         cutClipboard = [...files];
     }
 
-    //우클릭 이벤트 등록
     onMount(() => {
     window.addEventListener('contextmenu', openMenu);
     document.addEventListener('click', closeMenu);
   });
 
-  // 컴포넌트가 파괴될 때 이벤트 해제
   onDestroy(() => {
     window.removeEventListener('contextmenu', openMenu);
     document.removeEventListener('click', closeMenu);
   });
 
 //   ------------ file Rename ----------
-  let editingFile = writable(null); // 현재 이름을 수정 중인 파일
-  let newName = writable(''); // 새 이름 저장용
+  let editingFile = writable(null);
+  let newName = writable('');
 
     function getParentPath(filePath) {
-        // 플랫폼에 맞는 경로 구분자 사용 (Windows: \, Unix: /)
+        // Set separator (Windows: \, Unix: /)
         const separator = filePath.includes('\\') ? '\\' : '/';
 
-        const parts = filePath.split(separator); // 경로 분리
-        parts.pop(); // 마지막 파일 또는 디렉토리 이름 제거
+        const parts = filePath.split(separator);
+        parts.pop();
 
-        return parts.join(separator); // 구분자로 다시 합치기
+        return parts.join(separator);
     }
 
     function handleRenameClick() {
-        const [file] = get(right_click_clip); // 배열에서 첫 번째 값 가져오기
+        const [file] = get(right_click_clip);
         startEditing(file);
     }
 
 
-    // 이름 수정 모드 활성화
     function startEditing(file) {
-        editingFile.set(file); // 수정 중인 파일 설정
-        newName.set(getFileName(file)); // 기존 파일명으로 초기화
+        editingFile.set(file);
+        newName.set(getFileName(file));
     }
 
-  // 이름 변경 완료 처리
   async function renameFile(file, parentPath) {
     const newFileName = $newName.trim();
-    if (!newFileName) return; // 빈 이름은 무시
+    if (!newFileName) return;
 
-    const oldFileName = getFileName(file); // 원래 이름
+    const oldFileName = getFileName(file);
     if (oldFileName === newFileName) {
-      editingFile.set(null); // 변경이 없으면 수정 모드 종료
+      editingFile.set(null);
       return;
     }
     // console.log("parentPath : "+parentPath);
@@ -1462,7 +1442,6 @@ let slots = [
         newPath: `${parentPath}/${newFileName}`,
       });
 
-    // 성공 시 파일 목록 갱신
     filesInCurrentFolder = await listFilesInDirectory(curFolderName); // Rerending
 
 
@@ -1472,7 +1451,7 @@ let slots = [
     //   alert(currentTranslations.alt_file_rename_failed + `   ${error}`);
     }
 
-    editingFile.set(null); // 수정 모드 종료
+    editingFile.set(null);
   }
 
 
@@ -1481,27 +1460,25 @@ let slots = [
   let fileMetadata = writable(null);
   let filePropsModalPos = writable({ x: 0, y: 0 });
 
-  // 메타데이터 가져오기
   async function fetchFileMetadata() {
     try {
-      const files = get(right_click_clip); // 우클릭한 파일 경로 배열 가져오기
+      const files = get(right_click_clip);
       if (files.length === 0) {
-        alert('파일 경로가 없습니다.');
+        // alert('파일 경로가 없습니다.');
         return;
       }
 
-      const filePath = files[0]; // 첫 번째 파일의 경로 사용
+      const filePath = files[0];
 
-      // 백엔드에서 메타데이터 가져오기
       const metadata = await invoke('get_file_metadata', { filePath: filePath });
-      fileMetadata.set(metadata); // 가져온 메타데이터 저장
+      fileMetadata.set(metadata);
     } catch (error) {
       console.error('메타데이터 가져오기 실패:', error);
-      alert(`메타데이터 가져오기 실패: ${error}`);
+    //   alert(`메타데이터 가져오기 실패: ${error}`);
     }
   }
 
-  // 모달창을 닫기 위한 store
+  // modal close store
   let filePropModalToggle = writable(false);
 
   function filePropModalOpen(event) {
@@ -1514,8 +1491,353 @@ let slots = [
 
   function filePropModalClose() {
     filePropModalToggle.set(false);
-    fileMetadata.set(null); // 메타데이터 초기화
+    fileMetadata.set(null);
   }
+
+//   ---------------------------- search Lang Change ----------------------------------
+// source : https://theyt.net/wiki/%ED%95%9C%EC%98%81%ED%83%80%EB%B3%80%ED%99%98%EA%B8%B0
+
+const ENG_KEY = "rRseEfaqQtTdwWczxvgkoiOjpuPhynbml";
+const KOR_KEY = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅛㅜㅠㅡㅣ";
+const CHO_DATA = "ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ";
+const JUNG_DATA = "ㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ";
+const JONG_DATA = "ㄱㄲㄳㄴㄵㄶㄷㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅄㅅㅆㅇㅈㅊㅋㅌㅍㅎ";
+
+function schDoConvert(searchQuery:String) {
+	const hasKorean = /[ㄱ-ㅎ|ㅏ-ㅣ|가-힣]/.test(searchQuery);
+    const hasEnglish = /[a-zA-Z]/.test(searchQuery);
+
+    if (hasKorean && hasEnglish) {
+        return;
+    } else if (hasKorean) {
+        inputValue = korTypeToEng(searchQuery);
+    } else if (hasEnglish) {
+        inputValue = engTypeToKor(searchQuery);
+    } else {
+        return;
+    }
+
+    
+}
+
+function engTypeToKor(src) {
+	var res = "";
+	if (src.length == 0)
+		return res;
+
+	var nCho = -1, nJung = -1, nJong = -1;		// 초성, 중성, 종성
+
+	for (var i = 0; i < src.length; i++) {
+		var ch = src.charAt(i);
+		var p = ENG_KEY.indexOf(ch);
+		if (p == -1) {				// 영자판이 아님
+			// 남아있는 한글이 있으면 처리
+			if (nCho != -1) {
+				if (nJung != -1)				// 초성+중성+(종성)
+					res += makeHangul(nCho, nJung, nJong);
+				else							// 초성만
+					res += CHO_DATA.charAt(nCho);
+			} else {
+				if (nJung != -1)				// 중성만
+					res += JUNG_DATA.charAt(nJung);
+				else if (nJong != -1)			// 복자음
+					res += JONG_DATA.charAt(nJong);
+			}
+			nCho = -1;
+			nJung = -1;
+			nJong = -1;
+			res += ch;
+		} else if (p < 19) {			// 자음
+			if (nJung != -1) {
+				if (nCho == -1) {					// 중성만 입력됨, 초성으로
+					res += JUNG_DATA.charAt(nJung);
+					nJung = -1;
+					nCho = CHO_DATA.indexOf(KOR_KEY.charAt(p));
+				} else {							// 종성이다
+					if (nJong == -1) {				// 종성 입력 중
+						nJong = JONG_DATA.indexOf(KOR_KEY.charAt(p));
+						if (nJong == -1) {			// 종성이 아니라 초성이다
+							res += makeHangul(nCho, nJung, nJong);
+							nCho = CHO_DATA.indexOf(KOR_KEY.charAt(p));
+							nJung = -1;
+						}
+					} else if (nJong == 0 && p == 9) {			// ㄳ
+						nJong = 2;
+					} else if (nJong == 3 && p == 12) {			// ㄵ
+						nJong = 4;
+					} else if (nJong == 3 && p == 18) {			// ㄶ
+						nJong = 5;
+					} else if (nJong == 7 && p == 0) {			// ㄺ
+						nJong = 8;
+					} else if (nJong == 7 && p == 6) {			// ㄻ
+						nJong = 9;
+					} else if (nJong == 7 && p == 7) {			// ㄼ
+						nJong = 10;
+					} else if (nJong == 7 && p == 9) {			// ㄽ
+						nJong = 11;
+					} else if (nJong == 7 && p == 16) {			// ㄾ
+						nJong = 12;
+					} else if (nJong == 7 && p == 17) {			// ㄿ
+						nJong = 13;
+					} else if (nJong == 7 && p == 18) {			// ㅀ
+						nJong = 14;
+					} else if (nJong == 16 && p == 9) {			// ㅄ
+						nJong = 17;
+					} else {						// 종성 입력 끝, 초성으로
+						res += makeHangul(nCho, nJung, nJong);
+						nCho = CHO_DATA.indexOf(KOR_KEY.charAt(p));
+						nJung = -1;
+						nJong = -1;
+					}
+				}
+			} else {								// 초성 또는 (단/복)자음이다
+				if (nCho == -1) {					// 초성 입력 시작
+					if (nJong != -1) {				// 복자음 후 초성
+						res += JONG_DATA.charAt(nJong);
+						nJong = -1;
+					}
+					nCho = CHO_DATA.indexOf(KOR_KEY.charAt(p));
+				} else if (nCho == 0 && p == 9) {			// ㄳ
+					nCho = -1;
+					nJong = 2;
+				} else if (nCho == 2 && p == 12) {			// ㄵ
+					nCho = -1;
+					nJong = 4;
+				} else if (nCho == 2 && p == 18) {			// ㄶ
+					nCho = -1;
+					nJong = 5;
+				} else if (nCho == 5 && p == 0) {			// ㄺ
+					nCho = -1;
+					nJong = 8;
+				} else if (nCho == 5 && p == 6) {			// ㄻ
+					nCho = -1;
+					nJong = 9;
+				} else if (nCho == 5 && p == 7) {			// ㄼ
+					nCho = -1;
+					nJong = 10;
+				} else if (nCho == 5 && p == 9) {			// ㄽ
+					nCho = -1;
+					nJong = 11;
+				} else if (nCho == 5 && p == 16) {			// ㄾ
+					nCho = -1;
+					nJong = 12;
+				} else if (nCho == 5 && p == 17) {			// ㄿ
+					nCho = -1;
+					nJong = 13;
+				} else if (nCho == 5 && p == 18) {			// ㅀ
+					nCho = -1;
+					nJong = 14;
+				} else if (nCho == 7 && p == 9) {			// ㅄ
+					nCho = -1;
+					nJong = 17;
+				} else {							// 단자음을 연타
+					res += CHO_DATA.charAt(nCho);
+					nCho = CHO_DATA.indexOf(KOR_KEY.charAt(p));
+				}
+			}
+		} else {									// 모음
+			if (nJong != -1) {						// (앞글자 종성), 초성+중성
+				// 복자음 다시 분해
+				var newCho;			// (임시용) 초성
+				if (nJong == 2) {					// ㄱ, ㅅ
+					nJong = 0;
+					newCho = 9;
+				} else if (nJong == 4) {			// ㄴ, ㅈ
+					nJong = 3;
+					newCho = 12;
+				} else if (nJong == 5) {			// ㄴ, ㅎ
+					nJong = 3;
+					newCho = 18;
+				} else if (nJong == 8) {			// ㄹ, ㄱ
+					nJong = 7;
+					newCho = 0;
+				} else if (nJong == 9) {			// ㄹ, ㅁ
+					nJong = 7;
+					newCho = 6;
+				} else if (nJong == 10) {			// ㄹ, ㅂ
+					nJong = 7;
+					newCho = 7;
+				} else if (nJong == 11) {			// ㄹ, ㅅ
+					nJong = 7;
+					newCho = 9;
+				} else if (nJong == 12) {			// ㄹ, ㅌ
+					nJong = 7;
+					newCho = 16;
+				} else if (nJong == 13) {			// ㄹ, ㅍ
+					nJong = 7;
+					newCho = 17;
+				} else if (nJong == 14) {			// ㄹ, ㅎ
+					nJong = 7;
+					newCho = 18;
+				} else if (nJong == 17) {			// ㅂ, ㅅ
+					nJong = 16;
+					newCho = 9;
+				} else {							// 복자음 아님
+					newCho = CHO_DATA.indexOf(JONG_DATA.charAt(nJong));
+					nJong = -1;
+				}
+				if (nCho != -1)			// 앞글자가 초성+중성+(종성)
+					res += makeHangul(nCho, nJung, nJong);
+				else                    // 복자음만 있음
+					res += JONG_DATA.charAt(nJong);
+
+				nCho = newCho;
+				nJung = -1;
+				nJong = -1;
+			}
+			if (nJung == -1) {						// 중성 입력 중
+				nJung = JUNG_DATA.indexOf(KOR_KEY.charAt(p));
+			} else if (nJung == 8 && p == 19) {            // ㅘ
+				nJung = 9;
+			} else if (nJung == 8 && p == 20) {            // ㅙ
+				nJung = 10;
+			} else if (nJung == 8 && p == 32) {            // ㅚ
+				nJung = 11;
+			} else if (nJung == 13 && p == 23) {           // ㅝ
+				nJung = 14;
+			} else if (nJung == 13 && p == 24) {           // ㅞ
+				nJung = 15;
+			} else if (nJung == 13 && p == 32) {           // ㅟ
+				nJung = 16;
+			} else if (nJung == 18 && p == 32) {           // ㅢ
+				nJung = 19;
+			} else {			// 조합 안되는 모음 입력
+				if (nCho != -1) {			// 초성+중성 후 중성
+					res += makeHangul(nCho, nJung, nJong);
+					nCho = -1;
+				} else						// 중성 후 중성
+					res += JUNG_DATA.charAt(nJung);
+				nJung = -1;
+				res += KOR_KEY.charAt(p);
+			}
+		}
+	}
+
+	// 마지막 한글이 있으면 처리
+	if (nCho != -1) {
+		if (nJung != -1)			// 초성+중성+(종성)
+			res += makeHangul(nCho, nJung, nJong);
+		else                		// 초성만
+			res += CHO_DATA.charAt(nCho);
+	} else {
+		if (nJung != -1)			// 중성만
+			res += JUNG_DATA.charAt(nJung);
+		else {						// 복자음
+			if (nJong != -1)
+				res += JONG_DATA.charAt(nJong);
+		}
+	}
+
+	return res;
+}
+
+function makeHangul(nCho, nJung, nJong) {
+	return String.fromCharCode(0xac00 + nCho * 21 * 28 + nJung * 28 + nJong + 1);
+}
+
+function korTypeToEng(src) {
+	var res = "";
+	if (src.length == 0)
+		return res;
+
+	for (var i = 0; i < src.length; i++) {
+		var ch = src.charAt(i);
+		var nCode = ch.charCodeAt(0);
+		var nCho = CHO_DATA.indexOf(ch), nJung = JUNG_DATA.indexOf(ch), nJong = JONG_DATA.indexOf(ch);
+		var arrKeyIndex = [-1, -1, -1, -1, -1];
+
+		if (0xac00 <= nCode && nCode <= 0xd7a3) {
+			nCode -= 0xac00;
+			arrKeyIndex[0] = Math.floor(nCode / (21 * 28));			// 초성
+			arrKeyIndex[1] = Math.floor(nCode / 28) % 21;			// 중성
+			arrKeyIndex[3] = nCode % 28 - 1;						// 종성
+		} else if (nCho != -1)			// 초성 자음
+			arrKeyIndex[0] = nCho;
+		else if (nJung != -1)			// 중성
+			arrKeyIndex[1] = nJung;
+		else if (nJong != -1)			// 종성 자음
+			arrKeyIndex[3] = nJong;
+		else							// 한글이 아님
+			res += ch;
+
+		// 실제 Key Index로 변경. 초성은 순서 동일
+		if (arrKeyIndex[1] != -1) {
+			if (arrKeyIndex[1] == 9) {					// ㅘ
+				arrKeyIndex[1] = 27;
+				arrKeyIndex[2] = 19;
+			} else if (arrKeyIndex[1] == 10) {			// ㅙ
+				arrKeyIndex[1] = 27;
+				arrKeyIndex[2] = 20;
+			} else if (arrKeyIndex[1] == 11) {			// ㅚ
+				arrKeyIndex[1] = 27;
+				arrKeyIndex[2] = 32;
+			} else if (arrKeyIndex[1] == 14) {			// ㅝ
+				arrKeyIndex[1] = 29;
+				arrKeyIndex[2] = 23;
+			} else if (arrKeyIndex[1] == 15) {			// ㅞ
+				arrKeyIndex[1] = 29;
+				arrKeyIndex[2] = 24;
+			} else if (arrKeyIndex[1] == 16) {			// ㅟ
+				arrKeyIndex[1] = 29;
+				arrKeyIndex[2] = 32;
+			} else if (arrKeyIndex[1] == 19) {			// ㅢ
+				arrKeyIndex[1] = 31;
+				arrKeyIndex[2] = 32;
+			} else {
+				arrKeyIndex[1] = KOR_KEY.indexOf(JUNG_DATA.charAt(arrKeyIndex[1]));
+				arrKeyIndex[2] = -1;
+			}
+		}
+		if (arrKeyIndex[3] != -1) {
+			if (arrKeyIndex[3] == 2) {					// ㄳ
+				arrKeyIndex[3] = 0
+				arrKeyIndex[4] = 9;
+			} else if (arrKeyIndex[3] == 4) {			// ㄵ
+				arrKeyIndex[3] = 2;
+				arrKeyIndex[4] = 12;
+			} else if (arrKeyIndex[3] == 5) {			// ㄶ
+				arrKeyIndex[3] = 2;
+				arrKeyIndex[4] = 18;
+			} else if (arrKeyIndex[3] == 8) {			// ㄺ
+				arrKeyIndex[3] = 5;
+				arrKeyIndex[4] = 0;
+			} else if (arrKeyIndex[3] == 9) {			// ㄻ
+				arrKeyIndex[3] = 5;
+				arrKeyIndex[4] = 6;
+			} else if (arrKeyIndex[3] == 10) {			// ㄼ
+				arrKeyIndex[3] = 5;
+				arrKeyIndex[4] = 7;
+			} else if (arrKeyIndex[3] == 11) {			// ㄽ
+				arrKeyIndex[3] = 5;
+				arrKeyIndex[4] = 9;
+			} else if (arrKeyIndex[3] == 12) {			// ㄾ
+				arrKeyIndex[3] = 5;
+				arrKeyIndex[4] = 16;
+			} else if (arrKeyIndex[3] == 13) {			// ㄿ
+				arrKeyIndex[3] = 5;
+				arrKeyIndex[4] = 17;
+			} else if (arrKeyIndex[3] == 14) {			// ㅀ
+				arrKeyIndex[3] = 5;
+				arrKeyIndex[4] = 18;
+			} else if (arrKeyIndex[3] == 17) {			// ㅄ
+				arrKeyIndex[3] = 7;
+				arrKeyIndex[4] = 9;
+			} else {
+				arrKeyIndex[3] = KOR_KEY.indexOf(JONG_DATA.charAt(arrKeyIndex[3]));
+				arrKeyIndex[4] = -1;
+			}
+		}
+
+		for (var j = 0; j < 5; j++) {
+			if (arrKeyIndex[j] != -1)
+				res += ENG_KEY.charAt(arrKeyIndex[j]);
+		}
+	}
+
+	return res;
+}
+
+
 
 </script>
 
@@ -1579,8 +1901,9 @@ let slots = [
                 id="searchInput" 
                 class="searchbox-input" 
                 type="text" 
-                value={inputValue} 
-                on:input={schAutoComPletehandleInput} 
+                bind:value={inputValue} 
+                on:input={searchHandleInput}
+                on:keydown={cngLanghandleKeydown}
                 placeholder={curFolderName} 
                 />
                 <div class="searchbox-placeholder">
