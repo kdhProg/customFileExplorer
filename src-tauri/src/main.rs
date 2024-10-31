@@ -11,6 +11,7 @@ mod commands;
 mod search;
 mod sch_adv_properties_slot;
 mod front_utils;
+mod custom_category;
 
 use search::AppState;
 
@@ -44,7 +45,13 @@ fn main() {
      search::cancel_search,
 
      front_utils::paste_files,
-     front_utils::move_files_to_trash
+     front_utils::move_files_to_trash,
+
+     custom_category::get_categories,
+     custom_category::delete_category,
+     custom_category::add_to_category,
+     custom_category::remove_from_category,
+     custom_category::create_category
    ])
    .run(tauri::generate_context!())
    .expect("error while running tauri application");

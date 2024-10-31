@@ -15,6 +15,7 @@
     // import - css
     import "$lib/style/global_features.css"
     import "/src/lib/style/mainpage.css"
+    import CurrentPath from '$lib/components/currentPath.svelte';
 
 
     let showSettings = false; /* Setting modal show bool */
@@ -35,7 +36,7 @@
     // File Click Event - Directory List
     async function handleFolderSelected(event) {
         curFolderName = event.detail;
-
+        nowAtCategoryView = false; // disable category viewing mode
         addPathHistory(curFolderName); // add to history
 
         filesInCurrentFolder = await listFilesInDirectory(curFolderName); // rerender
@@ -515,9 +516,11 @@ function getParentFolder(path: string): string | null {
     // Folder - update current folder list
     // File - execute with default enrolled programs
     async function eachFolderClick(file:string){
+        // nowAtCategoryView = false; // disable category viewing mode
         // curFolderName = file;
         let isDir = await isDirectory(file);
         if(isDir){
+            nowAtCategoryView = false; // disable category viewing mode
             // case : this is directory
             curFolderName = file;
 
@@ -1365,7 +1368,7 @@ let slots = [
 
     e.preventDefault();
     right_click_clip.update((files) => [
-      ...files,
+    //   ...files,
       target.dataset.filePath
     ]);
     right_click_position.set({ x: e.clientX, y: e.clientY });
@@ -1837,6 +1840,106 @@ function korTypeToEng(src) {
 	return res;
 }
 
+// ---------------------- file category --------------------------------
+
+let fileCateList = writable([]); // category list from server
+
+let showCateCrtModal = false;
+
+let fileCateCrtObj = {
+    "name":"Name Here",
+    "description":"Description Here",
+    "color":""
+}
+
+async function loadFileCategories(){
+    const categories = await invoke('get_categories');
+    fileCateList.set(categories);
+}
+
+function toggleSHowCateCrtModal(){
+    showCateCrtModal = !showCateCrtModal;
+}
+
+  // 페이지 로드 시 카테고리를 가져옴
+onMount(async () => {
+    loadFileCategories();
+});
+
+async function fileCateCreateCategory(name:string,description:string,color:string) {
+    const newCategories = await invoke('create_category', {
+        name,
+        description,
+        color,
+    });
+    alert(currentTranslations.alt_file_cate_new_cate_crt);
+    loadFileCategories(); //reload
+    toggleSHowCateCrtModal(); //close modal
+}
+
+async function fileCateDeleteCategory(num) {
+    const newCategories = await invoke('delete_category', {
+        num: parseInt(num),
+    });
+    alert(currentTranslations.alt_file_cate_del_cate);
+
+    // set fileviwer to empty space
+    nowAtCategoryView = false;
+    curFolderName = '';
+    filesInCurrentFolder = [];
+}
+
+async function fileCateAddPath(num:string,path:string) {
+    const newCategories = await invoke('add_to_category', {
+        num: parseInt(num),
+        path,
+    });
+    // console.log('Categories after adding path:', newCategories);
+}
+
+
+async function fileCateRemovePath(num:string,path:string) {
+    const newCategories = await invoke('remove_from_category', {
+        num: parseInt(num),
+        path,
+    });
+
+    await loadFileCategories();
+    if(nowAtCategoryView){
+        // if category tab, reload each units when units removed
+        const category = $fileCateList.find(cat => cat.num === parseInt(num));
+        
+        if (category) {
+            filesInCurrentFolder = category.list;
+        }
+        
+    }
+
+}
+
+// check fileviwer is viewing category
+let nowAtCategoryView = false;
+
+let currentCategoryInfo = writable({
+    "num" : 0,
+    "name":"Name Here",
+    "description":"Description Here",
+    "list":[]
+});
+
+// Each Category Btn
+function setFileViwerToCategory(category){
+    nowAtCategoryView = true
+    curFolderName = '';
+    currentCategoryInfo.set({
+        num : category.num,
+        name: category.name,
+        description: category.description,
+        list : category.list
+    });
+    filesInCurrentFolder = category.list;
+}
+
 
 
 </script>
@@ -2088,6 +2191,22 @@ function korTypeToEng(src) {
                 <Folder path={drive} name={drive} items={$drives[drive]} currentTheme={currentTheme} on:folderSelected={handleFolderSelected}/>
             {/each}
             <hr>
+            <div>{currentTranslations.file_category_title}</div>
+            <button class="dirview-category-add-cate-btn" on:click={toggleSHowCateCrtModal} >{currentTranslations.file_category_add_cate_btn}</button>
+            {#if $fileCateList.length > 0}
+                {#each $fileCateList as category}
+                    <div>
+                        <button 
+                            class="dirview-category-button" 
+                            style="border-color: {category.color};"
+                            on:click={setFileViwerToCategory(category)}
+                        >
+                            {category.name}
+                        </button>
+                    </div>
+                {/each}
+            {/if}
+            <hr>
             <DiscInfo/>
         </aside>
 
@@ -2096,45 +2215,68 @@ function korTypeToEng(src) {
         <div class="resizer" id="resizer"></div>
 
         <!-- file viewer -->
-        <div 
-            class="file-viewer" 
-            id="fileViewer"
-            on:mousedown={handleMouseDown} 
-            on:mousemove={handleMouseMove} 
-            on:mouseup={handleMouseUp}
-        >
-            {#if $isDragging}
-                <div class="selection-rect" style={$rectStyle}></div>
-            {/if}
-            {#if filesInCurrentFolder.length > 0}
-                {#each filesInCurrentFolder as file}
-                    <div
-                        class="file-item"
-                        data-file-path={file}
-                        style="width: {fileSize}px; height: {fileSize}px;"
-                        on:dblclick={() => eachFolderClick(file)}
+        <div class="file-viewer-container">
+        {#if nowAtCategoryView}
+            <div class="file-viewer-category-desc-container">
+                <div>
+                    <h4>{currentTranslations.file_category_file_viewer_name}</h4>
+                    <p>{$currentCategoryInfo.name}</p>
+                </div>
+                <div>
+                    <h4>{currentTranslations.file_category_file_viewer_desc}</h4>
+                    <p>{$currentCategoryInfo.description}</p>
+                </div>
+                <div>
+                    <button 
+                        class="file-viewer-del-cate-btn"
+                        on:click={()=>{fileCateDeleteCategory($currentCategoryInfo.num);loadFileCategories();}}
                     >
-                        <img src="{fileIcons[file] || ''}" alt="File Icon" class="file-icon" />
-                        {#if $editingFile === file}
-                            <input
-                                type="text"
-                                bind:value={$newName}
-                                on:focusout={() => renameFile(file, getParentPath(file))}
-                                on:keydown={(e) => e.key === 'Enter' && renameFile(file, getParentPath(file))}
-                                class="file-name-input"
-                                autofocus
-                            />
-                        {:else}
-                            <span class="file-name">{getFileName(file)}</span>
-                        {/if}
-                    </div>
-                {/each}
-            {:else if selectedDriveLeft && selectedFolderLeft}
-                <p>{currentTranslations.no_folder}</p>
-            {:else}
-                <p>{currentTranslations.sel_folder}</p>
-            {/if}
+                        {currentTranslations.file_category_delete_cate_btn}
+                    </button>
+                </div>
+            </div>
+        {/if}
+            <div 
+                class="file-viewer" 
+                id="fileViewer"
+                on:mousedown={handleMouseDown} 
+                on:mousemove={handleMouseMove} 
+                on:mouseup={handleMouseUp}
+            >
+                {#if $isDragging}
+                    <div class="selection-rect" style={$rectStyle}></div>
+                {/if}
+                {#if filesInCurrentFolder.length > 0}
+                    {#each filesInCurrentFolder as file}
+                        <div
+                            class="file-item"
+                            data-file-path={file}
+                            style="width: {fileSize}px; height: {fileSize}px;"
+                            on:dblclick={() => eachFolderClick(file)}
+                        >
+                            <img src="{fileIcons[file] || ''}" alt="File Icon" class="file-icon" />
+                            {#if $editingFile === file}
+                                <input
+                                    type="text"
+                                    bind:value={$newName}
+                                    on:focusout={() => renameFile(file, getParentPath(file))}
+                                    on:keydown={(e) => e.key === 'Enter' && renameFile(file, getParentPath(file))}
+                                    class="file-name-input"
+                                    autofocus
+                                />
+                            {:else}
+                                <span class="file-name">{getFileName(file)}</span>
+                            {/if}
+                        </div>
+                    {/each}
+                {:else if selectedDriveLeft && selectedFolderLeft}
+                    <p>{currentTranslations.no_folder}</p>
+                {:else}
+                    <p>{currentTranslations.sel_folder}</p>
+                {/if}
+            </div>
         </div>
+        
     </div>
 
     <!------------------------ Setting Modal ------------------------>
@@ -2505,10 +2647,33 @@ function korTypeToEng(src) {
             <div class="file-item-btn-wrapper">
                 <button on:click={filePropModalOpen} class="file-item-btn">{currentTranslations.file_item_right_set_metadata}</button>
             </div>
+            {#each $fileCateList as category}
+                {#if $right_click_clip.length > 0 && category.list.includes($right_click_clip[0])}
+                    <div class="file-item-btn-wrapper">
+                        <button 
+                            class="file-item-btn" 
+                            style="color : {category.color}"
+                            on:click={()=>{fileCateRemovePath(category.num,$right_click_clip[0]);}}
+                        >
+                            {currentTranslations.file_cate_remove_list} {category.name}
+                        </button>
+                    </div>
+                {:else}
+                    <div class="file-item-btn-wrapper">
+                        <button 
+                            class="file-item-btn" 
+                            style="color : {category.color}" 
+                            on:click={()=>{fileCateAddPath(category.num,$right_click_clip[0]);loadFileCategories();}}
+                        >
+                            {currentTranslations.file_cate_add_list} {category.name}
+                        </button>
+                    </div>
+                {/if}
+            {/each}
         </div>
     {/if}
 
-    <!--  -->
+    <!-- File Right-click Properties modal -->
     {#if $filePropModalToggle}
     <div class="file-props-modal" on:click={filePropModalClose} style="left: {$filePropsModalPos.x}px; top: {$filePropsModalPos.y}px">
         <div class="file-props-content">
@@ -2531,5 +2696,39 @@ function korTypeToEng(src) {
         </div>
     </div>
     {/if}
+
+    <!-- File Category Creation Modal -->
+     {#if showCateCrtModal}
+        <div class="category-creation-modal-wrapper">
+            <div class="category-creation-each-row">
+                <h3>{currentTranslations.file_category_creation_title}</h3>
+            </div>
+            <div class="category-creation-each-row">
+                <p>{currentTranslations.file_category_crt_name_txt}</p>
+                <input type="text" bind:value={fileCateCrtObj.name}>
+            </div>
+            <div class="category-creation-each-row">
+                <p>{currentTranslations.file_category_crt_desp_txt}</p>
+                <textarea class="category-creation-desp-area" bind:value={fileCateCrtObj.description}/>
+            </div>
+            <div class="category-creation-each-row">
+                <p>{currentTranslations.file_category_crt_sel_color_txt}</p>
+                <input type="color" class="category-creation-color-btn" bind:value={fileCateCrtObj.color}>
+            </div>
+            <div class="category-creation-each-row">
+                <button 
+                    class="category-creation-btn" 
+                    on:click={()=>{fileCateCreateCategory(fileCateCrtObj.name,fileCateCrtObj.description,fileCateCrtObj.color)}}
+                >
+                    {currentTranslations.file_category_crt_creation_btn}
+                </button>
+            </div>
+            <div class="category-creation-each-row">
+                <button on:click={toggleSHowCateCrtModal} class="category-creation-btn">
+                    {currentTranslations.file_category_crt_close}
+                </button>
+            </div>
+        </div>
+     {/if}
 
 </div>

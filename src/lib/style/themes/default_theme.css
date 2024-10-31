@@ -39,8 +39,15 @@
     color: #005082;
 }
 
-.file-viewer {
+/* .file-viewer  */
+.file-viewer-container{
     background-color: #FFFFFF;
+}
+
+.file-viewer-del-cate-btn{
+    background-color: #4a4a4a;
+    color: white;
+    cursor: pointer;
 }
 
 /* selection Box */
@@ -179,4 +186,9 @@
 .file-prop-modal-btn{
     background-color: #4a4a4a;
     color: white;
+}
+
+.category-creation-modal-wrapper{
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }

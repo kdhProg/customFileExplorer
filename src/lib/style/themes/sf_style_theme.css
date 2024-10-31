@@ -54,9 +54,16 @@
     margin-top: 5px;
 }
 
-.file-viewer {
+/* .file-viewer */
+.file-viewer-container {
     background-color: #1b1b1b;
     border-left: 1px solid #444;
+}
+
+.file-viewer-del-cate-btn{
+    background-color: #00c8ff;
+    color: #000000;
+    cursor: pointer;
 }
 
 /* selection Box */
@@ -272,6 +279,25 @@ a:hover {
 }
 
 .file-prop-modal-btn{
+    color:#1b1b1b;
+    background: #00c8ff;
+}
+
+.dirview-category-button{
+    color : #00c8ff;
+}
+
+.dirview-category-add-cate-btn{
+    color : #00c8ff;
+    border-color: #00c8ff;
+}
+
+.category-creation-modal-wrapper{
+    background-color: #1b1b1b;
+    border:1px solid #00c8ff;
+}
+
+.category-creation-btn{
     color:#1b1b1b;
     background: #00c8ff;
 }

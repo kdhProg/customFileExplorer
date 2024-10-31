@@ -139,6 +139,25 @@ export const translations = {
         file_prop_loading : 'Getting Metadata',
         file_prop_close : 'Close',
 
+        file_category_add_cate_btn : 'Add Category',
+        file_category_title : 'Custom Category',
+        file_cate_add_list : 'Add to :',
+        file_cate_remove_list : 'Delete from :',
+
+        file_category_creation_title : 'Create Custom Category',
+        file_category_crt_name_txt : 'Name',
+        file_category_crt_desp_txt : 'Description',
+        file_category_crt_sel_color_txt : 'Color',
+        file_category_crt_creation_btn : 'Create',
+        file_category_crt_close : 'Close',
+        file_category_delete_cate_btn : 'Delete Category',
+
+        file_category_file_viewer_name:'Name',
+        file_category_file_viewer_desc: 'Description',
+
+        alt_file_cate_new_cate_crt: 'New Category has been created',
+        alt_file_cate_del_cate : 'Category has been deleted'
+
     },
     ko: {
         settings: '설정',
@@ -281,5 +300,23 @@ export const translations = {
         file_prop_loading : '파일 속성을 가져오는 중...',
         file_prop_close : '닫기',
 
+        file_category_title : '사용자 지정 카테고리',
+        file_category_add_cate_btn : '카테고리 추가',
+        file_cate_add_list : '추가 :',
+        file_cate_remove_list : '제거 :',
+
+        file_category_creation_title : '새 카테고리 만들기',
+        file_category_crt_name_txt : '이름',
+        file_category_crt_desp_txt : '설명',
+        file_category_crt_sel_color_txt : '대표색상',
+        file_category_crt_creation_btn : '생성',
+        file_category_crt_close : '닫기',
+        file_category_delete_cate_btn : '카테고리 제거',
+
+        file_category_file_viewer_name:'카테고리명',
+        file_category_file_viewer_desc: '설명',
+
+        alt_file_cate_new_cate_crt: '새 카테고리 생성 완료',
+        alt_file_cate_del_cate : '카테고리 제거 완료'
     },
 };

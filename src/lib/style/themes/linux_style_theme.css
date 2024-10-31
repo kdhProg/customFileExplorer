@@ -65,9 +65,16 @@
     background-color: rgba(255, 205, 250, 0.1);
 }
 
-.file-viewer {
+/* .file-viewer  */
+.file-viewer-container{
     background-color: #ffffff;
     border-left: 1px solid #444;
+}
+
+.file-viewer-del-cate-btn{
+    background-color: #64035a;
+    color: white;
+    cursor: pointer;
 }
 
 .file-item {
@@ -221,4 +228,9 @@ a:hover {
 .file-prop-modal-btn{
     background-color: #870b6e;
     color: white;
+}
+
+.category-creation-modal-wrapper{
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }

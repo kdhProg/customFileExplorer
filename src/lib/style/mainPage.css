@@ -89,6 +89,19 @@ html::-webkit-scrollbar{
     margin-top: 5px;
 }
 
+.file-viewer-container{
+    /* border: red 1px solid; */
+    width: 100%;
+}
+
+.file-viewer-category-desc-container{
+    padding:5px;
+}
+
+.file-viewer-del-cate-btn{
+    width: 150px;
+}
+
 .file-viewer {
     flex-grow: 1;
     padding: 10px;
@@ -862,6 +875,63 @@ html::-webkit-scrollbar{
 }
 
 .file-prop-modal-btn{
+    cursor:pointer;
+    width: 100%;
+    border-color: transparent;
+    border-radius: 5px;
+}
+
+.dirview-category-add-cate-btn{
+    cursor: pointer;
+    width: 50;
+    background: transparent;
+    border-radius: 5px;
+    box-sizing: border-box;
+    border-width: 1px;
+    border-style: solid;
+}
+
+.dirview-category-button{
+    cursor: pointer;
+    width: 100px;
+    background: transparent;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+.category-creation-modal-wrapper{
+    position: fixed;
+    top:20%;
+    left:40%;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 10px;
+    border-radius: 5px;
+
+}
+
+.category-creation-each-row{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.category-creation-desp-area{
+    width: 100%;
+    min-height: 100px;
+    max-height: 200px;
+    box-sizing: border-box;
+    resize: vertical;
+}
+
+.category-creation-color-btn{
+    width: 100%;
+    border-color: transparent;
+}
+
+.category-creation-btn{
     cursor:pointer;
     width: 100%;
     border-color: transparent;

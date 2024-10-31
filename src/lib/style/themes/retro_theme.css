@@ -46,9 +46,16 @@
     border-color: #a6caf0;
 } */
 
-.file-viewer {
+/* .file-viewer  */
+.file-viewer-container{
     background-color: #ffffff;
     /* border-left: 2px solid #96b9eb; */
+}
+
+.file-viewer-del-cate-btn{
+    background-color: #4a4a4a;
+    color: white;
+    cursor: pointer;
 }
 
 /* selection Box */
@@ -232,4 +239,9 @@ a:hover {
 .file-prop-modal-btn{
     background-color: #4a4a4a;
     color: white;
+}
+
+.category-creation-modal-wrapper{
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }

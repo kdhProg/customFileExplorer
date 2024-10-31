@@ -66,6 +66,14 @@ we developed a file explorer project with key strengths such as fast search spee
   - Util buttons deployment
 
 
+### Custom Categories
+  - You can make your custom categories and add / remove file or folder
+  - configurable options : name / description / color
+  - **Caution**
+    - file "Rename" not sufficiently work -> plan to fix
+    - another potential unintentional bugs may exists
+
+
 ### Search keyword autocomplete
 - It gets the top 30 most searched keywords based on log files from the logs folder and suggest them as autocomplete recommendations.
 - **Note:** Valid log files must exist.
