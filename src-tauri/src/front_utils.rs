@@ -26,7 +26,6 @@ pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteR
         let source = Path::new(file);
         let mut destination = Path::new(&target_path).join(source.file_name().unwrap());
 
-        // 중첩 복사 방지: 자기 자신의 하위 폴더에 복사할 때만 차단
         if is_nested_path(source, &destination) {
             return PasteResult {
                 success: false,
@@ -38,7 +37,6 @@ pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteR
             };
         }
 
-        // 고유한 이름 생성
         while existing_items.iter().any(|item| item.name == destination.file_name().unwrap().to_string_lossy())
             || generated_names.contains(destination.file_name().unwrap().to_string_lossy().as_ref()) {
             destination = generate_unique_copy_name(&destination, &existing_items, source.is_dir());
@@ -48,7 +46,6 @@ pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteR
         copy_plan.push((source.to_path_buf(), destination));
     }
 
-    // 복사 또는 이동 수행
     for (source, destination) in copy_plan {
         let result = if cut {
             if source == destination {
@@ -82,9 +79,7 @@ pub fn paste_files(files: Vec<String>, target_path: String, cut: bool) -> PasteR
     }
 }
 
-// 자기 자신의 하위 경로로 복사하려는지 확인하는 함수
 fn is_nested_path(source: &Path, destination: &Path) -> bool {
-    // 동일한 부모 경로에 복사하는 것은 허용하고, 하위 경로 복사만 차단
     destination.starts_with(source) && destination != source.parent().unwrap().join(source.file_name().unwrap())
 }
 
@@ -121,7 +116,6 @@ fn generate_unique_copy_name(
     };
 
     let mut counter = 2;
-    // 파일과 폴더를 구분하여 중복 검사
     while existing_items.iter().any(|item| item.name == new_name && item.is_folder == is_folder) {
         if extension.is_empty() {
             new_name = format!("{}_copy({})", file_name, counter);
@@ -135,9 +129,8 @@ fn generate_unique_copy_name(
 }
 
 
-// 재귀적으로 폴더 복사
 fn copy_recursive(src: &Path, dst: &Path) -> io::Result<()> {
-    fs::create_dir_all(dst)?; // 대상 경로에 폴더 생성
+    fs::create_dir_all(dst)?;
 
     for entry in fs::read_dir(src)? {
         let entry = entry?;
@@ -146,27 +139,26 @@ fn copy_recursive(src: &Path, dst: &Path) -> io::Result<()> {
         let dst_path = dst.join(entry.file_name());
 
         if file_type.is_dir() {
-            copy_recursive(&src_path, &dst_path)?; // 재귀적으로 폴더 복사
+            copy_recursive(&src_path, &dst_path)?;
         } else {
-            fs::copy(&src_path, &dst_path)?; // 파일 복사
+            fs::copy(&src_path, &dst_path)?;
         }
     }
     Ok(())
 }
 
-// 하위 디렉토리인지 확인
+
 fn is_subdirectory(src: &Path, dst: &Path) -> bool {
     let src_abs = src.canonicalize().unwrap_or(src.to_path_buf());
     let dst_abs = dst.canonicalize().unwrap_or(dst.to_path_buf());
     dst_abs.starts_with(&src_abs)
 }
 
-// 파일 또는 폴더 이동 함수
+
 fn move_item(src: &str, dst: &str) -> io::Result<()> {
     let source = Path::new(src);
     let destination = Path::new(dst).join(source.file_name().unwrap());
 
-    // 동일한 이름의 파일/폴더가 이미 있는지 검사
     if destination.exists() {
         return Err(io::Error::new(
             io::ErrorKind::AlreadyExists,
@@ -174,7 +166,6 @@ fn move_item(src: &str, dst: &str) -> io::Result<()> {
         ));
     }
 
-    // 파일/폴더 이동 시도
     if let Err(_) = fs::rename(&source, &destination) {
         fs::copy(&source, &destination).map(|_| ())?;
         fs::remove_file(&source)?;
@@ -183,7 +174,6 @@ fn move_item(src: &str, dst: &str) -> io::Result<()> {
 }
 
 
-// 에러 메시지를 담을 구조체
 #[derive(serde::Serialize)]
 pub struct TrashResult {
     success: bool,
@@ -194,9 +184,8 @@ pub struct TrashResult {
 pub fn move_files_to_trash(paths: Vec<String>) -> TrashResult {
     for path in paths {
         match trash::delete(&path) {
-            Ok(_) => continue, // 성공 시 아무 작업도 하지 않음
+            Ok(_) => continue,
             Err(err) => {
-                // 하나라도 실패하면 에러 메시지 반환
                 return TrashResult {
                     success: false,
                     message: format!("Failed to move {} to trash: {}", path, err),
@@ -205,7 +194,6 @@ pub fn move_files_to_trash(paths: Vec<String>) -> TrashResult {
         }
     }
 
-    // 모든 파일을 성공적으로 이동한 경우
     TrashResult {
         success: true,
         message: "All files moved to trash successfully.".to_string(),

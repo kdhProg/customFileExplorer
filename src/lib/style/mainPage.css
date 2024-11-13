@@ -103,6 +103,7 @@ html::-webkit-scrollbar{
 }
 
 .file-viewer {
+    height: 100%;
     flex-grow: 1;
     padding: 10px;
     display: flex;

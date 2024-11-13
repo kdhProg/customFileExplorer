@@ -47,10 +47,10 @@ pub struct SettingSlot {
 
 const SETTINGS_FILE: &str = "../src/properties/sch_obj_set.json";
 
-// 파일에서 JSON 데이터를 읽어오는 함수
+
 pub fn read_settings_file() -> SettingsData {
     let mut file = File::open(SETTINGS_FILE).unwrap_or_else(|_| {
-        // 파일이 없으면 기본 데이터로 파일 생성
+        
         let default_data = SettingsData {
             data: (1..=5)
                 .map(|i| SettingSlot {
@@ -97,7 +97,7 @@ pub fn read_settings_file() -> SettingsData {
     serde_json::from_str(&content).unwrap()
 }
 
-// 파일에 JSON 데이터를 저장하는 함수
+
 fn write_settings_file(data: &SettingsData) {
     let mut file = OpenOptions::new()
         .write(true)

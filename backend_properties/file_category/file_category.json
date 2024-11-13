@@ -1,9 +1,10 @@
 [
   {
     "num": 1,
-    "name": "Name Here",
-    "description": "Description Here",
-    "color": "",
-    "list": []
+    "name": "category1",
+    "description": "test1",
+    "color": "#ff0000",
+    "list": [
+    ]
   }
 ]

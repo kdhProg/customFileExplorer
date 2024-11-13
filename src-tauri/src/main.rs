@@ -20,7 +20,7 @@ use search::AppState;
 
 fn main() {
  tauri::Builder::default()
-   .manage(AppState::new()) // SearchProcess 관리
+   .manage(AppState::new())
    .invoke_handler(tauri::generate_handler![
      commands::get_current_dir,
      commands::list_files_in_directory,
